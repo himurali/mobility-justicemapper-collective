@@ -27,14 +27,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [mapboxToken, setMapboxToken] = useState<string>("");
-  const [showTokenInput, setShowTokenInput] = useState<boolean>(true);
-
-  const handleTokenSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setShowTokenInput(false);
-    initializeMap();
-  };
+  
+  // Use the provided token directly
+  const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   const getCategoryColor = (category: IssueCategory): string => {
     switch (category) {
@@ -56,20 +51,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const initializeMap = () => {
-    if (!mapboxToken) {
-      toast({
-        title: "Mapbox Token Required",
-        description: "Please enter a valid Mapbox token to display the map.",
-        variant: "destructive",
-      });
-      setShowTokenInput(true);
-      return;
-    }
-
     if (map.current) return;
     
     try {
-      // Initialize Mapbox
+      // Initialize Mapbox with the provided token
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
@@ -92,10 +77,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
       console.error("Error initializing map:", error);
       toast({
         title: "Map Error",
-        description: "Could not initialize the map. Please check your token.",
+        description: "Could not initialize the map. Please check your connection.",
         variant: "destructive",
       });
-      setShowTokenInput(true);
     }
   };
 
@@ -166,26 +150,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   };
 
-  const switchCity = (city: City) => {
-    if (!map.current) return;
-
-    map.current.flyTo({
-      center: city.coordinates,
-      zoom: city.zoom,
-      essential: true,
-    });
-  };
-
   useEffect(() => {
-    if (!showTokenInput && mapboxToken) {
-      initializeMap();
-    }
+    initializeMap();
 
     return () => {
       map.current?.remove();
       map.current = null;
     };
-  }, [showTokenInput, mapboxToken]);
+  }, []);
 
   useEffect(() => {
     if (map.current) {
@@ -194,37 +166,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [categoryFilter, severityFilter, selectedIssue]);
 
   return (
-    <>
-      {showTokenInput ? (
-        <div className="flex flex-col items-center justify-center w-full h-full rounded-lg border-2 border-dashed border-border p-6">
-          <h3 className="text-lg font-medium mb-4">Mapbox Token Required</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            To display the map, please enter your Mapbox public token.
-            You can get one from <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">mapbox.com</a>
-          </p>
-          <form onSubmit={handleTokenSubmit} className="w-full max-w-md">
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                placeholder="Enter your Mapbox token"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground py-2 px-4 rounded-md text-sm font-medium"
-              >
-                Set Token
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
-      )}
-    </>
+    <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
   );
 };
 

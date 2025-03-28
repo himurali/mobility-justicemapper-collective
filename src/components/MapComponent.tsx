@@ -48,7 +48,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setClusterClicked,
     setVisibleIssueIds,
     initializeMap, 
-    updateMapSource 
+    updateMapSource,
+    cleanupMap 
   } = useMapInitialization({
     center,
     zoom,
@@ -65,55 +66,76 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setActiveTab(selectedTab);
   }, [selectedTab]);
   
-  // Initialize the map
+  // Initialize the map once on component mount
   useEffect(() => {
-    initializeMap();
+    let isComponentMounted = true;
+    
+    if (isComponentMounted) {
+      initializeMap();
+    }
 
     return () => {
-      // Fix: Added proper null checks before cleanup operations
-      stopBlinking(markerElementsRef.current, selectedIssue);
+      isComponentMounted = false;
       
-      // Only attempt to remove the map if it exists and has been initialized
-      if (map.current) {
-        try {
-          map.current.remove();
-        } catch (error) {
-          console.error("Error removing map:", error);
-        }
+      // First stop marker animations
+      if (markerElementsRef.current) {
+        stopBlinking(markerElementsRef.current, selectedIssue);
       }
+      
+      // Remove all markers
+      Object.values(markersRef.current || {}).forEach(marker => {
+        try {
+          marker.remove();
+        } catch (error) {
+          console.error("Error removing marker:", error);
+        }
+      });
+      
+      // Then cleanup the map
+      cleanupMap();
     };
   }, []);
   
   // Update map when relevant props change
   useEffect(() => {
     if (map.current && mapStyleLoaded) {
-      map.current.flyTo({
-        center: center,
-        zoom: zoom,
-        essential: true
-      });
-      
-      setClusterClicked(false);
-      if (onVisibleIssuesChange) {
-        onVisibleIssuesChange([]);
+      try {
+        map.current.flyTo({
+          center: center,
+          zoom: zoom,
+          essential: true
+        });
+        
+        setClusterClicked(false);
+        if (onVisibleIssuesChange) {
+          onVisibleIssuesChange([]);
+        }
+        
+        setTimeout(() => {
+          updateMapSource();
+          addMarkers();
+        }, 100);
+      } catch (error) {
+        console.error("Error updating map:", error);
       }
-      
-      setTimeout(() => {
-        updateMapSource();
-        addMarkers();
-      }, 100);
     }
   }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
   
   // Handle marker blinking animation
   useEffect(() => {
+    if (!markerElementsRef.current) return;
+    
     stopBlinking(markerElementsRef.current, selectedIssue);
     
     if (selectedIssue) {
       startBlinking(selectedIssue, markerElementsRef.current);
     }
     
-    return () => stopBlinking(markerElementsRef.current, selectedIssue);
+    return () => {
+      if (markerElementsRef.current) {
+        stopBlinking(markerElementsRef.current, selectedIssue);
+      }
+    };
   }, [selectedIssue]);
   
   // Add markers to the map
@@ -121,7 +143,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
     if (!map.current || !mapStyleLoaded) return;
 
     // Remove existing markers
-    Object.values(markersRef.current).forEach(marker => marker.remove());
+    Object.values(markersRef.current || {}).forEach(marker => {
+      try {
+        marker.remove();
+      } catch (error) {
+        console.error("Error removing marker:", error);
+      }
+    });
+    
     markersRef.current = {};
     markerElementsRef.current = {};
     
@@ -164,9 +193,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
       };
       
       try {
+        if (!map.current) return;
+        
         const { element, marker } = MapMarker({
           issue,
-          map: map.current!,
+          map: map.current,
           isSelected: issue.id === selectedIssue,
           onClick: handleIssueSelect
         });
@@ -184,15 +215,19 @@ const MapComponent: React.FC<MapComponentProps> = ({
     });
     
     // Center map on selected issue if available
-    if (selectedIssue && markersRef.current[selectedIssue]) {
-      map.current.flyTo({
-        center: markersRef.current[selectedIssue].getLngLat(),
-        zoom: 15,
-        essential: true
-      });
-      
-      stopBlinking(markerElementsRef.current, selectedIssue);
-      startBlinking(selectedIssue, markerElementsRef.current);
+    if (selectedIssue && markersRef.current[selectedIssue] && map.current) {
+      try {
+        map.current.flyTo({
+          center: markersRef.current[selectedIssue].getLngLat(),
+          zoom: 15,
+          essential: true
+        });
+        
+        stopBlinking(markerElementsRef.current, selectedIssue);
+        startBlinking(selectedIssue, markerElementsRef.current);
+      } catch (error) {
+        console.error("Error centering on selected issue:", error);
+      }
     }
     
     // Select first visible issue if cluster was clicked and no issue is selected

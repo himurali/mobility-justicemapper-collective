@@ -35,13 +35,6 @@ const CustomFilter: React.FC<CustomFilterProps> = ({
   severityFilter,
   onSeverityChange
 }) => {
-  const handleCityChange = (cityId: string) => {
-    const city = cityOptions.find(c => c.id === cityId);
-    if (city) {
-      onSelectCity(city);
-    }
-  };
-
   const handleTagToggle = (tagId: string) => {
     if (selectedTags.includes(tagId)) {
       onTagsChange(selectedTags.filter(t => t !== tagId));
@@ -67,7 +60,7 @@ const CustomFilter: React.FC<CustomFilterProps> = ({
       case 'accessibility_issues':
         return <Building2 className="h-4 w-4" />;
       case 'green_spaces':
-        return <Leaf className="h-4 w-4" />; // Replaced Garden with Leaf
+        return <Leaf className="h-4 w-4" />; 
       case 'urban_education':
         return <GraduationCap className="h-4 w-4" />;
       default:
@@ -88,39 +81,6 @@ const CustomFilter: React.FC<CustomFilterProps> = ({
         </SheetHeader>
         
         <div className="space-y-6 py-4">
-          {/* Location Filter */}
-          <div className="filter-section">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Location</h3>
-              </div>
-              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="space-y-2">
-              {cityOptions.map((city) => (
-                <div 
-                  key={city.id} 
-                  className="flex items-center space-x-2 cursor-pointer hover:bg-muted rounded-md p-2"
-                  onClick={() => handleCityChange(city.id)}
-                >
-                  <div className={cn(
-                    "h-5 w-5 rounded border flex items-center justify-center",
-                    selectedCity.id === city.id 
-                      ? "bg-primary border-primary text-white" 
-                      : "border-gray-300"
-                  )}>
-                    {selectedCity.id === city.id && <Check className="h-3 w-3" />}
-                  </div>
-                  <Label className="cursor-pointer">{city.name}, India</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-          
           {/* Severity Filter */}
           <div className="filter-section">
             <div className="flex justify-between items-center mb-2">

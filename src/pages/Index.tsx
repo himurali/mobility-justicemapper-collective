@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -19,8 +18,8 @@ import { IssueData } from "@/types";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import NavTabs from "@/components/NavTabs";
+import { useLocation } from "react-router-dom";
 
-// Define the Bangalore city data
 const bangaloreCity: City = {
   id: "bangalore",
   name: "Bangalore",
@@ -28,7 +27,6 @@ const bangaloreCity: City = {
   zoom: 12,
 };
 
-// Create a cities array with Bangalore as the first city
 const cityOptions: City[] = [
   bangaloreCity,
   {
@@ -51,7 +49,6 @@ const cityOptions: City[] = [
   },
 ];
 
-// All possible tags for filtering
 const allTags = [
   "safety", 
   "traffic", 
@@ -67,7 +64,7 @@ const allTags = [
 ];
 
 const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity); // Default to Bangalore
+  const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity);
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | 'all'>('all');
   const [severityFilter, setSeverityFilter] = useState<IssueSeverity | 'all'>('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -76,30 +73,33 @@ const Index = () => {
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
   const selectedIssueRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
-  // Filter issues based on selected city, category, severity, tags, and search query
+  useEffect(() => {
+    const path = location.pathname.substring(1);
+    if (path === "video" || path === "solution" || path === "community" || path === "documents") {
+      setActiveDialogTab(path);
+    }
+  }, [location.pathname]);
+
   const filteredIssues = useMemo(() => {
     return mockIssues.filter(issue => {
-      // Filter by city
       if (issue.city.toLowerCase() !== selectedCity.name.toLowerCase()) {
         return false;
       }
 
-      // Filter by category if not "all"
       if (categoryFilter !== 'all') {
         if (!issue.tags.includes(categoryFilter)) {
           return false;
         }
       }
 
-      // Filter by severity if not "all"
       if (severityFilter !== 'all') {
         if (!issue.tags.includes(severityFilter)) {
           return false;
         }
       }
 
-      // Filter by selected tags
       if (selectedTags.length > 0) {
         const hasMatchingTag = selectedTags.some(tag => 
           issue.tags.includes(tag)
@@ -109,7 +109,6 @@ const Index = () => {
         }
       }
 
-      // Filter by search query
       if (searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase();
         return (
@@ -122,7 +121,6 @@ const Index = () => {
     });
   }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery]);
 
-  // Handle tag toggle
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) 
@@ -131,13 +129,11 @@ const Index = () => {
     );
   };
 
-  // Handle issue card click
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
     setIsDialogOpen(true);
   };
 
-  // Handle issue selection from map
   const handleSelectIssue = (issueId: string) => {
     const issue = mockIssues.find(i => i.id === issueId);
     if (issue) {
@@ -145,22 +141,21 @@ const Index = () => {
     }
   };
 
-  // Handle tab selection
   const handleTabSelect = (tab?: string) => {
     if (tab) {
       setActiveDialogTab(tab);
       
-      // If there's a selected issue, open the dialog with the selected tab
       if (selectedIssue) {
+        setIsDialogOpen(true);
+      } else if (filteredIssues.length > 0) {
+        setSelectedIssue(filteredIssues[0]);
         setIsDialogOpen(true);
       }
     }
   };
 
-  // Scroll selected issue into view when it changes
   useEffect(() => {
     if (selectedIssue && selectedIssueRef.current) {
-      // Find the element with the issue ID
       const issueElement = document.getElementById(`issue-card-${selectedIssue.id}`);
       if (issueElement) {
         issueElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -170,26 +165,18 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <Header />
-
-      {/* Hero section */}
       <Hero
         cities={cityOptions}
         selectedCity={selectedCity}
         onSelectCity={setSelectedCity}
       />
-      
-      {/* Navigation tabs */}
       <div className="container mx-auto px-4 md:px-6 mt-4 mb-6">
         <NavTabs onTabClick={handleTabSelect} />
       </div>
-
       <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
         <div className="flex-1 flex flex-col md:flex-row h-full">
-          {/* Left Sidebar */}
           <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">
-            {/* Search */}
             <div className="relative mb-4">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -199,8 +186,6 @@ const Index = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
-            {/* Tag Filters */}
             <div className="flex flex-wrap gap-2 mb-4">
               {allTags.map(tag => (
                 <Button
@@ -213,8 +198,6 @@ const Index = () => {
                 </Button>
               ))}
             </div>
-            
-            {/* Issue Cards */}
             <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
               {filteredIssues.length > 0 ? (
                 filteredIssues.map(issue => (
@@ -236,8 +219,6 @@ const Index = () => {
               )}
             </div>
           </div>
-          
-          {/* Map Area */}
           <div className="flex-1 relative h-[400px] md:h-auto">
             <MapComponent 
               center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
@@ -251,8 +232,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      
-      {/* Issue Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
           {selectedIssue && (

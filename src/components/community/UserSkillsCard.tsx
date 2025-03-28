@@ -6,21 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { MapPin, LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface Skill {
-  name: string;
-  proficiency: number; // 0-100
-  endorsed: number;
-  color: string;
-}
-
-interface MatchedIssue {
-  id: string;
-  title: string;
-  skillsMatch: number; // 0-100
-  location: string;
-  tags: string[];
-}
+import { Skill, MatchedIssue } from '@/types';
 
 interface UserSkillsCardProps {
   skills: Skill[];
@@ -42,11 +28,13 @@ export const UserSkillsCard: React.FC<UserSkillsCardProps> = ({ skills, matchedI
                       {skill.name}
                     </Badge>
                   </h4>
-                  <span className="text-sm text-muted-foreground">{skill.endorsed} endorsements</span>
+                  <span className="text-sm text-muted-foreground">
+                    {skill.endorsed ? '✓ Endorsed' : 'Not endorsed'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs">Beginner</span>
-                  <Progress value={skill.proficiency} className="h-1 flex-1" />
+                  <Progress value={skill.level} className="h-1 flex-1" />
                   <span className="text-xs">Expert</span>
                 </div>
               </CardContent>
@@ -75,15 +63,15 @@ export const UserSkillsCard: React.FC<UserSkillsCardProps> = ({ skills, matchedI
                     </Link>
                     <div className="flex items-center text-sm text-muted-foreground mt-1">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {issue.location}
+                      {issue.location || 'Unknown location'}
                     </div>
                   </div>
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                    {issue.skillsMatch}% Match
+                    {issue.match}% Match
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
-                  {issue.tags.map((tag, i) => (
+                  {issue.tags && issue.tags.map((tag, i) => (
                     <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>

@@ -1,5 +1,5 @@
 
-import { IssueLocation, IssueCategory, IssueSeverity } from './index';
+import type { IssueLocation, IssueCategory, IssueSeverity } from './index';
 
 export interface IssueData {
   id: string;

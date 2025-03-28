@@ -35,7 +35,7 @@ export interface ForumReply {
   likes: number;
 }
 
-export { IssueData, ForumPost };
+export type { IssueData, ForumPost };
 
 // Define types for community member data
 export interface Badge {

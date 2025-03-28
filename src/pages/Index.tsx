@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -108,8 +107,6 @@ const Index = () => {
       return true;
     });
 
-    // If we have visible issue IDs from the map (from expanded clusters),
-    // filter to only show those issues in the sidebar
     if (visibleIssueIds.length > 0) {
       filtered = filtered.filter(issue => visibleIssueIds.includes(issue.id));
     }
@@ -138,14 +135,12 @@ const Index = () => {
     }
   };
 
-  // This function will be called from the MapComponent when clusters are clicked
-  // and will update the visible issue IDs to sync with what's shown on the map
   const handleMapIssuesUpdate = (issueId: string) => {
     handleSelectIssue(issueId);
   };
-  
-  // Handler for when visible issues change in the map component
+
   const handleVisibleIssuesChange = (issueIds: string[]) => {
+    console.log("Visible issues changed:", issueIds.length);
     setVisibleIssueIds(issueIds);
   };
 
@@ -197,7 +192,6 @@ const Index = () => {
     }
   }, [selectedIssue]);
 
-  // Reset visible issue IDs when city changes
   useEffect(() => {
     setVisibleIssueIds([]);
   }, [selectedCity]);
@@ -261,7 +255,7 @@ const Index = () => {
                     <div className="text-center py-8 text-muted-foreground col-span-2">
                       {visibleIssueIds.length > 0 
                         ? "Click on map clusters to see issues in that area" 
-                        : "No issues found matching your filters"}
+                        : "No issues found matching your filters. Try clicking on map clusters to see issues."}
                     </div>
                   )}
                 </div>

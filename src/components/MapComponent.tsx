@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -48,6 +47,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [points, setPoints] = useState<any[]>([]);
   const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
   const [mapStyleLoaded, setMapStyleLoaded] = useState(false);
+  const [clusterClicked, setClusterClicked] = useState(false);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
@@ -166,12 +166,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
         "top-right"
       );
       
-      // Wait for the map style to load before adding sources and layers
       map.current.on("style.load", () => {
         if (!map.current) return;
         setMapStyleLoaded(true);
         
-        // Add sources and layers for clustering
         map.current.addSource('issues', {
           type: 'geojson',
           data: {
@@ -183,7 +181,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
           clusterRadius: 50
         });
         
-        // Add cluster circles
         map.current.addLayer({
           id: 'clusters',
           type: 'circle',
@@ -207,7 +204,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
           }
         });
         
-        // Add cluster count labels
         map.current.addLayer({
           id: 'cluster-count',
           type: 'symbol',
@@ -223,9 +219,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
           }
         });
         
-        // Handle cluster click
         map.current.on('click', 'clusters', (e) => {
           if (!map.current) return;
+          setClusterClicked(true);
+          
           const features = map.current.queryRenderedFeatures(e.point, {
             layers: ['clusters']
           });
@@ -244,29 +241,35 @@ const MapComponent: React.FC<MapComponentProps> = ({
                   zoom: zoom
                 });
                 
-                // After zooming in, get new cluster points to show markers for this zoomed area
                 setTimeout(() => {
-                  if (!map.current) return;
-                  const newVisibleFeatures = map.current.querySourceFeatures('issues', {
-                    sourceLayer: '',
-                    filter: ['!', ['has', 'point_count']]
-                  });
+                  if (!map.current || !mapStyleLoaded) return;
                   
-                  // Extract the issue IDs from the visible features
-                  const newVisibleIds = newVisibleFeatures.map(f => f.properties?.id).filter(Boolean);
-                  setVisibleIssueIds(newVisibleIds);
-                  
-                  // Update parent component with visible issues
-                  if (onVisibleIssuesChange) {
-                    onVisibleIssuesChange(newVisibleIds);
+                  try {
+                    const newVisibleFeatures = map.current.querySourceFeatures('issues', {
+                      sourceLayer: '',
+                      filter: ['!', ['has', 'point_count']]
+                    });
+                    
+                    const newVisibleIds = newVisibleFeatures
+                      .map(f => f.properties?.id)
+                      .filter(Boolean);
+                    
+                    setVisibleIssueIds(newVisibleIds);
+                    
+                    if (onVisibleIssuesChange) {
+                      onVisibleIssuesChange(newVisibleIds);
+                    }
+                    
+                    addMarkers();
+                  } catch (error) {
+                    console.error("Error updating visible features:", error);
                   }
-                }, 300); // Small delay to ensure map has settled
+                }, 300);
               });
             }
           }
         });
         
-        // Change cursor on hover
         map.current.on('mouseenter', 'clusters', () => {
           if (map.current) map.current.getCanvas().style.cursor = 'pointer';
         });
@@ -287,28 +290,23 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const addMarkers = () => {
-    if (!map.current) return;
+    if (!map.current || !mapStyleLoaded) return;
 
-    // Clear existing markers
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
 
     const filteredIssues = mockIssues.filter(issue => {
-      // Filter by city name
       if (issue.city.toLowerCase() !== center[1].toString()) {
-        // City filtering should match selectedCity
-        const cityMatch = issue.city.toLowerCase() === "bangalore"; // Hardcoded for now, could be passed as prop
+        const cityMatch = issue.city.toLowerCase() === "bangalore";
         if (!cityMatch) return false;
       }
       
-      // Filter by category if specified
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) return false;
       }
       
-      // Filter by severity if specified
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
         return false;
       }
@@ -316,7 +314,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return true;
     });
 
-    // Update GeoJSON source for clusters
     if (map.current.getSource('issues')) {
       const features = filteredIssues.map(issue => ({
         type: 'Feature' as const,
@@ -338,19 +335,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
         features
       });
 
-      // Update visible issues for export to the parent component
-      if (visibleIssueIds.length === 0) {
-        // Initially, no visible issues unless a cluster has been clicked
+      if (!clusterClicked) {
         if (onVisibleIssuesChange) {
           onVisibleIssuesChange([]);
         }
       }
     }
     
-    // Only add individual markers for visible issues (when clusters are clicked)
     filteredIssues.forEach(issue => {
-      // Only create markers for individual points that should be visible
-      // (selected issue or issues within expanded clusters)
       const shouldBeVisible = 
         issue.id === selectedIssue || 
         visibleIssueIds.includes(issue.id);
@@ -398,62 +390,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       startBlinking(selectedIssue);
     }
     
-    // Update the parent component with the visible issues
-    if (onSelectIssue && typeof onSelectIssue === 'function' && visibleIssueIds.length > 0) {
-      // This will notify the parent component about the visible issue IDs
-      // The parent can then filter the sidebar issues accordingly
+    if (clusterClicked && onSelectIssue && typeof onSelectIssue === 'function' && visibleIssueIds.length > 0) {
       const firstVisibleId = visibleIssueIds[0];
       if (firstVisibleId && !selectedIssue) {
         onSelectIssue(firstVisibleId);
       }
     }
   };
-
-  // Watch for changes in map viewport and update visible issue IDs
-  useEffect(() => {
-    if (!map.current || !mapStyleLoaded) return;
-    
-    const updateVisibleFeatures = () => {
-      if (!map.current || !mapStyleLoaded) return;
-      
-      try {
-        // Get visible individual points (not in clusters)
-        const visibleFeatures = map.current.querySourceFeatures('issues', {
-          sourceLayer: '',
-          filter: ['!', ['has', 'point_count']]
-        });
-        
-        // Extract issue IDs
-        const newVisibleIds = visibleFeatures.map(f => f.properties?.id).filter(Boolean);
-        
-        // Update visible issue IDs if they've changed
-        if (JSON.stringify(newVisibleIds) !== JSON.stringify(visibleIssueIds)) {
-          setVisibleIssueIds(newVisibleIds);
-          
-          // Update parent component
-          if (onVisibleIssuesChange) {
-            onVisibleIssuesChange(newVisibleIds);
-          }
-        }
-      } catch (error) {
-        console.error("Error updating visible features:", error);
-      }
-    };
-    
-    // Only add listeners if the map style is loaded
-    if (mapStyleLoaded) {
-      // Update visible features when map is moved or zoomed
-      map.current.on('moveend', updateVisibleFeatures);
-      map.current.on('zoomend', updateVisibleFeatures);
-      
-      return () => {
-        if (map.current) {
-          map.current.off('moveend', updateVisibleFeatures);
-          map.current.off('zoomend', updateVisibleFeatures);
-        }
-      };
-    }
-  }, [visibleIssueIds, onVisibleIssuesChange, mapStyleLoaded]);
 
   useEffect(() => {
     initializeMap();
@@ -472,9 +415,16 @@ const MapComponent: React.FC<MapComponentProps> = ({
         zoom: zoom,
         essential: true
       });
+      
+      setClusterClicked(false);
+      setVisibleIssueIds([]);
+      if (onVisibleIssuesChange) {
+        onVisibleIssuesChange([]);
+      }
+      
       addMarkers();
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, mapStyleLoaded]);
+  }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
 
   useEffect(() => {
     stopBlinking();

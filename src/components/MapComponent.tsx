@@ -42,12 +42,46 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   const [activeTab, setActiveTab] = useState(selectedTab);
+  const [clusters, setClusters] = useState<any[]>([]);
+  const [points, setPoints] = useState<any[]>([]);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   useEffect(() => {
     setActiveTab(selectedTab);
   }, [selectedTab]);
+
+  // Generate additional mock issues to get 15+ total markers
+  const generateAdditionalIssues = () => {
+    const baseIssues = mockIssues;
+    const additionalIssues: IssueData[] = [];
+    
+    // Generate enough issues to have at least 15 in total
+    const totalNeeded = Math.max(0, 15 - baseIssues.length);
+    
+    for (let i = 0; i < totalNeeded; i++) {
+      const baseIssue = baseIssues[i % baseIssues.length];
+      
+      // Create a variation by adjusting location slightly
+      const latVariation = (Math.random() - 0.5) * 0.05;
+      const lngVariation = (Math.random() - 0.5) * 0.05;
+      
+      additionalIssues.push({
+        ...baseIssue,
+        id: `generated-${baseIssue.id}-${i}`,
+        title: `${baseIssue.title} (${i + 1})`,
+        location: {
+          ...baseIssue.location,
+          latitude: baseIssue.location.latitude + latVariation,
+          longitude: baseIssue.location.longitude + lngVariation,
+        }
+      });
+    }
+    
+    return [...baseIssues, ...additionalIssues];
+  };
+  
+  const allIssues = generateAdditionalIssues();
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -161,6 +195,92 @@ const MapComponent: React.FC<MapComponentProps> = ({
       );
   
       map.current.on("load", () => {
+        if (!map.current) return;
+        
+        // Add sources and layers for clustering
+        map.current.addSource('issues', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: []
+          },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50
+        });
+        
+        // Add cluster circles
+        map.current.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: 'issues',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': [
+              'step',
+              ['get', 'point_count'],
+              '#51bbd6',
+              10, '#f1f075',
+              20, '#f28cb1'
+            ],
+            'circle-radius': [
+              'step',
+              ['get', 'point_count'],
+              20,
+              10, 30,
+              20, 40
+            ]
+          }
+        });
+        
+        // Add cluster count labels
+        map.current.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: 'issues',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+          },
+          paint: {
+            'text-color': '#ffffff'
+          }
+        });
+        
+        // Handle cluster click
+        map.current.on('click', 'clusters', (e) => {
+          if (!map.current) return;
+          const features = map.current.queryRenderedFeatures(e.point, {
+            layers: ['clusters']
+          });
+          
+          if (features.length > 0) {
+            const clusterId = features[0].properties?.cluster_id;
+            
+            if (clusterId) {
+              const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
+              source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+                if (err || !map.current) return;
+                
+                map.current.easeTo({
+                  center: (features[0].geometry as any).coordinates,
+                  zoom: zoom
+                });
+              });
+            }
+          }
+        });
+        
+        // Change cursor on hover
+        map.current.on('mouseenter', 'clusters', () => {
+          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+        });
+        map.current.on('mouseleave', 'clusters', () => {
+          if (map.current) map.current.getCanvas().style.cursor = '';
+        });
+        
         addMarkers();
       });
     } catch (error) {
@@ -176,11 +296,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const addMarkers = () => {
     if (!map.current) return;
 
+    // Clear existing markers
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
 
-    const filteredIssues = mockIssues.filter(issue => {
+    const filteredIssues = allIssues.filter(issue => {
       // Filter by category if specified
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
@@ -195,6 +316,30 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return true;
     });
 
+    // Update GeoJSON source for clusters
+    if (map.current.getSource('issues')) {
+      const features = filteredIssues.map(issue => ({
+        type: 'Feature' as const,
+        properties: {
+          id: issue.id,
+          title: issue.title,
+          severity: issue.severity,
+          category: issue.tags[0] || 'other'
+        },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [issue.location.longitude, issue.location.latitude]
+        }
+      }));
+      
+      const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
+      source.setData({
+        type: 'FeatureCollection',
+        features
+      });
+    }
+    
+    // Add individual markers (will be hidden when clustered)
     filteredIssues.forEach(issue => {
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;

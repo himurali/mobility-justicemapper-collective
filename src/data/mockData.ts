@@ -126,3 +126,125 @@ export const mockForumPosts: ForumPost[] = [
     ]
   }
 ];
+
+// Add mock data for community member
+export const mockCommunityMember = {
+  id: "user-1",
+  name: "Maria Rodriguez",
+  bio: "Urban planner and accessibility advocate",
+  avatarUrl: "/placeholder.svg",
+  city: "Metropolis",
+  contributionPoints: 745,
+  badges: [
+    { id: "badge-1", name: "Accessibility Expert", color: "#8884d8" },
+    { id: "badge-2", name: "Problem Solver", color: "#82ca9d" },
+    { id: "badge-3", name: "Community Connector", color: "#ffc658" },
+    { id: "badge-4", name: "Data Champion", color: "#ff8042" }
+  ],
+  skills: [
+    { name: "Urban Planning", level: 95 },
+    { name: "Accessibility Assessment", level: 90 },
+    { name: "Community Organizing", level: 85 },
+    { name: "Policy Analysis", level: 75 },
+    { name: "Grant Writing", level: 70 }
+  ],
+  matchedIssues: [
+    {
+      id: "1",
+      title: "Broken sidewalk near Central Park",
+      match: 95,
+      skills: ["Accessibility Assessment", "Urban Planning"]
+    },
+    {
+      id: "3",
+      title: "Dangerous crosswalk at Main and 5th",
+      match: 90,
+      skills: ["Urban Planning", "Policy Analysis"]
+    },
+    {
+      id: "8",
+      title: "Poor lighting on Riverside Path",
+      match: 85,
+      skills: ["Community Organizing", "Grant Writing"]
+    }
+  ],
+  solutions: 12,
+  forumPosts: 28,
+  events: [
+    {
+      id: "event-1",
+      title: "Accessibility Walkthrough - Downtown",
+      date: "2025-04-15T10:00:00",
+      location: "Downtown Square",
+      attendees: 18,
+      role: "Organizer"
+    },
+    {
+      id: "event-2",
+      title: "City Council Hearing - Mobility Plan",
+      date: "2025-04-22T14:00:00",
+      location: "City Hall",
+      attendees: 45,
+      role: "Speaker"
+    },
+    {
+      id: "event-3",
+      title: "Community Workshop - Sidewalk Solutions",
+      date: "2025-05-03T13:00:00",
+      location: "Community Center",
+      attendees: 30,
+      role: "Facilitator"
+    }
+  ],
+  impactMetrics: {
+    impactCategories: [
+      { category: "Accessibility", value: 450, color: "#8884d8" },
+      { category: "Safety", value: 320, color: "#82ca9d" },
+      { category: "Community Building", value: 280, color: "#ffc658" },
+      { category: "Policy Change", value: 180, color: "#ff8042" },
+      { category: "Education", value: 120, color: "#0088FE" }
+    ],
+    contributionHistory: [
+      { month: "Jan", contributions: 45 },
+      { month: "Feb", contributions: 60 },
+      { month: "Mar", contributions: 85 },
+      { month: "Apr", contributions: 90 },
+      { month: "May", contributions: 120 },
+      { month: "Jun", contributions: 95 }
+    ],
+    impactScore: 87,
+    issuesSolved: 9,
+    communitiesJoined: 4,
+    peopleImpacted: 15420
+  },
+  challenges: [
+    {
+      id: "challenge-1",
+      title: "Document 10 Accessibility Issues",
+      description: "Find and document 10 accessibility issues in your neighborhood",
+      completed: true,
+      progress: 100
+    },
+    {
+      id: "challenge-2",
+      title: "Recruit 5 New Community Members",
+      description: "Bring 5 new members to the platform from your local area",
+      completed: true,
+      progress: 100
+    },
+    {
+      id: "challenge-3",
+      title: "Attend 3 City Council Meetings",
+      description: "Represent community concerns at official city meetings",
+      completed: false,
+      progress: 66
+    },
+    {
+      id: "challenge-4",
+      title: "Solution Implementation",
+      description: "Work with officials to implement an approved solution",
+      completed: false,
+      progress: 45
+    }
+  ]
+};

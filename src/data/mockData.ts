@@ -1,5 +1,5 @@
 
-import { ForumPost, IssueData } from '@/types';
+import { ForumPost, IssueData, CommunityMember, Skill, MatchedIssue, Event } from '@/types';
 
 export const mockForumPosts: ForumPost[] = [
   {
@@ -128,7 +128,7 @@ export const mockForumPosts: ForumPost[] = [
 ];
 
 // Add mock data for community member
-export const mockCommunityMember = {
+export const mockCommunityMember: CommunityMember = {
   id: "user-1",
   name: "Maria Rodriguez",
   bio: "Urban planner and accessibility advocate",
@@ -142,30 +142,39 @@ export const mockCommunityMember = {
     { id: "badge-4", name: "Data Champion", color: "#ff8042" }
   ],
   skills: [
-    { name: "Urban Planning", level: 95 },
-    { name: "Accessibility Assessment", level: 90 },
-    { name: "Community Organizing", level: 85 },
-    { name: "Policy Analysis", level: 75 },
-    { name: "Grant Writing", level: 70 }
+    { name: "Urban Planning", level: 95, proficiency: "Expert", endorsed: true, color: "#8884d8" },
+    { name: "Accessibility Assessment", level: 90, proficiency: "Expert", endorsed: true, color: "#82ca9d" },
+    { name: "Community Organizing", level: 85, proficiency: "Advanced", endorsed: true, color: "#ffc658" },
+    { name: "Policy Analysis", level: 75, proficiency: "Intermediate", endorsed: false, color: "#ff8042" },
+    { name: "Grant Writing", level: 70, proficiency: "Intermediate", endorsed: false, color: "#0088FE" }
   ],
   matchedIssues: [
     {
       id: "1",
       title: "Broken sidewalk near Central Park",
       match: 95,
-      skills: ["Accessibility Assessment", "Urban Planning"]
+      skills: ["Accessibility Assessment", "Urban Planning"],
+      skillsMatch: [90, 95],
+      location: "Downtown",
+      tags: ["Accessibility", "Sidewalks"]
     },
     {
       id: "3",
       title: "Dangerous crosswalk at Main and 5th",
       match: 90,
-      skills: ["Urban Planning", "Policy Analysis"]
+      skills: ["Urban Planning", "Policy Analysis"],
+      skillsMatch: [95, 75],
+      location: "Midtown",
+      tags: ["Safety", "Pedestrian"]
     },
     {
       id: "8",
       title: "Poor lighting on Riverside Path",
       match: 85,
-      skills: ["Community Organizing", "Grant Writing"]
+      skills: ["Community Organizing", "Grant Writing"],
+      skillsMatch: [85, 70],
+      location: "Riverside",
+      tags: ["Safety", "Lighting"]
     }
   ],
   solutions: 12,
@@ -177,7 +186,12 @@ export const mockCommunityMember = {
       date: "2025-04-15T10:00:00",
       location: "Downtown Square",
       attendees: 18,
-      role: "Organizer"
+      role: "Organizer",
+      description: "A guided walkthrough to identify accessibility issues in the downtown area",
+      time: "10:00 AM",
+      type: "Field Work",
+      participants: ["James Wilson", "Sarah Chen", "Robert Kim"],
+      isRegistered: true
     },
     {
       id: "event-2",
@@ -185,7 +199,12 @@ export const mockCommunityMember = {
       date: "2025-04-22T14:00:00",
       location: "City Hall",
       attendees: 45,
-      role: "Speaker"
+      role: "Speaker",
+      description: "Presenting community feedback on the proposed mobility plan",
+      time: "2:00 PM",
+      type: "Advocacy",
+      participants: ["Jennifer Lopez", "Thomas Garcia", "David Johnson"],
+      isRegistered: true
     },
     {
       id: "event-3",
@@ -193,7 +212,12 @@ export const mockCommunityMember = {
       date: "2025-05-03T13:00:00",
       location: "Community Center",
       attendees: 30,
-      role: "Facilitator"
+      role: "Facilitator",
+      description: "Collaborative workshop to design solutions for sidewalk issues",
+      time: "1:00 PM",
+      type: "Workshop",
+      participants: ["Emma Davis", "Michael Brown", "Lisa Thompson"],
+      isRegistered: true
     }
   ],
   impactMetrics: {

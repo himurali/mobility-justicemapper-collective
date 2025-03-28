@@ -1,5 +1,30 @@
 
-import { IssueData } from './issueData';
+import { IssueData, ForumPost } from './issueData';
+
+// Location and category types
+export interface IssueLocation {
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
+
+export type IssueCategory = 
+  | 'safety' 
+  | 'traffic' 
+  | 'cycling' 
+  | 'sidewalks' 
+  | 'accessibility' 
+  | 'public_transport'
+  | 'other';
+
+export type IssueSeverity = 'low' | 'medium' | 'high';
+
+export interface City {
+  id: string;
+  name: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  zoom: number;
+}
 
 // Define types for forum posts
 export interface ForumReply {
@@ -10,17 +35,7 @@ export interface ForumReply {
   likes: number;
 }
 
-export interface ForumPost {
-  id: string;
-  issueId: string;
-  title: string;
-  author: string;
-  date: string;
-  content: string;
-  tags: string[];
-  likes: number;
-  replies: ForumReply[];
-}
+export { IssueData, ForumPost };
 
 // Define types for community member data
 export interface Badge {

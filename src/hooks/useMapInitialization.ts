@@ -28,8 +28,33 @@ export function useMapInitialization({
   const [clusterClicked, setClusterClicked] = useState(false);
   const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
   const { toast } = useToast();
-  
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
+  const isMountedRef = useRef(true);
+
+  // Define updateMapSource function first before it's used in initializeMap
+  const updateMapSource = useCallback(() => {
+    if (!map.current || !mapStyleLoaded || !isMountedRef.current) return;
+
+    try {
+      const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
+      const geoJsonData = issuesToGeoJSON(filteredIssues);
+      
+      if (map.current && map.current.getSource('issues')) {
+        try {
+          const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
+          source.setData(geoJsonData);
+        } catch (error) {
+          console.error("Error updating map source data:", error);
+        }
+      }
+      
+      if (!clusterClicked && onVisibleIssuesChange && isMountedRef.current) {
+        onVisibleIssuesChange([]);
+      }
+    } catch (error) {
+      console.error("Error updating map source:", error);
+    }
+  }, [map, mapStyleLoaded, issues, center, categoryFilter, severityFilter, clusterClicked, onVisibleIssuesChange]);
 
   // Safe map removal function to prevent errors
   const cleanupMap = useCallback(() => {
@@ -54,9 +79,9 @@ export function useMapInitialization({
     // Always cleanup any existing map first
     cleanupMap();
     
-    // Check if the container is available
-    if (!mapContainer.current) {
-      console.error("Map container not found");
+    // Check if the container is available and component is mounted
+    if (!mapContainer.current || !isMountedRef.current) {
+      console.error("Map container not found or component unmounted");
       return;
     }
     
@@ -78,14 +103,18 @@ export function useMapInitialization({
       map.current = mapInstance;
   
       // Add navigation controls
-      mapInstance.addControl(
-        new mapboxgl.NavigationControl(),
-        "top-right"
-      );
+      try {
+        mapInstance.addControl(
+          new mapboxgl.NavigationControl(),
+          "top-right"
+        );
+      } catch (error) {
+        console.error("Error adding navigation controls:", error);
+      }
       
       // Handle style loading
       mapInstance.on("style.load", () => {
-        if (!mapInstance || mapInstance !== map.current) {
+        if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) {
           // If the map instance has changed or been removed, don't continue
           return;
         }
@@ -159,7 +188,7 @@ export function useMapInitialization({
           
           // Handle cluster click
           mapInstance.on('click', 'clusters', (e) => {
-            if (!mapInstance || mapInstance !== map.current) return;
+            if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
             
             setClusterClicked(true);
             
@@ -174,7 +203,7 @@ export function useMapInitialization({
                 try {
                   const source = mapInstance.getSource('issues') as mapboxgl.GeoJSONSource;
                   source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-                    if (err || !mapInstance || mapInstance !== map.current) return;
+                    if (err || !mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
                     
                     try {
                       const coordinates = (features[0].geometry as any).coordinates.slice();
@@ -184,7 +213,7 @@ export function useMapInitialization({
                       });
                       
                       setTimeout(() => {
-                        if (!mapInstance || mapInstance !== map.current) return;
+                        if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
                         
                         try {
                           const newVisibleFeatures = mapInstance.queryRenderedFeatures({
@@ -197,7 +226,7 @@ export function useMapInitialization({
                           
                           setVisibleIssueIds(newVisibleIds);
                           
-                          if (onVisibleIssuesChange) {
+                          if (onVisibleIssuesChange && isMountedRef.current) {
                             onVisibleIssuesChange(newVisibleIds);
                           }
                         } catch (error) {
@@ -217,13 +246,13 @@ export function useMapInitialization({
           
           // Handle cursor styling for better UX
           mapInstance.on('mouseenter', 'clusters', () => {
-            if (mapInstance === map.current) {
+            if (mapInstance === map.current && isMountedRef.current) {
               mapInstance.getCanvas().style.cursor = 'pointer';
             }
           });
           
           mapInstance.on('mouseleave', 'clusters', () => {
-            if (mapInstance === map.current) {
+            if (mapInstance === map.current && isMountedRef.current) {
               mapInstance.getCanvas().style.cursor = '';
             }
           });
@@ -242,38 +271,23 @@ export function useMapInitialization({
       
     } catch (error) {
       console.error("Error initializing map:", error);
-      toast({
-        title: "Map Error",
-        description: "Could not initialize the map. Please check your connection.",
-        variant: "destructive",
-      });
-    }
-  }, [center, zoom, mapboxToken, toast, updateMapSource]);
-
-  const updateMapSource = useCallback(() => {
-    if (!map.current || !mapStyleLoaded) return;
-
-    try {
-      const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
-      const geoJsonData = issuesToGeoJSON(filteredIssues);
-      
-      if (map.current.getSource('issues')) {
-        const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
-        source.setData(geoJsonData);
+      if (isMountedRef.current) {
+        toast({
+          title: "Map Error",
+          description: "Could not initialize the map. Please check your connection.",
+          variant: "destructive",
+        });
       }
-      
-      if (!clusterClicked && onVisibleIssuesChange) {
-        onVisibleIssuesChange([]);
-      }
-    } catch (error) {
-      console.error("Error updating map source:", error);
     }
-  }, [map, mapStyleLoaded, issues, center, categoryFilter, severityFilter, clusterClicked, onVisibleIssuesChange]);
+  }, [center, zoom, mapboxToken, toast, cleanupMap, updateMapSource, onVisibleIssuesChange]);
 
   // Make sure the map is properly cleaned up when the component unmounts
   useEffect(() => {
+    isMountedRef.current = true;
+    
     return () => {
       console.log("Cleaning up map on unmount");
+      isMountedRef.current = false;
       cleanupMap();
     };
   }, [cleanupMap]);

@@ -37,6 +37,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [activeTab, setActiveTab] = useState(selectedTab);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
+  const isMountedRef = useRef(true);
   
   // Custom hooks
   const { 
@@ -63,23 +64,28 @@ const MapComponent: React.FC<MapComponentProps> = ({
   
   // Track selected tab
   useEffect(() => {
+    if (!isMountedRef.current) return;
     setActiveTab(selectedTab);
   }, [selectedTab]);
   
   // Initialize the map once on component mount
   useEffect(() => {
-    let isComponentMounted = true;
+    isMountedRef.current = true;
     
-    if (isComponentMounted) {
+    if (isMountedRef.current) {
       initializeMap();
     }
 
     return () => {
-      isComponentMounted = false;
+      isMountedRef.current = false;
       
       // First stop marker animations
       if (markerElementsRef.current) {
-        stopBlinking(markerElementsRef.current, selectedIssue);
+        try {
+          stopBlinking(markerElementsRef.current, selectedIssue);
+        } catch (error) {
+          console.error("Error stopping marker animations:", error);
+        }
       }
       
       // Remove all markers
@@ -98,49 +104,58 @@ const MapComponent: React.FC<MapComponentProps> = ({
   
   // Update map when relevant props change
   useEffect(() => {
-    if (map.current && mapStyleLoaded) {
-      try {
-        map.current.flyTo({
-          center: center,
-          zoom: zoom,
-          essential: true
-        });
-        
-        setClusterClicked(false);
-        if (onVisibleIssuesChange) {
-          onVisibleIssuesChange([]);
-        }
-        
-        setTimeout(() => {
-          updateMapSource();
-          addMarkers();
-        }, 100);
-      } catch (error) {
-        console.error("Error updating map:", error);
+    if (!isMountedRef.current || !map.current || !mapStyleLoaded) return;
+    
+    try {
+      map.current.flyTo({
+        center: center,
+        zoom: zoom,
+        essential: true
+      });
+      
+      setClusterClicked(false);
+      if (onVisibleIssuesChange) {
+        onVisibleIssuesChange([]);
       }
+      
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        updateMapSource();
+        addMarkers();
+      }, 100);
+    } catch (error) {
+      console.error("Error updating map:", error);
     }
   }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
   
   // Handle marker blinking animation
   useEffect(() => {
-    if (!markerElementsRef.current) return;
+    if (!isMountedRef.current || !markerElementsRef.current) return;
     
-    stopBlinking(markerElementsRef.current, selectedIssue);
-    
-    if (selectedIssue) {
-      startBlinking(selectedIssue, markerElementsRef.current);
+    try {
+      stopBlinking(markerElementsRef.current, selectedIssue);
+      
+      if (selectedIssue) {
+        startBlinking(selectedIssue, markerElementsRef.current);
+      }
+    } catch (error) {
+      console.error("Error with marker animation:", error);
     }
     
     return () => {
-      if (markerElementsRef.current) {
-        stopBlinking(markerElementsRef.current, selectedIssue);
+      if (markerElementsRef.current && isMountedRef.current) {
+        try {
+          stopBlinking(markerElementsRef.current, selectedIssue);
+        } catch (error) {
+          console.error("Error stopping blinking on cleanup:", error);
+        }
       }
     };
   }, [selectedIssue]);
   
   // Add markers to the map
   const addMarkers = () => {
-    if (!map.current || !mapStyleLoaded) return;
+    if (!isMountedRef.current || !map.current || !mapStyleLoaded) return;
 
     // Remove existing markers
     Object.values(markersRef.current || {}).forEach(marker => {
@@ -175,6 +190,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
     
     // Add markers for visible or selected issues
     filteredIssues.forEach(issue => {
+      if (!isMountedRef.current || !map.current) return;
+      
       const shouldBeVisible = 
         issue.id === selectedIssue || 
         visibleIssueIds.includes(issue.id) ||
@@ -184,6 +201,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       // Create marker
       const handleIssueSelect = (issue: IssueData) => {
+        if (!isMountedRef.current) return;
+        
         if (onSelectIssue) {
           onSelectIssue(issue.id);
         }

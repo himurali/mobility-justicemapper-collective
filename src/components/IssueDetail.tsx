@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,9 +11,9 @@ import { mockForumPosts } from '@/data/mockData';
 interface IssueDetailProps {
   issue: IssueData | null;
   onClose: () => void;
+  initialTab?: string;
 }
 
-// Define tag colors for consistency
 const tagColors: Record<string, string> = {
   'Cycling': 'bg-emerald-100 text-gray-600 dark:bg-emerald-900 dark:text-gray-300',
   'Safety': 'bg-red-100 text-gray-600 dark:bg-red-900 dark:text-gray-300',
@@ -34,10 +33,13 @@ const tagColors: Record<string, string> = {
   'Comfort': 'bg-lime-100 text-gray-600 dark:bg-lime-900 dark:text-gray-300',
 };
 
-const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onClose }) => {
+const IssueDetail: React.FC<IssueDetailProps> = ({ 
+  issue, 
+  onClose, 
+  initialTab = "video"
+}) => {
   if (!issue) return null;
 
-  // Get color for a tag
   const getTagColor = (tag: string) => {
     return tagColors[tag] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
   };
@@ -67,7 +69,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onClose }) => {
           </Button>
         </div>
         
-        {/* Community section moved to just below the title */}
         {issue.justiceChampion && (
           <div className="w-full mt-4 border-t pt-3">
             <div className="flex justify-between items-center">
@@ -101,7 +102,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onClose }) => {
         )}
       </CardHeader>
       <CardContent className="p-0">
-        <Tabs defaultValue="video" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full justify-start px-6 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950">
             <TabsTrigger value="video" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 dark:data-[state=active]:bg-blue-900 dark:data-[state=active]:text-blue-200">Video</TabsTrigger>
             <TabsTrigger value="solution" className="data-[state=active]:bg-green-100 data-[state=active]:text-green-800 dark:data-[state=active]:bg-green-900 dark:data-[state=active]:text-green-200">Solution</TabsTrigger>
@@ -182,7 +183,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onClose }) => {
   );
 };
 
-// Helper function to extract YouTube video ID
 function getYoutubeId(url: string): string {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);

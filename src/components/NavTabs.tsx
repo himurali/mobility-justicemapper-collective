@@ -5,20 +5,31 @@ import { Link, useLocation } from 'react-router-dom';
 interface NavTab {
   label: string;
   href: string;
+  dialogTab?: string; // Optional parameter to specify which tab to open in the dialog
 }
 
-const NavTabs: React.FC = () => {
+interface NavTabsProps {
+  onTabClick?: (dialogTab?: string) => void; // Optional callback for when a tab is clicked
+}
+
+const NavTabs: React.FC<NavTabsProps> = ({ onTabClick }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   
   const tabs: NavTab[] = [
     { label: 'Map', href: '/' },
-    { label: 'Video', href: '/video' },
-    { label: 'Solution', href: '/solution' },
-    { label: 'Community', href: '/community' },
+    { label: 'Video', href: '/video', dialogTab: 'video' },
+    { label: 'Solution', href: '/solution', dialogTab: 'solution' },
+    { label: 'Community', href: '/community', dialogTab: 'community' },
     { label: 'Forum', href: '/forum' },
-    { label: 'Documents', href: '/documents' },
+    { label: 'Documents', href: '/documents', dialogTab: 'documents' },
   ];
+
+  const handleClick = (tab: NavTab) => {
+    if (onTabClick && tab.dialogTab) {
+      onTabClick(tab.dialogTab);
+    }
+  };
 
   return (
     <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
@@ -32,6 +43,7 @@ const NavTabs: React.FC = () => {
             <Link
               key={tab.href}
               to={tab.href}
+              onClick={() => handleClick(tab)}
               className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-black text-white'

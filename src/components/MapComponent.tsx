@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -19,15 +18,17 @@ interface MapComponentProps {
   categoryFilter?: IssueCategory | "all";
   severityFilter?: string;
   onSelectIssue?: (issueId: string) => void;
+  selectedTab?: string;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
-  center = [77.5946, 12.9716], // Default to Bangalore
+  center = [77.5946, 12.9716],
   zoom = 12,
   selectedIssue,
   categoryFilter = "all",
   severityFilter = "all",
   onSelectIssue,
+  selectedTab = "video",
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -39,36 +40,39 @@ const MapComponent: React.FC<MapComponentProps> = ({
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
+  const [activeTab, setActiveTab] = useState(selectedTab);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
+
+  useEffect(() => {
+    setActiveTab(selectedTab);
+  }, [selectedTab]);
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
       case "safety":
-        return "#ef4444"; // red
+        return "#ef4444";
       case "traffic":
-        return "#f59e0b"; // amber
+        return "#f59e0b";
       case "cycling":
-        return "#10b981"; // green
+        return "#10b981";
       case "sidewalks":
-        return "#6366f1"; // indigo
+        return "#6366f1";
       case "accessibility":
-        return "#8b5cf6"; // violet
+        return "#8b5cf6";
       case "public_transport":
-        return "#0ea5e9"; // sky
+        return "#0ea5e9";
       default:
-        return "#64748b"; // slate
+        return "#64748b";
     }
   };
 
-  // Stop any ongoing blinking
   const stopBlinking = () => {
     if (blinkIntervalRef.current) {
       window.clearInterval(blinkIntervalRef.current);
       blinkIntervalRef.current = null;
     }
 
-    // Reset all markers to their normal state
     Object.entries(markerElementsRef.current).forEach(([issueId, element]) => {
       const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
         ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
@@ -76,7 +80,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       const isSelected = issueId === selectedIssue;
       
-      // Set initial size based on selection state
       const scale = isSelected ? 'scale-150' : '';
       const borderWidth = isSelected ? 'border-3' : 'border-2';
       
@@ -92,7 +95,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     });
   };
 
-  // Start blinking animation for the selected marker
   const startBlinking = (issueId: string) => {
     if (!markerElementsRef.current[issueId]) return;
     
@@ -154,7 +156,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const addMarkers = () => {
     if (!map.current) return;
 
-    // Clear existing markers and references
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
@@ -198,13 +199,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
         .addTo(map.current!);
       
       markerElement.addEventListener('click', () => {
-        // If the dialog is opened, we show issue details
         if (onSelectIssue) {
           onSelectIssue(issue.id);
-        } else {
-          setSelectedIssueData(issue);
-          setIsDialogOpen(true);
         }
+        
+        setSelectedIssueData(issue);
+        setIsDialogOpen(true);
       });
 
       markersRef.current[issue.id] = marker;
@@ -218,7 +218,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         essential: true
       });
       
-      // Start blinking for the selected marker
       stopBlinking();
       startBlinking(selectedIssue);
     }
@@ -245,7 +244,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
 
-  // Effect for blinking the selected marker
   useEffect(() => {
     stopBlinking();
     
@@ -265,6 +263,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           <IssueDetail 
             issue={selectedIssueData} 
             onClose={() => setIsDialogOpen(false)} 
+            initialTab={activeTab}
           />
         </DialogContent>
       </Dialog>

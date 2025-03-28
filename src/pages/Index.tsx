@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -73,6 +74,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
+  const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
   const selectedIssueRef = useRef<HTMLDivElement>(null);
 
   // Filter issues based on selected city, category, severity, tags, and search query
@@ -143,6 +145,18 @@ const Index = () => {
     }
   };
 
+  // Handle tab selection
+  const handleTabSelect = (tab?: string) => {
+    if (tab) {
+      setActiveDialogTab(tab);
+      
+      // If there's a selected issue, open the dialog with the selected tab
+      if (selectedIssue) {
+        setIsDialogOpen(true);
+      }
+    }
+  };
+
   // Scroll selected issue into view when it changes
   useEffect(() => {
     if (selectedIssue && selectedIssueRef.current) {
@@ -168,7 +182,7 @@ const Index = () => {
       
       {/* Navigation tabs */}
       <div className="container mx-auto px-4 md:px-6 mt-4 mb-6">
-        <NavTabs />
+        <NavTabs onTabClick={handleTabSelect} />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
@@ -232,6 +246,7 @@ const Index = () => {
               severityFilter={severityFilter}
               selectedIssue={selectedIssue?.id}
               onSelectIssue={handleSelectIssue}
+              selectedTab={activeDialogTab}
             />
           </div>
         </div>
@@ -244,6 +259,7 @@ const Index = () => {
             <IssueDetail 
               issue={selectedIssue} 
               onClose={() => setIsDialogOpen(false)} 
+              initialTab={activeDialogTab}
             />
           )}
         </DialogContent>

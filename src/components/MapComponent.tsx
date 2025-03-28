@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -33,11 +32,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // State for the issue dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   
-  // Use the provided token directly
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   const getCategoryColor = (category: string): string => {
@@ -63,7 +60,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     if (map.current) return;
     
     try {
-      // Initialize Mapbox with the provided token
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
@@ -73,7 +69,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         zoom: zoom,
       });
   
-      // Add navigation controls
       map.current.addControl(
         new mapboxgl.NavigationControl(),
         "top-right"
@@ -95,18 +90,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const addMarkers = () => {
     if (!map.current) return;
 
-    // Remove existing markers
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
 
-    // Filter issues based on category and severity
     const filteredIssues = mockIssues.filter(issue => {
-      // For Bangalore issues, use the first tag that matches our categories
       const issueCategory = issue.tags.find(tag => 
         ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
       ) || "other";
       
-      // Extract severity from tags if available, otherwise default to "medium"
       const issueSeverity = issue.tags.find(tag => 
         ["low", "medium", "high"].includes(tag.toLowerCase())
       ) || "medium";
@@ -119,30 +110,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return categoryMatch && severityMatch;
     });
 
-    // Add markers for filtered issues
     filteredIssues.forEach(issue => {
-      // Get the category for color
       const issueCategory = issue.tags.find(tag => 
         ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
       ) || "other";
       
-      // Create custom marker element
+      const isSelected = issue.id === selectedIssue;
+      
       const markerElement = document.createElement("div");
       markerElement.className = "cursor-pointer";
       markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2" 
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''}" 
              style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
           <div class="w-3 h-3 rounded-full" 
                style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
         </div>
       `;
 
-      // Add marker to map with click functionality to show dialog
       const marker = new mapboxgl.Marker(markerElement)
         .setLngLat([issue.location.longitude, issue.location.latitude])
         .addTo(map.current!);
       
-      // Add click event to marker
       markerElement.addEventListener('click', () => {
         setSelectedIssueData(issue);
         setIsDialogOpen(true);
@@ -151,7 +139,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       markersRef.current[issue.id] = marker;
     });
 
-    // If a specific issue is selected, focus on it
     if (selectedIssue && markersRef.current[selectedIssue]) {
       map.current.flyTo({
         center: markersRef.current[selectedIssue].getLngLat(),
@@ -172,9 +159,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   useEffect(() => {
     if (map.current) {
+      map.current.flyTo({
+        center: center,
+        zoom: zoom,
+        essential: true
+      });
       addMarkers();
     }
-  }, [categoryFilter, severityFilter, selectedIssue]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
 
   return (
     <>

@@ -47,6 +47,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [clusters, setClusters] = useState<any[]>([]);
   const [points, setPoints] = useState<any[]>([]);
   const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
+  const [mapStyleLoaded, setMapStyleLoaded] = useState(false);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
@@ -164,9 +165,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
         new mapboxgl.NavigationControl(),
         "top-right"
       );
-  
-      map.current.on("load", () => {
+      
+      // Wait for the map style to load before adding sources and layers
+      map.current.on("style.load", () => {
         if (!map.current) return;
+        setMapStyleLoaded(true);
         
         // Add sources and layers for clustering
         map.current.addSource('issues', {
@@ -242,19 +245,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 });
                 
                 // After zooming in, get new cluster points to show markers for this zoomed area
-                const newVisibleFeatures = map.current.querySourceFeatures('issues', {
-                  sourceLayer: '',
-                  filter: ['!', ['has', 'point_count']]
-                });
-                
-                // Extract the issue IDs from the visible features
-                const newVisibleIds = newVisibleFeatures.map(f => f.properties?.id).filter(Boolean);
-                setVisibleIssueIds(newVisibleIds);
-                
-                // Update parent component with visible issues
-                if (onVisibleIssuesChange) {
-                  onVisibleIssuesChange(newVisibleIds);
-                }
+                setTimeout(() => {
+                  if (!map.current) return;
+                  const newVisibleFeatures = map.current.querySourceFeatures('issues', {
+                    sourceLayer: '',
+                    filter: ['!', ['has', 'point_count']]
+                  });
+                  
+                  // Extract the issue IDs from the visible features
+                  const newVisibleIds = newVisibleFeatures.map(f => f.properties?.id).filter(Boolean);
+                  setVisibleIssueIds(newVisibleIds);
+                  
+                  // Update parent component with visible issues
+                  if (onVisibleIssuesChange) {
+                    onVisibleIssuesChange(newVisibleIds);
+                  }
+                }, 300); // Small delay to ensure map has settled
               });
             }
           }
@@ -405,42 +411,49 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   // Watch for changes in map viewport and update visible issue IDs
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapStyleLoaded) return;
     
     const updateVisibleFeatures = () => {
-      if (!map.current) return;
+      if (!map.current || !mapStyleLoaded) return;
       
-      // Get visible individual points (not in clusters)
-      const visibleFeatures = map.current.querySourceFeatures('issues', {
-        sourceLayer: '',
-        filter: ['!', ['has', 'point_count']]
-      });
-      
-      // Extract issue IDs
-      const newVisibleIds = visibleFeatures.map(f => f.properties?.id).filter(Boolean);
-      
-      // Update visible issue IDs if they've changed
-      if (JSON.stringify(newVisibleIds) !== JSON.stringify(visibleIssueIds)) {
-        setVisibleIssueIds(newVisibleIds);
+      try {
+        // Get visible individual points (not in clusters)
+        const visibleFeatures = map.current.querySourceFeatures('issues', {
+          sourceLayer: '',
+          filter: ['!', ['has', 'point_count']]
+        });
         
-        // Update parent component
-        if (onVisibleIssuesChange) {
-          onVisibleIssuesChange(newVisibleIds);
+        // Extract issue IDs
+        const newVisibleIds = visibleFeatures.map(f => f.properties?.id).filter(Boolean);
+        
+        // Update visible issue IDs if they've changed
+        if (JSON.stringify(newVisibleIds) !== JSON.stringify(visibleIssueIds)) {
+          setVisibleIssueIds(newVisibleIds);
+          
+          // Update parent component
+          if (onVisibleIssuesChange) {
+            onVisibleIssuesChange(newVisibleIds);
+          }
         }
+      } catch (error) {
+        console.error("Error updating visible features:", error);
       }
     };
     
-    // Update visible features when map is moved or zoomed
-    map.current.on('moveend', updateVisibleFeatures);
-    map.current.on('zoomend', updateVisibleFeatures);
-    
-    return () => {
-      if (map.current) {
-        map.current.off('moveend', updateVisibleFeatures);
-        map.current.off('zoomend', updateVisibleFeatures);
-      }
-    };
-  }, [visibleIssueIds, onVisibleIssuesChange]);
+    // Only add listeners if the map style is loaded
+    if (mapStyleLoaded) {
+      // Update visible features when map is moved or zoomed
+      map.current.on('moveend', updateVisibleFeatures);
+      map.current.on('zoomend', updateVisibleFeatures);
+      
+      return () => {
+        if (map.current) {
+          map.current.off('moveend', updateVisibleFeatures);
+          map.current.off('zoomend', updateVisibleFeatures);
+        }
+      };
+    }
+  }, [visibleIssueIds, onVisibleIssuesChange, mapStyleLoaded]);
 
   useEffect(() => {
     initializeMap();
@@ -453,7 +466,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, []);
 
   useEffect(() => {
-    if (map.current) {
+    if (map.current && mapStyleLoaded) {
       map.current.flyTo({
         center: center,
         zoom: zoom,
@@ -461,7 +474,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
       addMarkers();
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, mapStyleLoaded]);
 
   useEffect(() => {
     stopBlinking();

@@ -1,57 +1,107 @@
 
-export interface IssueLocation {
-  latitude: number;
-  longitude: number;
-  address?: string;
+import { IssueData } from './issueData';
+
+// Define types for forum posts
+export interface ForumReply {
+  id: string;
+  author: string;
+  date: string;
+  content: string;
+  likes: number;
 }
 
-export type IssueCategory = 
-  | 'safety' 
-  | 'traffic' 
-  | 'cycling' 
-  | 'sidewalks' 
-  | 'accessibility' 
-  | 'public_transport'
-  | 'other';
+export interface ForumPost {
+  id: string;
+  issueId: string;
+  title: string;
+  author: string;
+  date: string;
+  content: string;
+  tags: string[];
+  likes: number;
+  replies: ForumReply[];
+}
 
-export type IssueSeverity = 'low' | 'medium' | 'high';
+// Define types for community member data
+export interface Badge {
+  id: string;
+  name: string;
+  color: string;
+}
 
-export interface IssueReport {
+export interface Skill {
+  name: string;
+  level: number;
+  proficiency?: string;
+  endorsed?: boolean;
+  color?: string;
+}
+
+export interface MatchedIssue {
+  id: string;
+  title: string;
+  match: number;
+  skills: string[];
+  skillsMatch?: number[];
+  location?: string;
+  tags?: string[];
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  attendees: number;
+  role: string;
+  description?: string;
+  time?: string;
+  type?: string;
+  participants?: string[];
+  isRegistered?: boolean;
+}
+
+export interface Challenge {
   id: string;
   title: string;
   description: string;
-  category: IssueCategory;
-  severity: IssueSeverity;
-  location: IssueLocation;
-  images: string[];
-  date: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  upvotes: number;
-  comments: Comment[];
-  status: 'open' | 'in_progress' | 'resolved';
+  completed: boolean;
+  progress: number;
 }
 
-export interface Comment {
-  id: string;
-  text: string;
-  date: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
+export interface ImpactMetric {
+  category: string;
+  value: number;
+  color: string;
 }
 
-export interface City {
+export interface ContributionData {
+  month: string;
+  contributions: number;
+}
+
+export interface ImpactMetrics {
+  impactCategories: ImpactMetric[];
+  contributionHistory: ContributionData[];
+  impactScore: number;
+  issuesSolved: number;
+  communitiesJoined: number;
+  peopleImpacted: number;
+}
+
+export interface CommunityMember {
   id: string;
   name: string;
-  coordinates: [number, number]; // [longitude, latitude]
-  zoom: number;
+  bio: string;
+  avatarUrl: string;
+  city: string;
+  contributionPoints: number;
+  badges: Badge[];
+  skills: Skill[];
+  matchedIssues: MatchedIssue[];
+  solutions: number;
+  forumPosts: number;
+  events: Event[];
+  impactMetrics: ImpactMetrics;
+  challenges: Challenge[];
 }
-
-// Re-export types from issueData.ts
-export type * from './issueData';

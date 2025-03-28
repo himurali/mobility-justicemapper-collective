@@ -79,7 +79,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
             "bg-green-100 text-green-800"
           )}>
             {issue.severity === 'critical' && <AlertTriangle className="h-3 w-3 mr-1" />}
-            {issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1)}
+            {issue.severity && issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1)}
           </Badge>
         </div>
         <div className="flex items-center text-xs text-muted-foreground">
@@ -124,7 +124,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
               <ThumbsUp className="h-4 w-4" />
               <span className="sr-only">Upvote</span>
             </Button>
-            <span className="text-sm font-medium">{issue.upvotes}</span>
+            <span className="text-sm font-medium">{issue.upvotes || 0}</span>
             
             <Button 
               variant="ghost" 
@@ -135,7 +135,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
               <ThumbsDown className="h-4 w-4" />
               <span className="sr-only">Downvote</span>
             </Button>
-            <span className="text-sm font-medium">{issue.downvotes}</span>
+            <span className="text-sm font-medium">{issue.downvotes || 0}</span>
           </div>
         </div>
       </CardContent>

@@ -114,7 +114,7 @@ export const mockIssues: IssueData[] = [
       }
     ],
     documents: [],
-    tags: ['Cycling', 'Infrastructure', 'Safety', 'Urban Design'],
+    tags: ['cyclist_facilities', 'green_spaces', 'road_safety'],
     justiceChampion: {
       id: 'user17',
       name: 'Vikram Menon',
@@ -122,7 +122,10 @@ export const mockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-01-25T11:45:00Z',
-    updatedAt: '2025-02-05T10:30:00Z'
+    updatedAt: '2025-02-05T10:30:00Z',
+    upvotes: 37,
+    downvotes: 5,
+    severity: 'moderate' as IssueSeverity
   },
   {
     id: '8',
@@ -162,7 +165,7 @@ export const mockIssues: IssueData[] = [
         type: 'pdf'
       }
     ],
-    tags: ['Pedestrian', 'Sidewalks', 'Accessibility', 'Maintenance'],
+    tags: ['pedestrian_infrastructure', 'accessibility_issues'],
     justiceChampion: {
       id: 'user20',
       name: 'Meera Iyer',
@@ -170,7 +173,10 @@ export const mockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-03-05T08:15:00Z',
-    updatedAt: '2025-03-10T16:40:00Z'
+    updatedAt: '2025-03-10T16:40:00Z',
+    upvotes: 42,
+    downvotes: 8,
+    severity: 'critical' as IssueSeverity
   },
   {
     id: '9',
@@ -205,7 +211,7 @@ export const mockIssues: IssueData[] = [
         type: 'pdf'
       }
     ],
-    tags: ['Public Transit', 'Traffic', 'Infrastructure', 'Commuting'],
+    tags: ['public_bus_transport', 'public_metro', 'pollution_hotspots'],
     justiceChampion: {
       id: 'user22',
       name: 'Lakshmi Rao',
@@ -213,7 +219,10 @@ export const mockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-02-20T13:10:00Z',
-    updatedAt: '2025-03-01T09:25:00Z'
+    updatedAt: '2025-03-01T09:25:00Z',
+    upvotes: 56,
+    downvotes: 7,
+    severity: 'moderate' as IssueSeverity
   }
 ];
 

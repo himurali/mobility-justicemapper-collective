@@ -17,7 +17,6 @@ import IssueDetail from "@/components/IssueDetail";
 import { IssueData } from "@/types";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import NavTabs from "@/components/NavTabs";
 import { useLocation } from "react-router-dom";
 
 const bangaloreCity: City = {
@@ -74,13 +73,6 @@ const Index = () => {
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-
-  useEffect(() => {
-    const path = location.pathname.substring(1);
-    if (path === "video" || path === "solution" || path === "community" || path === "documents") {
-      setActiveDialogTab(path);
-    }
-  }, [location.pathname]);
 
   const filteredIssues = useMemo(() => {
     return mockIssues.filter(issue => {
@@ -171,9 +163,6 @@ const Index = () => {
         selectedCity={selectedCity}
         onSelectCity={setSelectedCity}
       />
-      <div className="container mx-auto px-4 md:px-6 mt-4 mb-6">
-        <NavTabs onTabClick={handleTabSelect} />
-      </div>
       <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
         <div className="flex-1 flex flex-col md:flex-row h-full">
           <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">

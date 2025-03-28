@@ -2,10 +2,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { IssueCategory } from "@/types";
+import { IssueCategory, IssueData } from "@/types";
 import { mockIssues } from "@/data/issueData";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import IssueDetail from "@/components/IssueDetail";
 
 interface MapComponentProps {
   center?: [number, number];
@@ -27,6 +32,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // State for the issue dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   
   // Use the provided token directly
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
@@ -128,43 +137,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
         </div>
       `;
 
-      // Add marker to map
+      // Add marker to map with click functionality to show dialog
       const marker = new mapboxgl.Marker(markerElement)
         .setLngLat([issue.location.longitude, issue.location.latitude])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div class="flex flex-col gap-2">
-              <h3 class="font-medium text-sm">${issue.title}</h3>
-              <p class="text-xs text-muted-foreground">${issueCategory} · ${issue.city}</p>
-              <button id="popup-view-more" class="text-xs text-primary hover:underline">View details</button>
-            </div>
-          `)
-        )
         .addTo(map.current!);
-
-      // Add click event to "View details" button in popup
-      marker.getPopup().on('open', () => {
-        setTimeout(() => {
-          const viewMoreButton = document.getElementById('popup-view-more');
-          if (viewMoreButton) {
-            viewMoreButton.addEventListener('click', () => {
-              navigate(`/issues/${issue.id}`);
-            });
-          }
-        }, 10);
+      
+      // Add click event to marker
+      markerElement.addEventListener('click', () => {
+        setSelectedIssueData(issue);
+        setIsDialogOpen(true);
       });
 
       markersRef.current[issue.id] = marker;
     });
 
-    // If a specific issue is selected, open its popup
+    // If a specific issue is selected, focus on it
     if (selectedIssue && markersRef.current[selectedIssue]) {
       map.current.flyTo({
         center: markersRef.current[selectedIssue].getLngLat(),
         zoom: 15,
         essential: true
       });
-      markersRef.current[selectedIssue].togglePopup();
     }
   };
 
@@ -184,7 +177,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [categoryFilter, severityFilter, selectedIssue]);
 
   return (
-    <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
+    <>
+      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
+      
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
+          <IssueDetail 
+            issue={selectedIssueData} 
+            onClose={() => setIsDialogOpen(false)} 
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

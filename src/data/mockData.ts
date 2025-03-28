@@ -1,225 +1,128 @@
 
-import { City, IssueReport } from "@/types";
+import { ForumPost, IssueData } from '@/types';
 
-export const cities: City[] = [
+export const mockForumPosts: ForumPost[] = [
   {
-    id: "nyc",
-    name: "New York City",
-    coordinates: [-74.006, 40.7128],
-    zoom: 11,
-  },
-  {
-    id: "sf",
-    name: "San Francisco",
-    coordinates: [-122.4194, 37.7749],
-    zoom: 12,
-  },
-  {
-    id: "chicago",
-    name: "Chicago",
-    coordinates: [-87.6298, 41.8781],
-    zoom: 11,
-  },
-  {
-    id: "la",
-    name: "Los Angeles",
-    coordinates: [-118.2437, 34.0522],
-    zoom: 10,
-  },
-];
-
-export const mockIssues: IssueReport[] = [
-  {
-    id: "1",
-    title: "Broken bike lane on Main Street",
-    description:
-      "The bike lane on Main Street between 5th and 7th Ave has large potholes making it dangerous to cycle.",
-    category: "cycling",
-    severity: "high",
-    location: {
-      latitude: 40.7128,
-      longitude: -73.999,
-      address: "Main St between 5th and 7th Ave",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=800&h=600&fit=crop",
-    ],
-    date: "2023-09-15T14:30:00Z",
-    user: {
-      id: "user1",
-      name: "Alex Johnson",
-      avatar: "https://i.pravatar.cc/150?u=user1",
-    },
-    upvotes: 24,
-    comments: [
+    id: "forum-1",
+    issueId: "1",
+    title: "Monthly Community Meeting - Downtown Cycling Infrastructure",
+    author: "Maria Rodriguez",
+    date: "2025-03-10",
+    content: "I'd like to invite everyone to our monthly community meeting where we'll discuss the progress on downtown cycling infrastructure improvements. We'll review the city's response to our collective feedback and plan next steps.",
+    tags: ["Meeting", "Cycling", "Infrastructure"],
+    likes: 24,
+    replies: [
       {
-        id: "c1",
-        text: "I ride here daily and it's becoming increasingly dangerous. Someone is going to get hurt.",
-        date: "2023-09-16T10:15:00Z",
-        user: {
-          id: "user2",
-          name: "Sam Rivera",
-          avatar: "https://i.pravatar.cc/150?u=user2",
-        },
+        id: "reply-1-1",
+        author: "James Wilson",
+        date: "2025-03-10",
+        content: "I'll be there! I've documented several problematic intersections that we should discuss.",
+        likes: 8
       },
       {
-        id: "c2",
-        text: "I've reported this to the city twice already. No response.",
-        date: "2023-09-17T09:22:00Z",
-        user: {
-          id: "user3",
-          name: "Taylor Kim",
-          avatar: "https://i.pravatar.cc/150?u=user3",
-        },
-      },
-    ],
-    status: "open",
+        id: "reply-1-2",
+        author: "Sarah Chen",
+        date: "2025-03-11",
+        content: "Can we also discuss the new bike lane proposal for Oak Street? I have some concerns about the current design.",
+        likes: 12
+      }
+    ]
   },
   {
-    id: "2",
-    title: "No wheelchair access at Central Station",
-    description:
-      "The east entrance to Central Station has no wheelchair ramp, making it inaccessible for people with mobility issues.",
-    category: "accessibility",
-    severity: "high",
-    location: {
-      latitude: 40.7158,
-      longitude: -74.004,
-      address: "Central Station, East Entrance",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1551038247-3d9af20df552?w=800&h=600&fit=crop",
-    ],
-    date: "2023-09-10T09:15:00Z",
-    user: {
-      id: "user4",
-      name: "Jordan Lee",
-      avatar: "https://i.pravatar.cc/150?u=user4",
-    },
-    upvotes: 42,
-    comments: [
+    id: "forum-2",
+    issueId: "2",
+    title: "Action Plan for Improving Wheelchair Accessibility in Public Transit",
+    author: "David Johnson",
+    date: "2025-03-08",
+    content: "After our survey of transit stations, I've drafted an action plan for improving wheelchair accessibility. The document includes prioritized improvements, estimated costs, and potential funding sources. I'd appreciate everyone's feedback before we present this to the city council.",
+    tags: ["Action Plan", "Accessibility", "Public Transit", "Wheelchair"],
+    likes: 37,
+    replies: [
       {
-        id: "c3",
-        text: "This affects me every day. I have to take a 15-minute detour to use the north entrance.",
-        date: "2023-09-11T16:40:00Z",
-        user: {
-          id: "user5",
-          name: "Casey Morgan",
-          avatar: "https://i.pravatar.cc/150?u=user5",
-        },
-      },
-    ],
-    status: "in_progress",
+        id: "reply-2-1",
+        author: "Lisa Thompson",
+        date: "2025-03-09",
+        content: "This is excellent work, David! I've reviewed the document and added some comments about the Central Station ramps that need urgent attention.",
+        likes: 15
+      }
+    ]
   },
   {
-    id: "3",
-    title: "Dangerous pedestrian crossing",
-    description:
-      "The crossing at Oak and Pine has a very short signal, insufficient for elderly people to cross safely.",
-    category: "safety",
-    severity: "medium",
-    location: {
-      latitude: 40.7098,
-      longitude: -74.001,
-      address: "Intersection of Oak St and Pine Ave",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop",
-    ],
-    date: "2023-09-05T11:20:00Z",
-    user: {
-      id: "user6",
-      name: "Robin Chen",
-      avatar: "https://i.pravatar.cc/150?u=user6",
-    },
-    upvotes: 17,
-    comments: [
+    id: "forum-3",
+    issueId: "8",
+    title: "Volunteer Group for Sidewalk Condition Documentation",
+    author: "Michael Brown",
+    date: "2025-03-05",
+    content: "I'm organizing a volunteer group to systematically document sidewalk conditions in the eastern neighborhoods. We'll use the app to record issues and create a comprehensive report. Looking for 10-15 volunteers who can commit to covering specific areas over the next two weekends.",
+    tags: ["Volunteer", "Sidewalks", "Documentation"],
+    likes: 19,
+    replies: [
       {
-        id: "c4",
-        text: "My grandmother lives nearby and won't go out alone because of this crossing.",
-        date: "2023-09-07T14:10:00Z",
-        user: {
-          id: "user7",
-          name: "Parker Williams",
-          avatar: "https://i.pravatar.cc/150?u=user7",
-        },
+        id: "reply-3-1",
+        author: "Emma Davis",
+        date: "2025-03-06",
+        content: "I can help cover the Riverside district. I walk there daily and have already noticed several problem areas.",
+        likes: 7
       },
-    ],
-    status: "open",
+      {
+        id: "reply-3-2",
+        author: "Robert Kim",
+        date: "2025-03-06",
+        content: "Count me in for the University area. I can bring my measuring tools to document exact dimensions of problematic spots.",
+        likes: 9
+      },
+      {
+        id: "reply-3-3",
+        author: "Jennifer Lopez",
+        date: "2025-03-07",
+        content: "I'll volunteer for downtown. I use a wheelchair and can provide valuable perspective on accessibility issues.",
+        likes: 21
+      }
+    ]
   },
   {
-    id: "4",
-    title: "Bus shelter removed",
-    description:
-      "The bus shelter at Green Street stop was removed two months ago and has not been replaced. Passengers have no protection from weather.",
-    category: "public_transport",
-    severity: "medium",
-    location: {
-      latitude: 40.7148,
-      longitude: -73.996,
-      address: "Green Street Bus Stop",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=600&fit=crop",
-    ],
-    date: "2023-08-28T08:45:00Z",
-    user: {
-      id: "user8",
-      name: "Quinn Taylor",
-      avatar: "https://i.pravatar.cc/150?u=user8",
-    },
-    upvotes: 9,
-    comments: [],
-    status: "open",
+    id: "forum-4",
+    issueId: "3",
+    title: "Update on City Council Meeting - Pedestrian Safety Initiatives",
+    author: "Alexandra Wong",
+    date: "2025-03-01",
+    content: "I attended yesterday's city council meeting where our pedestrian safety proposals were discussed. The council was receptive to our data-driven approach and has agreed to allocate funding for improved crosswalks at the five most dangerous intersections we identified. They've requested more detailed information on our other recommendations.",
+    tags: ["Update", "Pedestrian", "Safety", "City Council"],
+    likes: 42,
+    replies: [
+      {
+        id: "reply-4-1",
+        author: "Thomas Garcia",
+        date: "2025-03-01",
+        content: "This is great news! Thanks for representing us, Alexandra. I can help prepare the additional information they requested.",
+        likes: 11
+      },
+      {
+        id: "reply-4-2",
+        author: "Sophia Miller",
+        date: "2025-03-02",
+        content: "Did they mention any timeline for the crosswalk improvements? We should follow up to ensure this doesn't get delayed.",
+        likes: 8
+      }
+    ]
   },
   {
-    id: "5",
-    title: "Traffic light timing issue",
-    description:
-      "The traffic light at the corner of Market and State stays green for only 10 seconds, causing congestion.",
-    category: "traffic",
-    severity: "low",
-    location: {
-      latitude: 40.7138,
-      longitude: -74.008,
-      address: "Market St and State Ave intersection",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop",
-    ],
-    date: "2023-09-01T17:30:00Z",
-    user: {
-      id: "user9",
-      name: "Dakota Smith",
-      avatar: "https://i.pravatar.cc/150?u=user9",
-    },
-    upvotes: 12,
-    comments: [],
-    status: "open",
-  },
-  {
-    id: "6",
-    title: "Narrow sidewalk with obstacles",
-    description:
-      "The sidewalk on Elm Street is too narrow and has lampposts right in the middle, blocking passage for strollers and wheelchairs.",
-    category: "sidewalks",
-    severity: "medium",
-    location: {
-      latitude: 40.7108,
-      longitude: -73.992,
-      address: "Elm Street between 10th and 12th",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1487887235947-a955ef187fcc?w=800&h=600&fit=crop",
-    ],
-    date: "2023-09-18T13:15:00Z",
-    user: {
-      id: "user10",
-      name: "Morgan Rivera",
-      avatar: "https://i.pravatar.cc/150?u=user10",
-    },
-    upvotes: 7,
-    comments: [],
-    status: "open",
-  },
+    id: "forum-5",
+    issueId: "4",
+    title: "Proposal for Night Safety Audit of Street Lighting",
+    author: "Daniel Lee",
+    date: "2025-02-28",
+    content: "I'm proposing we conduct a night safety audit to assess street lighting adequacy in residential areas. Poor lighting has been mentioned in several mobility issues, and a systematic assessment would strengthen our case for improvements. I've created a simple methodology and reporting template we could use.",
+    tags: ["Proposal", "Lighting", "Safety", "Night Audit"],
+    likes: 31,
+    replies: [
+      {
+        id: "reply-5-1",
+        author: "Olivia Williams",
+        date: "2025-03-01",
+        content: "This is a great idea. I work late shifts and would be happy to help with the audits. The lighting on my route home is definitely inadequate.",
+        likes: 14
+      }
+    ]
+  }
 ];

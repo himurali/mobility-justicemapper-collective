@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -81,21 +82,26 @@ const Index = () => {
       }
 
       if (categoryFilter !== 'all') {
-        if (!issue.tags.includes(categoryFilter)) {
+        const categoryNormalized = categoryFilter.toLowerCase().replace(/[_\s-]/g, '');
+        if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === categoryNormalized)) {
           return false;
         }
       }
 
       if (severityFilter !== 'all') {
-        if (!issue.tags.includes(severityFilter)) {
+        const severityNormalized = severityFilter.toLowerCase().replace(/[_\s-]/g, '');
+        if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === severityNormalized)) {
           return false;
         }
       }
 
       if (selectedTags.length > 0) {
-        const hasMatchingTag = selectedTags.some(tag => 
-          issue.tags.includes(tag)
-        );
+        const hasMatchingTag = selectedTags.some(selectedTag => {
+          const normalizedSelectedTag = selectedTag.toLowerCase().replace(/[_\s-]/g, '');
+          return issue.tags.some(tag => 
+            tag.toLowerCase().replace(/[_\s-]/g, '') === normalizedSelectedTag
+          );
+        });
         if (!hasMatchingTag) {
           return false;
         }
@@ -175,12 +181,12 @@ const Index = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-1 mb-4 max-h-[80px] overflow-y-auto">
               {allTags.map(tag => (
                 <Button
                   key={tag}
                   variant={selectedTags.includes(tag) ? "secondary" : "outline"}
-                  className="text-sm rounded-full h-auto py-1"
+                  className="text-xs rounded-full h-6 py-0 px-2 min-w-0"
                   onClick={() => toggleTag(tag)}
                 >
                   {tag.replace('_', ' ')}

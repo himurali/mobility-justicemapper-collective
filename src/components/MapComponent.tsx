@@ -85,13 +85,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
       
       setClusterClicked(false);
-      setVisibleIssueIds([]);
       if (onVisibleIssuesChange) {
         onVisibleIssuesChange([]);
       }
       
-      addMarkers();
-      updateMapSource();
+      setTimeout(() => {
+        updateMapSource();
+        addMarkers();
+      }, 100);
     }
   }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
   
@@ -138,9 +139,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
     filteredIssues.forEach(issue => {
       const shouldBeVisible = 
         issue.id === selectedIssue || 
-        visibleIssueIds.includes(issue.id);
+        visibleIssueIds.includes(issue.id) ||
+        clusterClicked;
       
-      if (!shouldBeVisible) return;
+      if (!shouldBeVisible && visibleIssueIds.length > 0) return;
       
       // Create marker
       const handleIssueSelect = (issue: IssueData) => {
@@ -152,20 +154,24 @@ const MapComponent: React.FC<MapComponentProps> = ({
         setIsDialogOpen(true);
       };
       
-      const { element, marker } = MapMarker({
-        issue,
-        map: map.current!,
-        isSelected: issue.id === selectedIssue,
-        onClick: handleIssueSelect
-      });
-      
-      // Store references to markers
-      markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = element;
-      
-      // Set data attributes for animation
-      element.setAttribute('data-category', issue.tags[0] || 'other');
-      element.setAttribute('data-severity', issue.severity);
+      try {
+        const { element, marker } = MapMarker({
+          issue,
+          map: map.current!,
+          isSelected: issue.id === selectedIssue,
+          onClick: handleIssueSelect
+        });
+        
+        // Store references to markers
+        markersRef.current[issue.id] = marker;
+        markerElementsRef.current[issue.id] = element;
+        
+        // Set data attributes for animation
+        element.setAttribute('data-category', issue.tags[0] || 'other');
+        element.setAttribute('data-severity', issue.severity);
+      } catch (error) {
+        console.error("Error creating marker:", error);
+      }
     });
     
     // Center map on selected issue if available
@@ -181,9 +187,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
     
     // Select first visible issue if cluster was clicked and no issue is selected
-    if (clusterClicked && onSelectIssue && typeof onSelectIssue === 'function' && visibleIssueIds.length > 0) {
+    if (clusterClicked && onSelectIssue && visibleIssueIds.length > 0 && !selectedIssue) {
       const firstVisibleId = visibleIssueIds[0];
-      if (firstVisibleId && !selectedIssue) {
+      if (firstVisibleId) {
         onSelectIssue(firstVisibleId);
       }
     }

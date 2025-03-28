@@ -43,7 +43,7 @@ export const getSeverityColor = (severity: string): string => {
 // Converts issues to GeoJSON for Mapbox
 export const issuesToGeoJSON = (issues: IssueData[]) => {
   return {
-    type: 'FeatureCollection',
+    type: 'FeatureCollection' as const,
     features: issues.map(issue => ({
       type: 'Feature' as const,
       properties: {

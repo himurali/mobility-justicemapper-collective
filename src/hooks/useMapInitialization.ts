@@ -56,10 +56,7 @@ export function useMapInitialization({
         // Setup cluster source and layers
         map.current.addSource('issues', {
           type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: []
-          },
+          data: issuesToGeoJSON([]), // Start with empty data
           cluster: true,
           clusterMaxZoom: 14,
           clusterRadius: 50
@@ -103,6 +100,20 @@ export function useMapInitialization({
           }
         });
         
+        // Add unclustered point layer
+        map.current.addLayer({
+          id: 'unclustered-point',
+          type: 'circle',
+          source: 'issues',
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': '#11b4da',
+            'circle-radius': 8,
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#fff'
+          }
+        });
+        
         // Handle cluster click
         map.current.on('click', 'clusters', (e) => {
           if (!map.current) return;
@@ -112,8 +123,8 @@ export function useMapInitialization({
             layers: ['clusters']
           });
           
-          if (features.length > 0) {
-            const clusterId = features[0].properties?.cluster_id;
+          if (features.length > 0 && features[0].properties) {
+            const clusterId = features[0].properties.cluster_id;
             
             if (clusterId) {
               const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
@@ -130,14 +141,13 @@ export function useMapInitialization({
                   if (!map.current || !mapStyleLoaded) return;
                   
                   try {
-                    const newVisibleFeatures = map.current.querySourceFeatures('issues', {
-                      sourceLayer: '',
-                      filter: ['!', ['has', 'point_count']]
+                    const newVisibleFeatures = map.current.queryRenderedFeatures({
+                      layers: ['unclustered-point']
                     });
                     
                     const newVisibleIds = newVisibleFeatures
-                      .map(f => f.properties?.id)
-                      .filter(Boolean);
+                      .filter(f => f.properties && f.properties.id)
+                      .map(f => f.properties!.id as string);
                     
                     setVisibleIssueIds(newVisibleIds);
                     
@@ -147,7 +157,7 @@ export function useMapInitialization({
                   } catch (error) {
                     console.error("Error updating visible features:", error);
                   }
-                }, 300);
+                }, 500);
               });
             }
           }
@@ -161,7 +171,7 @@ export function useMapInitialization({
           if (map.current) map.current.getCanvas().style.cursor = '';
         });
         
-        // Update map with initial data
+        // After style is fully loaded, update with data
         updateMapSource();
       });
     } catch (error) {
@@ -177,17 +187,20 @@ export function useMapInitialization({
   const updateMapSource = () => {
     if (!map.current || !mapStyleLoaded) return;
 
-    const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
-    
-    if (map.current.getSource('issues')) {
-      const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
-      source.setData(issuesToGeoJSON(filteredIssues));
-
-      if (!clusterClicked) {
-        if (onVisibleIssuesChange) {
-          onVisibleIssuesChange([]);
-        }
+    try {
+      const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
+      const geoJsonData = issuesToGeoJSON(filteredIssues);
+      
+      if (map.current.getSource('issues')) {
+        const source = map.current.getSource('issues') as mapboxgl.GeoJSONSource;
+        source.setData(geoJsonData);
       }
+      
+      if (!clusterClicked && onVisibleIssuesChange) {
+        onVisibleIssuesChange([]);
+      }
+    } catch (error) {
+      console.error("Error updating map source:", error);
     }
   };
 

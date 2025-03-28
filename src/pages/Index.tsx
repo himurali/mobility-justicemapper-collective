@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
 import { mockIssues } from "@/data/issueData";
@@ -78,6 +78,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
+  const selectedIssueRef = useRef<HTMLDivElement>(null);
 
   // Filter issues based on selected city, category, severity, tags, and search query
   const filteredIssues = useMemo(() => {
@@ -139,6 +140,25 @@ const Index = () => {
     setIsDialogOpen(true);
   };
 
+  // Handle issue selection from map
+  const handleSelectIssue = (issueId: string) => {
+    const issue = mockIssues.find(i => i.id === issueId);
+    if (issue) {
+      setSelectedIssue(issue);
+    }
+  };
+
+  // Scroll selected issue into view when it changes
+  useEffect(() => {
+    if (selectedIssue && selectedIssueRef.current) {
+      // Find the element with the issue ID
+      const issueElement = document.getElementById(`issue-card-${selectedIssue.id}`);
+      if (issueElement) {
+        issueElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedIssue]);
+
   return (
     <div className="flex flex-col h-screen">
       <div className="flex-1 flex flex-row h-full">
@@ -181,14 +201,19 @@ const Index = () => {
           </div>
           
           {/* Issue Cards */}
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
             {filteredIssues.length > 0 ? (
               filteredIssues.map(issue => (
-                <IssueCard 
+                <div 
                   key={issue.id} 
-                  issue={issue} 
-                  onClick={() => handleIssueClick(issue)}
-                />
+                  id={`issue-card-${issue.id}`}
+                >
+                  <IssueCard
+                    issue={issue}
+                    onClick={() => handleIssueClick(issue)}
+                    isSelected={selectedIssue?.id === issue.id}
+                  />
+                </div>
               ))
             ) : (
               <div className="text-center py-8 text-muted-foreground">
@@ -213,6 +238,7 @@ const Index = () => {
             categoryFilter={categoryFilter}
             severityFilter={severityFilter}
             selectedIssue={selectedIssue?.id}
+            onSelectIssue={handleSelectIssue}
           />
         </div>
       </div>

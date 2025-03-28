@@ -8,16 +8,21 @@ import type { IssueData } from "@/types";
 interface IssueCardProps {
   issue: IssueData;
   onClick?: () => void;
+  isSelected?: boolean;
 }
 
-const IssueCard: React.FC<IssueCardProps> = ({ issue, onClick }) => {
+const IssueCard: React.FC<IssueCardProps> = ({ issue, onClick, isSelected = false }) => {
   // Get the first 3 tags to display
   const visibleTags = issue.tags.slice(0, 3);
   const hasMoreTags = issue.tags.length > 3;
 
   return (
     <Card 
-      className="mb-4 cursor-pointer hover:border-primary transition-colors"
+      className={`mb-4 cursor-pointer transition-all duration-300 ${
+        isSelected 
+          ? "border-primary border-2 bg-primary/5 shadow-md" 
+          : "hover:border-primary"
+      }`}
       onClick={onClick}
     >
       <CardHeader className="pb-2">

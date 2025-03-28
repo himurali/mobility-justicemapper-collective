@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -17,6 +18,7 @@ interface MapComponentProps {
   selectedIssue?: string;
   categoryFilter?: IssueCategory | "all";
   severityFilter?: string;
+  onSelectIssue?: (issueId: string) => void;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -25,10 +27,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   selectedIssue,
   categoryFilter = "all",
   severityFilter = "all",
+  onSelectIssue,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
+  const blinkIntervalRef = useRef<number | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -54,6 +59,65 @@ const MapComponent: React.FC<MapComponentProps> = ({
       default:
         return "#64748b"; // slate
     }
+  };
+
+  // Stop any ongoing blinking
+  const stopBlinking = () => {
+    if (blinkIntervalRef.current) {
+      window.clearInterval(blinkIntervalRef.current);
+      blinkIntervalRef.current = null;
+    }
+
+    // Reset all markers to their normal state
+    Object.entries(markerElementsRef.current).forEach(([issueId, element]) => {
+      const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
+      
+      const isSelected = issueId === selectedIssue;
+      
+      // Set initial size based on selection state
+      const scale = isSelected ? 'scale-150' : '';
+      const borderWidth = isSelected ? 'border-3' : 'border-2';
+      
+      if (element) {
+        element.innerHTML = `
+          <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md ${borderWidth} ${scale} transition-transform duration-300" 
+               style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
+            <div class="w-3 h-3 rounded-full" 
+                 style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
+          </div>
+        `;
+      }
+    });
+  };
+
+  // Start blinking animation for the selected marker
+  const startBlinking = (issueId: string) => {
+    if (!markerElementsRef.current[issueId]) return;
+    
+    const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
+      ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+    ) || "other";
+    
+    const color = getCategoryColor(issueCategory.toLowerCase());
+    let isLarge = true;
+    
+    blinkIntervalRef.current = window.setInterval(() => {
+      if (!markerElementsRef.current[issueId]) return;
+      
+      isLarge = !isLarge;
+      const scale = isLarge ? 'scale-150' : 'scale-125';
+      const glow = isLarge ? `box-shadow: 0 0 10px ${color}, 0 0 20px ${color}` : '';
+      
+      markerElementsRef.current[issueId].innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-3 ${scale} transition-transform duration-300" 
+             style="border-color: ${color}; ${glow}">
+          <div class="w-3 h-3 rounded-full" 
+               style="background-color: ${color}"></div>
+        </div>
+      `;
+    }, 500);
   };
 
   const initializeMap = () => {
@@ -90,8 +154,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const addMarkers = () => {
     if (!map.current) return;
 
+    // Clear existing markers and references
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
+    markerElementsRef.current = {};
 
     const filteredIssues = mockIssues.filter(issue => {
       const issueCategory = issue.tags.find(tag => 
@@ -120,7 +186,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const markerElement = document.createElement("div");
       markerElement.className = "cursor-pointer";
       markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''}" 
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
              style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
           <div class="w-3 h-3 rounded-full" 
                style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
@@ -132,11 +198,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
         .addTo(map.current!);
       
       markerElement.addEventListener('click', () => {
-        setSelectedIssueData(issue);
-        setIsDialogOpen(true);
+        // If the dialog is opened, we show issue details
+        if (onSelectIssue) {
+          onSelectIssue(issue.id);
+        } else {
+          setSelectedIssueData(issue);
+          setIsDialogOpen(true);
+        }
       });
 
       markersRef.current[issue.id] = marker;
+      markerElementsRef.current[issue.id] = markerElement;
     });
 
     if (selectedIssue && markersRef.current[selectedIssue]) {
@@ -145,6 +217,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
         zoom: 15,
         essential: true
       });
+      
+      // Start blinking for the selected marker
+      stopBlinking();
+      startBlinking(selectedIssue);
     }
   };
 
@@ -152,6 +228,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     initializeMap();
 
     return () => {
+      stopBlinking();
       map.current?.remove();
       map.current = null;
     };
@@ -167,6 +244,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
       addMarkers();
     }
   }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
+
+  // Effect for blinking the selected marker
+  useEffect(() => {
+    stopBlinking();
+    
+    if (selectedIssue) {
+      startBlinking(selectedIssue);
+    }
+    
+    return () => stopBlinking();
+  }, [selectedIssue]);
 
   return (
     <>

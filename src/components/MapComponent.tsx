@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -50,20 +51,38 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
-      case "safety":
-        return "#ef4444";
-      case "traffic":
-        return "#f59e0b";
-      case "cycling":
-        return "#10b981";
-      case "sidewalks":
-        return "#6366f1";
-      case "accessibility":
-        return "#8b5cf6";
-      case "public_transport":
-        return "#0ea5e9";
+      case "pedestrian_infrastructure":
+        return "#ef4444"; // red
+      case "cyclist_facilities":
+        return "#10b981"; // green
+      case "public_bus_transport":
+      case "public_metro":
+        return "#3b82f6"; // blue
+      case "high_risk_intersections":
+        return "#f59e0b"; // amber
+      case "accessibility_issues":
+        return "#8b5cf6"; // purple
+      case "traffic_signal_compliance":
+        return "#ec4899"; // pink
+      case "green_spaces":
+        return "#22c55e"; // green
+      case "pollution_hotspots":
+        return "#64748b"; // slate
       default:
-        return "#64748b";
+        return "#64748b"; // default slate
+    }
+  };
+
+  const getSeverityColor = (severity: string): string => {
+    switch (severity) {
+      case "critical":
+        return "#ef4444"; // red
+      case "moderate":
+        return "#f59e0b"; // amber
+      case "minor":
+        return "#22c55e"; // green
+      default:
+        return "#64748b"; // slate
     }
   };
 
@@ -74,10 +93,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
 
     Object.entries(markerElementsRef.current).forEach(([issueId, element]) => {
-      const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
-        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
-      ) || "other";
+      const issue = mockIssues.find(i => i.id === issueId);
+      if (!issue) return;
       
+      const mainCategory = issue.tags[0] || "other";
       const isSelected = issueId === selectedIssue;
       
       const scale = isSelected ? 'scale-150' : '';
@@ -86,9 +105,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
       if (element) {
         element.innerHTML = `
           <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md ${borderWidth} ${scale} transition-transform duration-300" 
-               style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
+               style="border-color: ${getCategoryColor(mainCategory)}">
             <div class="w-3 h-3 rounded-full" 
-                 style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
+                 style="background-color: ${getSeverityColor(issue.severity)}"></div>
           </div>
         `;
       }
@@ -98,11 +117,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const startBlinking = (issueId: string) => {
     if (!markerElementsRef.current[issueId]) return;
     
-    const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
-      ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
-    ) || "other";
+    const issue = mockIssues.find(i => i.id === issueId);
+    if (!issue) return;
     
-    const color = getCategoryColor(issueCategory.toLowerCase());
+    const mainCategory = issue.tags[0] || "other";
+    const color = getCategoryColor(mainCategory);
+    const severityColor = getSeverityColor(issue.severity);
     let isLarge = true;
     
     blinkIntervalRef.current = window.setInterval(() => {
@@ -116,7 +136,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-3 ${scale} transition-transform duration-300" 
              style="border-color: ${color}; ${glow}">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${color}"></div>
+               style="background-color: ${severityColor}"></div>
         </div>
       `;
     }, 500);
@@ -161,36 +181,31 @@ const MapComponent: React.FC<MapComponentProps> = ({
     markerElementsRef.current = {};
 
     const filteredIssues = mockIssues.filter(issue => {
-      const issueCategory = issue.tags.find(tag => 
-        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
-      ) || "other";
+      // Filter by category if specified
+      if (categoryFilter !== "all") {
+        const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
+        if (!categoryMatch) return false;
+      }
       
-      const issueSeverity = issue.tags.find(tag => 
-        ["low", "medium", "high"].includes(tag.toLowerCase())
-      ) || "medium";
-      
-      const categoryMatch = categoryFilter === "all" || 
-        (issueCategory.toLowerCase() === categoryFilter.toLowerCase());
-      const severityMatch = severityFilter === "all" || 
-        (issueSeverity.toLowerCase() === severityFilter.toLowerCase());
+      // Filter by severity if specified
+      if (severityFilter !== "all" && issue.severity !== severityFilter) {
+        return false;
+      }
         
-      return categoryMatch && severityMatch;
+      return true;
     });
 
     filteredIssues.forEach(issue => {
-      const issueCategory = issue.tags.find(tag => 
-        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
-      ) || "other";
-      
+      const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       
       const markerElement = document.createElement("div");
       markerElement.className = "cursor-pointer";
       markerElement.innerHTML = `
         <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
-             style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
+             style="border-color: ${getCategoryColor(mainCategory)}">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
+               style="background-color: ${getSeverityColor(issue.severity)}"></div>
         </div>
       `;
 

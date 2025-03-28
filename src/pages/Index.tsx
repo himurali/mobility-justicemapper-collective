@@ -3,22 +3,18 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
 import { mockIssues } from "@/data/issueData";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  MapPin,
-  Filter,
-  Search
-} from "lucide-react";
+import { Search } from "lucide-react";
 import CitySelector from "@/components/CitySelector";
 import IssueCard from "@/components/IssueCard";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
 import { IssueData } from "@/types";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import { useLocation } from "react-router-dom";
+import FilterBar from "@/components/FilterBar";
+import { useToast } from "@/components/ui/use-toast";
 
 const bangaloreCity: City = {
   id: "bangalore",
@@ -49,20 +45,6 @@ const cityOptions: City[] = [
   },
 ];
 
-const allTags = [
-  "safety", 
-  "traffic", 
-  "cycling", 
-  "sidewalks", 
-  "accessibility", 
-  "public_transport",
-  "infrastructure",
-  "pedestrian",
-  "urban_design",
-  "maintenance",
-  "commuting"
-];
-
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity);
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | 'all'>('all');
@@ -72,11 +54,16 @@ const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
+  const [showMap, setShowMap] = useState(true);
+  const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
+  const [issues, setIssues] = useState<IssueData[]>(mockIssues);
+  
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { toast } = useToast();
 
   const filteredIssues = useMemo(() => {
-    return mockIssues.filter(issue => {
+    let filtered = issues.filter(issue => {
       if (issue.city.toLowerCase() !== selectedCity.name.toLowerCase()) {
         return false;
       }
@@ -89,8 +76,7 @@ const Index = () => {
       }
 
       if (severityFilter !== 'all') {
-        const severityNormalized = severityFilter.toLowerCase().replace(/[_\s-]/g, '');
-        if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === severityNormalized)) {
+        if (issue.severity !== severityFilter) {
           return false;
         }
       }
@@ -117,15 +103,19 @@ const Index = () => {
 
       return true;
     });
-  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery]);
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
-  };
+    // Sort the filtered issues
+    return filtered.sort((a, b) => {
+      if (sortBy === 'most_critical') {
+        const severityOrder = { 'critical': 0, 'moderate': 1, 'minor': 2 };
+        return severityOrder[a.severity as IssueSeverity] - severityOrder[b.severity as IssueSeverity];
+      } else if (sortBy === 'most_recent') {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      } else { // most_upvoted
+        return b.upvotes - a.upvotes;
+      }
+    });
+  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery, issues, sortBy]);
 
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
@@ -133,7 +123,7 @@ const Index = () => {
   };
 
   const handleSelectIssue = (issueId: string) => {
-    const issue = mockIssues.find(i => i.id === issueId);
+    const issue = issues.find(i => i.id === issueId);
     if (issue) {
       setSelectedIssue(issue);
     }
@@ -150,6 +140,32 @@ const Index = () => {
         setIsDialogOpen(true);
       }
     }
+  };
+
+  const handleUpvote = (id: string) => {
+    setIssues(prev => prev.map(issue => 
+      issue.id === id ? { ...issue, upvotes: issue.upvotes + 1 } : issue
+    ));
+    toast({
+      title: "Upvoted",
+      description: "Thank you for your feedback!",
+      duration: 2000,
+    });
+  };
+
+  const handleDownvote = (id: string) => {
+    setIssues(prev => prev.map(issue => 
+      issue.id === id ? { ...issue, downvotes: issue.downvotes + 1 } : issue
+    ));
+    toast({
+      title: "Downvoted",
+      description: "Thank you for your feedback!",
+      duration: 2000,
+    });
+  };
+
+  const toggleMapVisibility = () => {
+    setShowMap(prev => !prev);
   };
 
   useEffect(() => {
@@ -170,29 +186,32 @@ const Index = () => {
         onSelectCity={setSelectedCity}
       />
       <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
+        <div className="relative mb-4">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search issues..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <FilterBar 
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          severityFilter={severityFilter}
+          setSeverityFilter={setSeverityFilter}
+          selectedTags={selectedTags}
+          setSelectedTags={setSelectedTags}
+          issueCount={filteredIssues.length}
+          showMap={showMap}
+          toggleMap={toggleMapVisibility}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+        />
+        
         <div className="flex-1 flex flex-col md:flex-row h-full">
           <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">
-            <div className="relative mb-4">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search issues..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap gap-1 mb-4 max-h-[80px] overflow-y-auto">
-              {allTags.map(tag => (
-                <Button
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "secondary" : "outline"}
-                  className="text-xs rounded-full h-6 py-0 px-2 min-w-0"
-                  onClick={() => toggleTag(tag)}
-                >
-                  {tag.replace('_', ' ')}
-                </Button>
-              ))}
-            </div>
             <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
               {filteredIssues.length > 0 ? (
                 filteredIssues.map(issue => (
@@ -204,6 +223,8 @@ const Index = () => {
                       issue={issue}
                       onClick={() => handleIssueClick(issue)}
                       isSelected={selectedIssue?.id === issue.id}
+                      onUpvote={handleUpvote}
+                      onDownvote={handleDownvote}
                     />
                   </div>
                 ))
@@ -214,17 +235,19 @@ const Index = () => {
               )}
             </div>
           </div>
-          <div className="flex-1 relative h-[400px] md:h-auto">
-            <MapComponent 
-              center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
-              zoom={selectedCity.zoom}
-              categoryFilter={categoryFilter}
-              severityFilter={severityFilter}
-              selectedIssue={selectedIssue?.id}
-              onSelectIssue={handleSelectIssue}
-              selectedTab={activeDialogTab}
-            />
-          </div>
+          {showMap && (
+            <div className="flex-1 relative h-[400px] md:h-auto">
+              <MapComponent 
+                center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
+                zoom={selectedCity.zoom}
+                categoryFilter={categoryFilter}
+                severityFilter={severityFilter}
+                selectedIssue={selectedIssue?.id}
+                onSelectIssue={handleSelectIssue}
+                selectedTab={activeDialogTab}
+              />
+            </div>
+          )}
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

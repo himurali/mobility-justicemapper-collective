@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -15,6 +14,7 @@ import Hero from "@/components/Hero";
 import { useLocation } from "react-router-dom";
 import FilterBar from "@/components/FilterBar";
 import { useToast } from "@/components/ui/use-toast";
+import CustomFilter from "@/components/CustomFilter";
 
 const bangaloreCity: City = {
   id: "bangalore",
@@ -57,6 +57,7 @@ const Index = () => {
   const [showMap, setShowMap] = useState(true);
   const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
   const [issues, setIssues] = useState<IssueData[]>(mockIssues);
+  const [showCustomFilter, setShowCustomFilter] = useState(false);
   
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -104,7 +105,6 @@ const Index = () => {
       return true;
     });
 
-    // Sort the filtered issues
     return filtered.sort((a, b) => {
       if (sortBy === 'most_critical') {
         const severityOrder = { 'critical': 0, 'moderate': 1, 'minor': 2 };
@@ -178,14 +178,14 @@ const Index = () => {
   }, [selectedIssue]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       <Header />
       <Hero
         cities={cityOptions}
         selectedCity={selectedCity}
         onSelectCity={setSelectedCity}
       />
-      <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
+      <div className="container mx-auto px-4 md:px-0 flex-1 flex flex-col">
         <div className="relative mb-4">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -208,35 +208,39 @@ const Index = () => {
           toggleMap={toggleMapVisibility}
           sortBy={sortBy}
           setSortBy={setSortBy}
+          onShowCustomFilter={() => setShowCustomFilter(true)}
         />
         
         <div className="flex-1 flex flex-col md:flex-row h-full">
-          <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
-              {filteredIssues.length > 0 ? (
-                filteredIssues.map(issue => (
-                  <div 
-                    key={issue.id} 
-                    id={`issue-card-${issue.id}`}
-                  >
-                    <IssueCard
-                      issue={issue}
-                      onClick={() => handleIssueClick(issue)}
-                      isSelected={selectedIssue?.id === issue.id}
-                      onUpvote={handleUpvote}
-                      onDownvote={handleDownvote}
-                    />
+          <div className="w-full md:w-1/3 lg:w-1/3 bg-sidebar border-r overflow-hidden h-[calc(100vh-13rem)]">
+            <div className="flex-1 overflow-y-auto pr-2 h-full" ref={selectedIssueRef}>
+              <div className="grid grid-cols-2 gap-2 p-2">
+                {filteredIssues.length > 0 ? (
+                  filteredIssues.map(issue => (
+                    <div 
+                      key={issue.id} 
+                      id={`issue-card-${issue.id}`}
+                      className="col-span-1"
+                    >
+                      <IssueCard
+                        issue={issue}
+                        onClick={() => handleIssueClick(issue)}
+                        isSelected={selectedIssue?.id === issue.id}
+                        onUpvote={handleUpvote}
+                        onDownvote={handleDownvote}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground col-span-2">
+                    No issues found matching your filters
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No issues found matching your filters
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
           {showMap && (
-            <div className="flex-1 relative h-[400px] md:h-auto">
+            <div className="flex-1 h-[calc(100vh-13rem)]">
               <MapComponent 
                 center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
                 zoom={selectedCity.zoom}
@@ -250,6 +254,7 @@ const Index = () => {
           )}
         </div>
       </div>
+      
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
           {selectedIssue && (
@@ -261,6 +266,18 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      <CustomFilter
+        open={showCustomFilter}
+        onClose={() => setShowCustomFilter(false)}
+        selectedCity={selectedCity}
+        cityOptions={cityOptions}
+        onSelectCity={setSelectedCity}
+        selectedTags={selectedTags}
+        onTagsChange={setSelectedTags}
+        severityFilter={severityFilter}
+        onSeverityChange={setSeverityFilter}
+      />
     </div>
   );
 };

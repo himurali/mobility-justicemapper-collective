@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapIcon, FilterIcon, SlidersHorizontal } from "lucide-react";
+import { MapIcon, FilterIcon, SlidersHorizontal, Settings } from "lucide-react";
 import { mobilityCategories } from "@/data/issueData";
 import { IssueCategory, IssueSeverity } from "@/types";
 import { 
@@ -26,6 +26,7 @@ interface FilterBarProps {
   toggleMap: () => void;
   sortBy: 'most_critical' | 'most_recent' | 'most_upvoted';
   setSortBy: (sort: 'most_critical' | 'most_recent' | 'most_upvoted') => void;
+  onShowCustomFilter?: () => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -39,7 +40,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
   showMap,
   toggleMap,
   sortBy,
-  setSortBy
+  setSortBy,
+  onShowCustomFilter
 }) => {
   const handleTagSelect = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -114,48 +116,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
             Map
           </Button>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                <FilterIcon className="h-4 w-4 mr-1" />
-                Filters
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuGroup>
-                <div className="px-2 py-1.5 text-sm font-semibold">Severity</div>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('all')} className={severityFilter === 'all' ? 'bg-accent' : ''}>
-                  All Severities
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('critical' as IssueSeverity)} className={severityFilter === 'critical' ? 'bg-accent' : ''}>
-                  Critical
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('moderate' as IssueSeverity)} className={severityFilter === 'moderate' ? 'bg-accent' : ''}>
-                  Moderate
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('minor' as IssueSeverity)} className={severityFilter === 'minor' ? 'bg-accent' : ''}>
-                  Minor
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              
-              <DropdownMenuSeparator />
-              
-              {mobilityCategories.map(category => (
-                <DropdownMenuGroup key={category.id}>
-                  <div className="px-2 py-1.5 text-sm font-semibold">{category.name}</div>
-                  {category.subcategories.map(subcat => (
-                    <DropdownMenuItem 
-                      key={subcat.id} 
-                      onClick={() => handleTagSelect(subcat.id)}
-                      className={selectedTags.includes(subcat.id) ? 'bg-accent' : ''}
-                    >
-                      {subcat.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuGroup>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8"
+            onClick={onShowCustomFilter}
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            Filters
+          </Button>
         </div>
       </div>
       

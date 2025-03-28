@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +63,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setSelectedTags([]);
   };
 
-  // Count active filters
   const activeFilterCount = (categoryFilter !== 'all' ? 1 : 0) + 
                            (severityFilter !== 'all' ? 1 : 0) + 
                            selectedTags.length;
@@ -129,13 +127,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 <DropdownMenuItem onClick={() => handleSeveritySelect('all')} className={severityFilter === 'all' ? 'bg-accent' : ''}>
                   All Severities
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('critical')} className={severityFilter === 'critical' ? 'bg-accent' : ''}>
+                <DropdownMenuItem onClick={() => handleSeveritySelect('critical' as IssueSeverity)} className={severityFilter === 'critical' ? 'bg-accent' : ''}>
                   Critical
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('moderate')} className={severityFilter === 'moderate' ? 'bg-accent' : ''}>
+                <DropdownMenuItem onClick={() => handleSeveritySelect('moderate' as IssueSeverity)} className={severityFilter === 'moderate' ? 'bg-accent' : ''}>
                   Moderate
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSeveritySelect('minor')} className={severityFilter === 'minor' ? 'bg-accent' : ''}>
+                <DropdownMenuItem onClick={() => handleSeveritySelect('minor' as IssueSeverity)} className={severityFilter === 'minor' ? 'bg-accent' : ''}>
                   Minor
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -178,7 +176,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
           )}
           
           {selectedTags.map(tag => {
-            // Find the subcategory to get its name with emoji
             let displayName = tag;
             for (const category of mobilityCategories) {
               const subcategory = category.subcategories.find(sub => sub.id === tag);

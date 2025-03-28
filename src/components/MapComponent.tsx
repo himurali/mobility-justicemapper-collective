@@ -44,6 +44,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [activeTab, setActiveTab] = useState(selectedTab);
   const [clusters, setClusters] = useState<any[]>([]);
   const [points, setPoints] = useState<any[]>([]);
+  const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
@@ -264,10 +265,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
               source.getClusterExpansionZoom(clusterId, (err, zoom) => {
                 if (err || !map.current) return;
                 
+                const coordinates = (features[0].geometry as any).coordinates.slice();
                 map.current.easeTo({
-                  center: (features[0].geometry as any).coordinates,
+                  center: coordinates,
                   zoom: zoom
                 });
+                
+                // After zooming in, get new cluster points to show markers for this zoomed area
+                const newVisibleFeatures = map.current.querySourceFeatures('issues', {
+                  sourceLayer: '',
+                  filter: ['!', ['has', 'point_count']]
+                });
+                
+                // Extract the issue IDs from the visible features
+                const newVisibleIds = newVisibleFeatures.map(f => f.properties?.id).filter(Boolean);
+                setVisibleIssueIds(newVisibleIds);
               });
             }
           }
@@ -337,10 +349,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
         type: 'FeatureCollection',
         features
       });
+
+      // Update visible issues for export to the parent component
+      setVisibleIssueIds(filteredIssues.map(issue => issue.id));
     }
     
-    // Add individual markers (will be hidden when clustered)
+    // Only add individual markers for visible issues (when clusters are clicked)
     filteredIssues.forEach(issue => {
+      // Only create markers for individual points that should be visible
+      // (selected issue or issues within expanded clusters)
+      const shouldBeVisible = 
+        issue.id === selectedIssue || 
+        visibleIssueIds.includes(issue.id);
+      
+      if (!shouldBeVisible) return;
+      
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       
@@ -381,7 +404,51 @@ const MapComponent: React.FC<MapComponentProps> = ({
       stopBlinking();
       startBlinking(selectedIssue);
     }
+    
+    // Update the parent component with the visible issues
+    if (onSelectIssue && typeof onSelectIssue === 'function') {
+      // This will notify the parent component about the visible issue IDs
+      // The parent can then filter the sidebar issues accordingly
+      const firstVisibleId = visibleIssueIds[0];
+      if (firstVisibleId && !selectedIssue) {
+        onSelectIssue(firstVisibleId);
+      }
+    }
   };
+
+  // Watch for changes in map viewport and update visible issue IDs
+  useEffect(() => {
+    if (!map.current) return;
+    
+    const updateVisibleFeatures = () => {
+      if (!map.current) return;
+      
+      // Get visible individual points (not in clusters)
+      const visibleFeatures = map.current.querySourceFeatures('issues', {
+        sourceLayer: '',
+        filter: ['!', ['has', 'point_count']]
+      });
+      
+      // Extract issue IDs
+      const newVisibleIds = visibleFeatures.map(f => f.properties?.id).filter(Boolean);
+      
+      // Update visible issue IDs if they've changed
+      if (JSON.stringify(newVisibleIds) !== JSON.stringify(visibleIssueIds)) {
+        setVisibleIssueIds(newVisibleIds);
+      }
+    };
+    
+    // Update visible features when map is moved or zoomed
+    map.current.on('moveend', updateVisibleFeatures);
+    map.current.on('zoomend', updateVisibleFeatures);
+    
+    return () => {
+      if (map.current) {
+        map.current.off('moveend', updateVisibleFeatures);
+        map.current.off('zoomend', updateVisibleFeatures);
+      }
+    };
+  }, [visibleIssueIds]);
 
   useEffect(() => {
     initializeMap();

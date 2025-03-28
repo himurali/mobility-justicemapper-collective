@@ -60,6 +60,7 @@ const Index = () => {
   const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
   const [issues, setIssues] = useState<IssueData[]>(mockIssues);
   const [showCustomFilter, setShowCustomFilter] = useState(false);
+  const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
   
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -107,6 +108,12 @@ const Index = () => {
       return true;
     });
 
+    // If we have visible issue IDs from the map (from expanded clusters),
+    // filter to only show those issues in the sidebar
+    if (visibleIssueIds.length > 0) {
+      filtered = filtered.filter(issue => visibleIssueIds.includes(issue.id));
+    }
+
     return filtered.sort((a, b) => {
       if (sortBy === 'most_critical') {
         const severityOrder = { 'critical': 0, 'moderate': 1, 'minor': 2 };
@@ -117,7 +124,7 @@ const Index = () => {
         return b.upvotes - a.upvotes;
       }
     });
-  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery, issues, sortBy]);
+  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery, issues, sortBy, visibleIssueIds]);
 
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
@@ -129,6 +136,12 @@ const Index = () => {
     if (issue) {
       setSelectedIssue(issue);
     }
+  };
+
+  // This function will be called from the MapComponent when clusters are clicked
+  // and will update the visible issue IDs to sync with what's shown on the map
+  const handleMapIssuesUpdate = (issueId: string) => {
+    handleSelectIssue(issueId);
   };
 
   const handleTabSelect = (tab?: string) => {
@@ -254,7 +267,7 @@ const Index = () => {
                     categoryFilter={categoryFilter}
                     severityFilter={severityFilter}
                     selectedIssue={selectedIssue?.id}
-                    onSelectIssue={handleSelectIssue}
+                    onSelectIssue={handleMapIssuesUpdate}
                     selectedTab={activeDialogTab}
                   />
                 </div>

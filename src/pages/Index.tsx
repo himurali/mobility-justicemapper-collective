@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -15,6 +16,7 @@ import { useLocation } from "react-router-dom";
 import FilterBar from "@/components/FilterBar";
 import { useToast } from "@/components/ui/use-toast";
 import CustomFilter from "@/components/CustomFilter";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 const bangaloreCity: City = {
   id: "bangalore",
@@ -211,47 +213,54 @@ const Index = () => {
           onShowCustomFilter={() => setShowCustomFilter(true)}
         />
         
-        <div className="flex-1 flex flex-col md:flex-row h-full">
-          <div className="w-full md:w-1/3 lg:w-1/3 bg-sidebar border-r overflow-hidden h-[calc(100vh-13rem)]">
-            <div className="flex-1 overflow-y-auto pr-2 h-full" ref={selectedIssueRef}>
-              <div className="grid grid-cols-2 gap-2 p-2">
-                {filteredIssues.length > 0 ? (
-                  filteredIssues.map(issue => (
-                    <div 
-                      key={issue.id} 
-                      id={`issue-card-${issue.id}`}
-                      className="col-span-1"
-                    >
-                      <IssueCard
-                        issue={issue}
-                        onClick={() => handleIssueClick(issue)}
-                        isSelected={selectedIssue?.id === issue.id}
-                        onUpvote={handleUpvote}
-                        onDownvote={handleDownvote}
-                      />
+        <div className="flex-1 h-[calc(100vh-13rem)]">
+          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
+            <ResizablePanel defaultSize={50} minSize={30}>
+              <div className="h-full overflow-y-auto bg-sidebar" ref={selectedIssueRef}>
+                <div className="grid grid-cols-2 gap-2 p-2">
+                  {filteredIssues.length > 0 ? (
+                    filteredIssues.map(issue => (
+                      <div 
+                        key={issue.id} 
+                        id={`issue-card-${issue.id}`}
+                        className="col-span-1"
+                      >
+                        <IssueCard
+                          issue={issue}
+                          onClick={() => handleIssueClick(issue)}
+                          isSelected={selectedIssue?.id === issue.id}
+                          onUpvote={handleUpvote}
+                          onDownvote={handleDownvote}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground col-span-2">
+                      No issues found matching your filters
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground col-span-2">
-                    No issues found matching your filters
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-          {showMap && (
-            <div className="flex-1 h-[calc(100vh-13rem)]">
-              <MapComponent 
-                center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
-                zoom={selectedCity.zoom}
-                categoryFilter={categoryFilter}
-                severityFilter={severityFilter}
-                selectedIssue={selectedIssue?.id}
-                onSelectIssue={handleSelectIssue}
-                selectedTab={activeDialogTab}
-              />
-            </div>
-          )}
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            <ResizablePanel defaultSize={50} minSize={30}>
+              {showMap && (
+                <div className="h-full">
+                  <MapComponent 
+                    center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
+                    zoom={selectedCity.zoom}
+                    categoryFilter={categoryFilter}
+                    severityFilter={severityFilter}
+                    selectedIssue={selectedIssue?.id}
+                    onSelectIssue={handleSelectIssue}
+                    selectedTab={activeDialogTab}
+                  />
+                </div>
+              )}
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
       

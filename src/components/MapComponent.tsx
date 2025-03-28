@@ -70,8 +70,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
     initializeMap();
 
     return () => {
+      // Fix: Added proper null checks before cleanup operations
       stopBlinking(markerElementsRef.current, selectedIssue);
-      map.current?.remove();
+      
+      // Only attempt to remove the map if it exists and has been initialized
+      if (map.current) {
+        try {
+          map.current.remove();
+        } catch (error) {
+          console.error("Error removing map:", error);
+        }
+      }
     };
   }, []);
   

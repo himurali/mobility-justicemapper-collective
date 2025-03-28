@@ -32,13 +32,23 @@ export function useMapInitialization({
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   const initializeMap = () => {
-    if (map.current) return;
+    if (map.current) {
+      // If a map instance already exists, clean it up properly before creating a new one
+      try {
+        map.current.remove();
+      } catch (error) {
+        console.error("Error removing existing map:", error);
+      }
+      map.current = null;
+    }
+    
+    if (!mapContainer.current) return;
     
     try {
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
-        container: mapContainer.current!,
+        container: mapContainer.current,
         style: "mapbox://styles/mapbox/light-v10",
         center: center,
         zoom: zoom,
@@ -203,6 +213,20 @@ export function useMapInitialization({
       console.error("Error updating map source:", error);
     }
   };
+
+  // Add cleanup for map instance when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (map.current) {
+        try {
+          map.current.remove();
+          map.current = null;
+        } catch (error) {
+          console.error("Error cleaning up map:", error);
+        }
+      }
+    };
+  }, []);
 
   return {
     mapContainer,

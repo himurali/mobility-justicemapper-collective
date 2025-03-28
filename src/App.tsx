@@ -29,6 +29,15 @@ const App = () => {
             <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/about" element={<div>About page (coming soon)</div>} />
+              <Route path="/resources" element={<div>Resources page (coming soon)</div>} />
+              <Route path="/register" element={<div>Register page (coming soon)</div>} />
+              <Route path="/signin" element={<div>Sign In page (coming soon)</div>} />
+              <Route path="/video" element={<div>Video page (coming soon)</div>} />
+              <Route path="/solution" element={<div>Solution page (coming soon)</div>} />
+              <Route path="/community" element={<div>Community page (coming soon)</div>} />
+              <Route path="/forum" element={<div>Forum page (coming soon)</div>} />
+              <Route path="/documents" element={<div>Documents page (coming soon)</div>} />
               <Route path="/issues/:issueId" element={<div>Issue Details page (coming soon)</div>} />
               <Route path="/community/profile/:userId" element={<CommunityProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

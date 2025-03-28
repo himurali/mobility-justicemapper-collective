@@ -18,83 +18,78 @@ const Header: React.FC = () => {
   
   const NavLinks = () => (
     <>
-      <Link to="/">
-        <Button variant="ghost" className="flex items-center gap-2">
-          <Map size={16} />
-          <span>Map</span>
-        </Button>
-      </Link>
-      <Link to="/issues">
-        <Button variant="ghost" className="flex items-center gap-2">
-          <List size={16} />
-          <span>Issues</span>
-        </Button>
-      </Link>
       <Link to="/about">
-        <Button variant="ghost" className="flex items-center gap-2">
-          <Info size={16} />
-          <span>About</span>
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+          About
+        </Button>
+      </Link>
+      <Link to="/resources">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+          Resources
+        </Button>
+      </Link>
+      <Link to="/register">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+          Register
+        </Button>
+      </Link>
+      <Link to="/signin">
+        <Button variant="secondary" className="bg-white text-indigo-700 hover:bg-gray-100">
+          Sign In
         </Button>
       </Link>
     </>
   );
 
   return (
-    <header className="border-b bg-background sticky top-0 z-10">
+    <header className="bg-indigo-600 sticky top-0 z-10">
       <div className="container flex items-center justify-between h-16 mx-auto px-4 md:px-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-full bg-mobility-teal h-8 w-8 flex items-center justify-center text-white font-semibold">MJ</div>
-            <h1 className="text-lg font-semibold hidden sm:block">
-              Mobility Justice
+            <div className="rounded-full bg-white h-10 w-10 flex items-center justify-center">
+              <svg 
+                viewBox="0 0 24 24" 
+                width="24" 
+                height="24" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                fill="none" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="text-indigo-600"
+              >
+                <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
+              </svg>
+            </div>
+            <h1 className="text-xl font-semibold text-white">
+              MobilityJustice
             </h1>
           </Link>
         </div>
 
         {isMobile ? (
-          <div className="flex items-center gap-2">
-            <Link to="/report">
-              <Button
-                variant="default"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <PlusCircle size={16} />
-                <span>Report Issue</span>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="ghost" className="text-white">
+                <Menu size={24} />
+                <span className="sr-only">Toggle menu</span>
               </Button>
-            </Link>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <Menu size={16} />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-[240px]">
-                <SheetHeader className="text-left">
-                  <SheetTitle>Mobility Justice</SheetTitle>
-                  <SheetDescription>
-                    Community-powered mapping for urban mobility issues
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="flex flex-col gap-2 mt-6">
-                  <NavLinks />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader className="text-left">
+                <SheetTitle>Mobility Justice</SheetTitle>
+                <SheetDescription>
+                  Document and address mobility injustice in your city
+                </SheetDescription>
+              </SheetHeader>
+              <div className="flex flex-col gap-2 mt-6">
+                <NavLinks />
+              </div>
+            </SheetContent>
+          </Sheet>
         ) : (
           <nav className="flex items-center gap-2">
             <NavLinks />
-            <Link to="/report">
-              <Button
-                variant="default"
-                className="flex items-center gap-2 ml-4"
-              >
-                <PlusCircle size={16} />
-                <span>Report Issue</span>
-              </Button>
-            </Link>
           </nav>
         )}
       </div>

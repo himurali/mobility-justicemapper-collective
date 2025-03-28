@@ -1,17 +1,9 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
 import { mockIssues } from "@/data/issueData";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { 
   MapPin,
   Filter,
@@ -23,6 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
 import { IssueData } from "@/types";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import NavTabs from "@/components/NavTabs";
 
 // Define the Bangalore city data
 const bangaloreCity: City = {
@@ -160,86 +155,85 @@ const Index = () => {
   }, [selectedIssue]);
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 flex flex-row h-full">
-        {/* Left Sidebar */}
-        <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-full overflow-hidden">
-          <h1 className="text-3xl font-bold text-primary mb-4">Mobility Issues</h1>
-          
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search issues..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          
-          {/* Tag Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {allTags.map(tag => (
-              <Button
-                key={tag}
-                variant={selectedTags.includes(tag) ? "secondary" : "outline"}
-                className="text-sm rounded-full h-auto py-1"
-                onClick={() => toggleTag(tag)}
-              >
-                {tag.replace('_', ' ')}
-              </Button>
-            ))}
-          </div>
-          
-          {/* City Selector */}
-          <div className="mb-4">
-            <CitySelector 
-              cities={cityOptions} 
-              selectedCity={selectedCity} 
-              onSelectCity={setSelectedCity} 
-            />
-          </div>
-          
-          {/* Issue Cards */}
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
-            {filteredIssues.length > 0 ? (
-              filteredIssues.map(issue => (
-                <div 
-                  key={issue.id} 
-                  id={`issue-card-${issue.id}`}
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <Header />
+
+      {/* Hero section */}
+      <Hero
+        cities={cityOptions}
+        selectedCity={selectedCity}
+        onSelectCity={setSelectedCity}
+      />
+      
+      {/* Navigation tabs */}
+      <div className="container mx-auto px-4 md:px-6 mt-4 mb-6">
+        <NavTabs />
+      </div>
+
+      <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col md:flex-row h-full">
+          {/* Left Sidebar */}
+          <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search issues..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            {/* Tag Filters */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {allTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? "secondary" : "outline"}
+                  className="text-sm rounded-full h-auto py-1"
+                  onClick={() => toggleTag(tag)}
                 >
-                  <IssueCard
-                    issue={issue}
-                    onClick={() => handleIssueClick(issue)}
-                    isSelected={selectedIssue?.id === issue.id}
-                  />
+                  {tag.replace('_', ' ')}
+                </Button>
+              ))}
+            </div>
+            
+            {/* Issue Cards */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
+              {filteredIssues.length > 0 ? (
+                filteredIssues.map(issue => (
+                  <div 
+                    key={issue.id} 
+                    id={`issue-card-${issue.id}`}
+                  >
+                    <IssueCard
+                      issue={issue}
+                      onClick={() => handleIssueClick(issue)}
+                      isSelected={selectedIssue?.id === issue.id}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No issues found matching your filters
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No issues found matching your filters
-              </div>
-            )}
+              )}
+            </div>
           </div>
           
-          {/* Report New Issue Button */}
-          <div className="pt-4 border-t mt-4">
-            <Button className="w-full">
-              Report New Issue
-            </Button>
+          {/* Map Area */}
+          <div className="flex-1 relative h-[400px] md:h-auto">
+            <MapComponent 
+              center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
+              zoom={selectedCity.zoom}
+              categoryFilter={categoryFilter}
+              severityFilter={severityFilter}
+              selectedIssue={selectedIssue?.id}
+              onSelectIssue={handleSelectIssue}
+            />
           </div>
-        </div>
-        
-        {/* Map Area */}
-        <div className="flex-1 relative">
-          <MapComponent 
-            center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
-            zoom={selectedCity.zoom}
-            categoryFilter={categoryFilter}
-            severityFilter={severityFilter}
-            selectedIssue={selectedIssue?.id}
-            onSelectIssue={handleSelectIssue}
-          />
         </div>
       </div>
       

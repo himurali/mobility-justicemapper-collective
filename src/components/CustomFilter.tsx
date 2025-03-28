@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { City, IssueCategory, IssueSeverity } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Check, MapPin, X, AlertTriangle, Home, Building, Building2, ParkingCircle, Garden, GraduationCap, User, Gem } from "lucide-react";
+import { Check, MapPin, X, AlertTriangle, Home, Building, Building2, ParkingCircle, Leaf, GraduationCap, User, Gem } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mobilityCategories } from "@/data/issueData";
 
@@ -67,7 +67,7 @@ const CustomFilter: React.FC<CustomFilterProps> = ({
       case 'accessibility_issues':
         return <Building2 className="h-4 w-4" />;
       case 'green_spaces':
-        return <Garden className="h-4 w-4" />;
+        return <Leaf className="h-4 w-4" />; // Replaced Garden with Leaf
       case 'urban_education':
         return <GraduationCap className="h-4 w-4" />;
       default:

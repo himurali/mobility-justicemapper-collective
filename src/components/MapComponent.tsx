@@ -20,6 +20,7 @@ interface MapComponentProps {
   severityFilter?: string;
   onSelectIssue?: (issueId: string) => void;
   selectedTab?: string;
+  onVisibleIssuesChange?: (issueIds: string[]) => void;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -30,6 +31,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   severityFilter = "all",
   onSelectIssue,
   selectedTab = "video",
+  onVisibleIssuesChange,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -51,38 +53,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     setActiveTab(selectedTab);
   }, [selectedTab]);
-
-  // Generate additional mock issues to get 15+ total markers
-  const generateAdditionalIssues = () => {
-    const baseIssues = mockIssues;
-    const additionalIssues: IssueData[] = [];
-    
-    // Generate enough issues to have at least 15 in total
-    const totalNeeded = Math.max(0, 15 - baseIssues.length);
-    
-    for (let i = 0; i < totalNeeded; i++) {
-      const baseIssue = baseIssues[i % baseIssues.length];
-      
-      // Create a variation by adjusting location slightly
-      const latVariation = (Math.random() - 0.5) * 0.05;
-      const lngVariation = (Math.random() - 0.5) * 0.05;
-      
-      additionalIssues.push({
-        ...baseIssue,
-        id: `generated-${baseIssue.id}-${i}`,
-        title: `${baseIssue.title} (${i + 1})`,
-        location: {
-          ...baseIssue.location,
-          latitude: baseIssue.location.latitude + latVariation,
-          longitude: baseIssue.location.longitude + lngVariation,
-        }
-      });
-    }
-    
-    return [...baseIssues, ...additionalIssues];
-  };
-  
-  const allIssues = generateAdditionalIssues();
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -280,6 +250,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 // Extract the issue IDs from the visible features
                 const newVisibleIds = newVisibleFeatures.map(f => f.properties?.id).filter(Boolean);
                 setVisibleIssueIds(newVisibleIds);
+                
+                // Update parent component with visible issues
+                if (onVisibleIssuesChange) {
+                  onVisibleIssuesChange(newVisibleIds);
+                }
               });
             }
           }
@@ -313,7 +288,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
     markersRef.current = {};
     markerElementsRef.current = {};
 
-    const filteredIssues = allIssues.filter(issue => {
+    const filteredIssues = mockIssues.filter(issue => {
+      // Filter by city name
+      if (issue.city.toLowerCase() !== center[1].toString()) {
+        // City filtering should match selectedCity
+        const cityMatch = issue.city.toLowerCase() === "bangalore"; // Hardcoded for now, could be passed as prop
+        if (!cityMatch) return false;
+      }
+      
       // Filter by category if specified
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
@@ -351,7 +333,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       // Update visible issues for export to the parent component
-      setVisibleIssueIds(filteredIssues.map(issue => issue.id));
+      if (visibleIssueIds.length === 0) {
+        // Initially, no visible issues unless a cluster has been clicked
+        if (onVisibleIssuesChange) {
+          onVisibleIssuesChange([]);
+        }
+      }
     }
     
     // Only add individual markers for visible issues (when clusters are clicked)
@@ -406,7 +393,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
     
     // Update the parent component with the visible issues
-    if (onSelectIssue && typeof onSelectIssue === 'function') {
+    if (onSelectIssue && typeof onSelectIssue === 'function' && visibleIssueIds.length > 0) {
       // This will notify the parent component about the visible issue IDs
       // The parent can then filter the sidebar issues accordingly
       const firstVisibleId = visibleIssueIds[0];
@@ -435,6 +422,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
       // Update visible issue IDs if they've changed
       if (JSON.stringify(newVisibleIds) !== JSON.stringify(visibleIssueIds)) {
         setVisibleIssueIds(newVisibleIds);
+        
+        // Update parent component
+        if (onVisibleIssuesChange) {
+          onVisibleIssuesChange(newVisibleIds);
+        }
       }
     };
     
@@ -448,7 +440,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         map.current.off('zoomend', updateVisibleFeatures);
       }
     };
-  }, [visibleIssueIds]);
+  }, [visibleIssueIds, onVisibleIssuesChange]);
 
   useEffect(() => {
     initializeMap();

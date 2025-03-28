@@ -143,6 +143,11 @@ const Index = () => {
   const handleMapIssuesUpdate = (issueId: string) => {
     handleSelectIssue(issueId);
   };
+  
+  // Handler for when visible issues change in the map component
+  const handleVisibleIssuesChange = (issueIds: string[]) => {
+    setVisibleIssueIds(issueIds);
+  };
 
   const handleTabSelect = (tab?: string) => {
     if (tab) {
@@ -191,6 +196,11 @@ const Index = () => {
       }
     }
   }, [selectedIssue]);
+
+  // Reset visible issue IDs when city changes
+  useEffect(() => {
+    setVisibleIssueIds([]);
+  }, [selectedCity]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -249,7 +259,9 @@ const Index = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-muted-foreground col-span-2">
-                      No issues found matching your filters
+                      {visibleIssueIds.length > 0 
+                        ? "Click on map clusters to see issues in that area" 
+                        : "No issues found matching your filters"}
                     </div>
                   )}
                 </div>
@@ -269,6 +281,7 @@ const Index = () => {
                     selectedIssue={selectedIssue?.id}
                     onSelectIssue={handleMapIssuesUpdate}
                     selectedTab={activeDialogTab}
+                    onVisibleIssuesChange={handleVisibleIssuesChange}
                   />
                 </div>
               )}

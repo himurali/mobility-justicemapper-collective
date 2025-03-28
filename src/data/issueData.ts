@@ -39,7 +39,7 @@ export const mobilityCategories = [
   }
 ];
 
-export const mockIssues: IssueData[] = [
+const baseMockIssues: IssueData[] = [
   // Bangalore issues
   {
     id: '6',
@@ -225,6 +225,57 @@ export const mockIssues: IssueData[] = [
     severity: 'moderate' as IssueSeverity
   }
 ];
+
+const generateAdditionalIssues = (): IssueData[] => {
+  const additionalIssues: IssueData[] = [];
+  
+  const templates = baseMockIssues;
+  const issueTypes = [
+    'Broken Traffic Light',
+    'Missing Pedestrian Crossing',
+    'Unsafe Bike Lane',
+    'Poor Road Conditions',
+    'Inaccessible Bus Stop',
+    'Flooding Prone Area',
+    'Traffic Congestion Hotspot',
+    'Missing Street Lights',
+    'Poorly Designed Intersection',
+    'Narrow Sidewalk',
+    'Lack of Wheelchair Access'
+  ];
+  
+  const totalNeeded = Math.max(0, 15 - baseMockIssues.length);
+  
+  for (let i = 0; i < totalNeeded; i++) {
+    const baseIssue = templates[i % templates.length];
+    const issueType = issueTypes[i % issueTypes.length];
+    
+    const latVariation = (Math.random() - 0.5) * 0.05;
+    const lngVariation = (Math.random() - 0.5) * 0.05;
+    
+    additionalIssues.push({
+      ...baseIssue,
+      id: `generated-${i+10}`,
+      title: `${issueType} at ${baseIssue.location.address.split(',')[0]} Area ${i+1}`,
+      description: `This ${issueType.toLowerCase()} issue needs urgent attention as it affects daily commuters.`,
+      location: {
+        ...baseIssue.location,
+        latitude: baseIssue.location.latitude + latVariation,
+        longitude: baseIssue.location.longitude + lngVariation,
+        address: `${issueType} Location ${i+1}, ${baseIssue.city}`
+      },
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString(),
+      upvotes: Math.floor(Math.random() * 50),
+      downvotes: Math.floor(Math.random() * 10),
+      severity: ['critical', 'moderate', 'minor'][Math.floor(Math.random() * 3)] as IssueSeverity
+    });
+  }
+  
+  return additionalIssues;
+};
+
+export const mockIssues: IssueData[] = [...baseMockIssues, ...generateAdditionalIssues()];
 
 export const mockForumPosts: ForumPost[] = [
   {

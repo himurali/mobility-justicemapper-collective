@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
-import { cities } from "@/data/mockData";
+import { cities } from "@/data/issueData";
 import { Badge } from "@/components/ui/badge";
 import { 
   Select,
@@ -17,8 +17,39 @@ import {
 } from "lucide-react";
 import CitySelector from "@/components/CitySelector";
 
+// Define the Bangalore city data
+const bangaloreCity: City = {
+  id: "bangalore",
+  name: "Bangalore",
+  coordinates: [77.5946, 12.9716],
+  zoom: 12,
+};
+
+// Create a cities array with Bangalore as the first city
+const cityOptions: City[] = [
+  bangaloreCity,
+  {
+    id: "delhi",
+    name: "Delhi",
+    coordinates: [77.2090, 28.6139],
+    zoom: 11,
+  },
+  {
+    id: "mumbai",
+    name: "Mumbai",
+    coordinates: [72.8777, 19.0760],
+    zoom: 12,
+  },
+  {
+    id: "chennai",
+    name: "Chennai",
+    coordinates: [80.2707, 13.0827],
+    zoom: 12,
+  },
+];
+
 const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<City>(cities[0]); // Default to first city
+  const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity); // Default to Bangalore
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | 'all'>('all');
   const [severityFilter, setSeverityFilter] = useState<IssueSeverity | 'all'>('all');
 
@@ -30,7 +61,7 @@ const Index = () => {
         <div className="w-full md:w-80 bg-sidebar border-r p-4 flex flex-col gap-4">
           <h1 className="text-2xl font-bold text-primary">Mobility Justice</h1>
           <p className="text-sm text-sidebar-foreground">
-            Report and discover urban mobility issues in your community
+            Report and discover urban mobility issues in Bangalore
           </p>
           
           <div className="border-t border-sidebar-border my-4"></div>
@@ -39,10 +70,10 @@ const Index = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
               <MapPin size={16} />
-              Select City
+              Select Area
             </label>
             <CitySelector 
-              cities={cities} 
+              cities={cityOptions} 
               selectedCity={selectedCity} 
               onSelectCity={setSelectedCity} 
             />

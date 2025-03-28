@@ -52,3 +52,6 @@ export interface City {
   coordinates: [number, number]; // [longitude, latitude]
   zoom: number;
 }
+
+// Re-export types from issueData.ts
+export type * from './issueData';

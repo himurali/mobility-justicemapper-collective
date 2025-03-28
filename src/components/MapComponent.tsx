@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { IssueReport, IssueCategory, City } from "@/types";
-import { mockIssues } from "@/data/mockData";
+import { IssueCategory } from "@/types";
+import { mockIssues } from "@/data/issueData";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ interface MapComponentProps {
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
-  center = [-74.0060, 40.7128], // Default to NYC
+  center = [77.5946, 12.9716], // Default to Bangalore
   zoom = 12,
   selectedIssue,
   categoryFilter = "all",
@@ -31,7 +31,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   // Use the provided token directly
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
-  const getCategoryColor = (category: IssueCategory): string => {
+  const getCategoryColor = (category: string): string => {
     switch (category) {
       case "safety":
         return "#ef4444"; // red
@@ -92,21 +92,39 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     // Filter issues based on category and severity
     const filteredIssues = mockIssues.filter(issue => {
-      const categoryMatch = categoryFilter === "all" || issue.category === categoryFilter;
-      const severityMatch = severityFilter === "all" || issue.severity === severityFilter;
+      // For Bangalore issues, use the first tag that matches our categories
+      const issueCategory = issue.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
+      
+      // Extract severity from tags if available, otherwise default to "medium"
+      const issueSeverity = issue.tags.find(tag => 
+        ["low", "medium", "high"].includes(tag.toLowerCase())
+      ) || "medium";
+      
+      const categoryMatch = categoryFilter === "all" || 
+        (issueCategory.toLowerCase() === categoryFilter.toLowerCase());
+      const severityMatch = severityFilter === "all" || 
+        (issueSeverity.toLowerCase() === severityFilter.toLowerCase());
+        
       return categoryMatch && severityMatch;
     });
 
     // Add markers for filtered issues
     filteredIssues.forEach(issue => {
+      // Get the category for color
+      const issueCategory = issue.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
+      
       // Create custom marker element
       const markerElement = document.createElement("div");
       markerElement.className = "cursor-pointer";
       markerElement.innerHTML = `
         <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2" 
-             style="border-color: ${getCategoryColor(issue.category)}">
+             style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${getCategoryColor(issue.category)}"></div>
+               style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
         </div>
       `;
 
@@ -117,7 +135,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div class="flex flex-col gap-2">
               <h3 class="font-medium text-sm">${issue.title}</h3>
-              <p class="text-xs text-muted-foreground">${issue.category} · ${issue.severity} severity</p>
+              <p class="text-xs text-muted-foreground">${issueCategory} · ${issue.city}</p>
               <button id="popup-view-more" class="text-xs text-primary hover:underline">View details</button>
             </div>
           `)

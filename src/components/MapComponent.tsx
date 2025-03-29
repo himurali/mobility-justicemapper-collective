@@ -206,14 +206,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       if (!shouldBeVisible) return;
       
-      // Create marker
+      // Create marker with proper click handling
       const handleIssueSelect = (issue: IssueData) => {
         if (!isMountedRef.current) return;
+        
+        console.log("Issue selected:", issue.id);
         
         if (onSelectIssue) {
           onSelectIssue(issue.id);
         }
         
+        // Set the selected issue data and open dialog
         setSelectedIssueData(issue);
         setIsDialogOpen(true);
       };
@@ -286,11 +289,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
-          <IssueDetail 
-            issue={selectedIssueData} 
-            onClose={() => setIsDialogOpen(false)} 
-            initialTab={activeTab}
-          />
+          {selectedIssueData && (
+            <IssueDetail 
+              issue={selectedIssueData} 
+              onClose={() => setIsDialogOpen(false)} 
+              initialTab={activeTab}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>

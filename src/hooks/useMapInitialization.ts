@@ -36,21 +36,19 @@ export function useMapInitialization({
     if (!map.current) return;
     
     try {
-      // First check if the map is actually initialized and has methods
+      // Check if the map is actually initialized and has methods
       if (map.current && typeof map.current.remove === 'function') {
-        // Try to remove the map properly
         map.current.remove();
       }
     } catch (error) {
       console.error("Error removing map:", error);
     } finally {
-      // Always ensure we clear the reference
       map.current = null;
       setMapStyleLoaded(false);
     }
   }, []);
 
-  // Define updateMapSource function before it's used in initializeMap
+  // Define updateMapSource function
   const updateMapSource = useCallback(() => {
     if (!map.current || !mapStyleLoaded || !isMountedRef.current) return;
 
@@ -111,7 +109,7 @@ export function useMapInitialization({
       try {
         console.log("Adding navigation controls");
         const navControl = new mapboxgl.NavigationControl({
-          visualizePitch: false, // We disabled rotation, so this is not needed
+          visualizePitch: false, 
           showCompass: false,
           showZoom: true
         });
@@ -124,7 +122,6 @@ export function useMapInitialization({
       // Handle style loading
       mapInstance.on("style.load", () => {
         if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) {
-          // If the map instance has changed or been removed, don't continue
           return;
         }
         
@@ -144,7 +141,7 @@ export function useMapInitialization({
               clusterRadius: 50
             });
             
-            // Add clusters layer - ensure this is visible
+            // Add clusters layer
             mapInstance.addLayer({
               id: 'clusters',
               type: 'circle',
@@ -213,11 +210,8 @@ export function useMapInitialization({
               console.log("Cluster clicked:", features[0].properties);
               setClusterClicked(true);
               
-              // Get cluster id and expansion zoom
+              // Get cluster id and coordinates
               const clusterId = features[0].properties?.cluster_id;
-              const pointCount = features[0].properties?.point_count;
-              
-              // Get cluster coordinates
               const coordinates = (features[0].geometry as any).coordinates.slice();
               
               if (clusterId) {

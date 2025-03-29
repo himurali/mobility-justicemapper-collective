@@ -14,32 +14,38 @@
   font-size: 10px;
 }
 
-/* Make sure navigation controls are visible and working */
+/* Fix navigation control visibility */
 .mapboxgl-ctrl-group {
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: white !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) !important;
   display: block !important;
-  z-index: 100;
-  margin: 10px;
+  z-index: 100 !important;
+  margin: 10px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 
 .mapboxgl-ctrl-group button {
-  width: 30px;
-  height: 30px;
-  display: block;
-  padding: 0;
-  outline: none;
-  border: 0;
-  box-sizing: border-box;
-  background-position: center;
-  background-repeat: no-repeat;
-  cursor: pointer;
+  width: 30px !important;
+  height: 30px !important;
+  display: block !important;
+  padding: 0 !important;
+  outline: none !important;
+  border: 0 !important;
+  box-sizing: border-box !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  cursor: pointer !important;
 }
 
 /* Ensure zoom buttons are visible and functioning */
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in,
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
+  display: block !important;
+}
+
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in .mapboxgl-ctrl-zoom-in,
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out .mapboxgl-ctrl-zoom-out {
   display: block !important;
 }
 
@@ -49,7 +55,25 @@
 }
 
 /* Make clusters stand out more */
-.clusters {
+.cluster {
+  background: rgba(38, 181, 240, 0.7);
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 4px white;
+}
+
+.cluster:hover {
+  background: rgba(38, 181, 240, 0.9);
+  transform: scale(1.05);
+}
+
+.mapboxgl-marker {
   cursor: pointer;
 }
 
@@ -69,4 +93,15 @@
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.marker-tooltip {
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.marker-container:hover .marker-tooltip {
+  opacity: 1;
 }

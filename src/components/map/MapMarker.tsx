@@ -13,7 +13,8 @@ interface MapMarkerProps {
 
 const MapMarker = ({ issue, map, isSelected, onClick }: MapMarkerProps) => {
   const markerElement = document.createElement("div");
-  markerElement.className = "cursor-pointer";
+  markerElement.className = "marker-container cursor-pointer";
+  markerElement.setAttribute('data-issue-id', issue.id);
   
   const mainCategory = issue.tags[0] || "other";
   const categoryColor = getCategoryColor(mainCategory);
@@ -26,36 +27,19 @@ const MapMarker = ({ issue, map, isSelected, onClick }: MapMarkerProps) => {
       <div class="w-5 h-5 rounded-full" 
            style="background-color: ${severityColor}"></div>
     </div>
-  `;
-  
-  // Add a tooltip with the issue title
-  const tooltip = document.createElement('div');
-  tooltip.className = 'absolute bg-white px-3 py-2 rounded shadow-lg text-sm pointer-events-none opacity-0 transition-opacity duration-200 -mt-14 text-center min-w-[150px] max-w-[200px] z-10';
-  tooltip.style.transform = 'translateX(-50%)';
-  
-  // Add title and severity to tooltip
-  tooltip.innerHTML = `
-    <div class="font-semibold">${issue.title}</div>
-    <div class="text-xs mt-1 flex items-center justify-center gap-1">
-      <span class="inline-block w-2 h-2 rounded-full" style="background-color: ${severityColor}"></span>
-      <span class="capitalize">${issue.severity}</span>
+    <div class="marker-tooltip absolute bg-white px-3 py-2 rounded shadow-lg text-sm pointer-events-none -mt-14 text-center min-w-[150px] max-w-[200px] z-10" style="transform: translateX(-50%);">
+      <div class="font-semibold">${issue.title}</div>
+      <div class="text-xs mt-1 flex items-center justify-center gap-1">
+        <span class="inline-block w-2 h-2 rounded-full" style="background-color: ${severityColor}"></span>
+        <span class="capitalize">${issue.severity}</span>
+      </div>
     </div>
   `;
-  
-  markerElement.appendChild(tooltip);
-  
-  // Show/hide tooltip on hover
-  markerElement.addEventListener('mouseenter', () => {
-    tooltip.style.opacity = '1';
-  });
-  
-  markerElement.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = '0';
-  });
   
   // Handle marker click
   markerElement.addEventListener('click', (e) => {
     e.stopPropagation(); // Prevent event from bubbling to map
+    console.log("Marker clicked:", issue.id);
     onClick(issue);
   });
   
@@ -63,7 +47,7 @@ const MapMarker = ({ issue, map, isSelected, onClick }: MapMarkerProps) => {
   const marker = new mapboxgl.Marker({
     element: markerElement,
     anchor: 'bottom',
-    offset: [0, -4]  // Slight offset to make marker positioning more accurate
+    offset: [0, -4]  // Slight offset for better positioning
   })
     .setLngLat([issue.location.longitude, issue.location.latitude])
     .addTo(map);

@@ -70,8 +70,15 @@ export default {
 					yellow: '#fbbf24',
 					red: '#ef4444',
 					// Add JUMP logo colors
-					purple: '#5D3FD3', // Main purple from logo
-					brightYellow: '#FFE11A', // Bright yellow from logo
+					purple: '#4C1D95', // Deep purple from the logo
+					brightYellow: '#FACC15', // Bright yellow from the logo
+				},
+				jump: {
+					purple: '#4C1D95',   // Deep JUMP purple
+					yellow: '#FACC15',   // JUMP yellow
+					lightYellow: '#FEF08A',
+					mediumPurple: '#7E22CE',
+					lightPurple: '#C084FC',
 				}
 			},
 			borderRadius: {

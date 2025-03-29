@@ -13,15 +13,20 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
   return (
-    <div className="bg-gradient-to-b from-yellow-100 to-white py-10 px-4">
+    <div className="bg-gradient-to-b from-yellow-300 to-yellow-50 py-10 px-4">
       <div className="container mx-auto max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="max-w-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-900 to-purple-600">
+            <div className="flex items-center gap-3 mb-2">
+              <img 
+                src="/lovable-uploads/aedeae24-5c3f-4111-80ea-4046aed9bc3d.png" 
+                alt="JUMP spiral logo" 
+                className="h-12 w-12"
+              />
+              <h2 className="text-4xl font-bold text-purple-800">
                 JUMP
               </h2>
-              <div className="rounded-md bg-yellow-200 px-2 py-1">
+              <div className="rounded-md bg-purple-100 px-2 py-1">
                 <span className="text-xs font-medium text-purple-800">BETA</span>
               </div>
             </div>
@@ -34,7 +39,7 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
             </div>
           </div>
           
-          <div className="w-full md:w-auto bg-white rounded-lg shadow-md p-5 border border-yellow-200">
+          <div className="w-full md:w-auto bg-white rounded-lg shadow-md p-5 border border-yellow-300">
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full sm:w-64">
                 <div className="flex flex-col gap-1">

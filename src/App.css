@@ -20,21 +20,29 @@
 }
 
 .jump-gradient-text {
-  background: linear-gradient(90deg, #5d3fd3 0%, #9366e8 100%);
+  background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .jump-card {
-  border: 1px solid rgba(237, 233, 254, 0.5);
-  box-shadow: 0 4px 12px rgba(93, 63, 211, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  box-shadow: 0 4px 12px rgba(76, 29, 149, 0.08);
   transition: all 0.3s ease;
 }
 
 .jump-card:hover {
-  box-shadow: 0 8px 16px rgba(93, 63, 211, 0.12);
+  box-shadow: 0 8px 16px rgba(76, 29, 149, 0.12);
   transform: translateY(-2px);
+}
+
+.jump-spiral-bg {
+  background-image: url('/lovable-uploads/aedeae24-5c3f-4111-80ea-4046aed9bc3d.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15%;
+  background-blend-mode: soft-light;
 }
 
 @keyframes logo-spin {

@@ -42,11 +42,11 @@ const Header: React.FC = () => {
   );
 
   return (
-    <header className="bg-indigo-600 sticky top-0 z-10">
+    <header className="bg-gradient-to-r from-indigo-800 to-indigo-600 sticky top-0 z-10 shadow-md">
       <div className="container flex items-center justify-between h-16 mx-auto px-4 md:px-6">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-full bg-white h-10 w-10 flex items-center justify-center">
+            <div className="rounded-full bg-white h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
               <svg 
                 viewBox="0 0 24 24" 
                 width="24" 
@@ -61,9 +61,14 @@ const Header: React.FC = () => {
                 <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-white">
-              MobilityJustice
-            </h1>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                JUMP
+              </h1>
+              <span className="text-xs text-indigo-200 leading-none font-medium">
+                Justice+ Urban Mobility Platform
+              </span>
+            </div>
           </Link>
         </div>
 
@@ -77,9 +82,9 @@ const Header: React.FC = () => {
             </SheetTrigger>
             <SheetContent>
               <SheetHeader className="text-left">
-                <SheetTitle>Mobility Justice</SheetTitle>
+                <SheetTitle>JUMP Platform</SheetTitle>
                 <SheetDescription>
-                  Document and address mobility injustice in your city
+                  Justice+ Urban Mobility Platform
                 </SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-2 mt-6">

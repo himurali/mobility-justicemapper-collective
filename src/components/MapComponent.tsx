@@ -42,9 +42,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     mapContainer,
     map,
     mapStyleLoaded,
-    clusterClicked,
     visibleIssueIds,
-    setClusterClicked,
     setVisibleIssueIds,
     initializeMap,
     updateMapSource,
@@ -86,40 +84,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     updateMapSource();
     addMarkers();
 
-    // Handle cluster click
-    map.current.on("click", "clusters", (e) => {
-      const features = map.current?.queryRenderedFeatures(e.point, {
-        layers: ["clusters"],
-      });
-      
-      if (!features || features.length === 0 || !map.current) return;
-      
-      const clusterId = features[0].properties?.cluster_id;
-      
-      // Type assertion to access geometry coordinates safely
-      const featureGeometry = features[0].geometry as GeoJSON.Point;
-      const coordinates = featureGeometry.coordinates;
-
-      if (clusterId && map.current) {
-        const source = map.current.getSource("issues") as mapboxgl.GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
-          map.current?.easeTo({
-            center: coordinates as [number, number],
-            zoom: zoom,
-          });
-        });
-
-        source.getClusterLeaves(clusterId, 100, 0, (err, leaves) => {
-          if (err) return;
-          const issueIds = leaves.map(leaf => leaf.properties.id);
-          setVisibleIssueIds(issueIds);
-          setClusterClicked(true);
-          if (onVisibleIssuesChange) onVisibleIssuesChange(issueIds);
-        });
-      }
-    });
-
     // Handle map click to close dialog if clicking outside markers
     map.current.on("click", () => {
       setIsDialogOpen(false);
@@ -156,11 +120,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
     });
 
     filteredIssues.forEach(issue => {
-      const shouldBeVisible =
-        issue.id === selectedIssue ||
-        (clusterClicked && visibleIssueIds.includes(issue.id)) ||
-        (!clusterClicked && visibleIssueIds.length === 0);
-
+      const shouldBeVisible = true; // Show all markers since clustering is disabled
+      
       if (!shouldBeVisible) return;
 
       const handleIssueSelect = (selectedIssue: IssueData) => {
@@ -191,7 +152,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     if (mapStyleLoaded && map.current) {
       addMarkers();
     }
-  }, [visibleIssueIds, clusterClicked, mapStyleLoaded]);
+  }, [visibleIssueIds, mapStyleLoaded]);
 
   return (
     <>

@@ -25,7 +25,6 @@ export function useMapInitialization({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapStyleLoaded, setMapStyleLoaded] = useState(false);
-  const [clusterClicked, setClusterClicked] = useState(false);
   const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
   const { toast } = useToast();
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
@@ -65,13 +64,17 @@ export function useMapInitialization({
         }
       }
       
-      if (!clusterClicked && onVisibleIssuesChange && isMountedRef.current) {
-        onVisibleIssuesChange([]);
+      // Update visible issue IDs with all filtered issues since clustering is disabled
+      const allIssueIds = filteredIssues.map(issue => issue.id);
+      setVisibleIssueIds(allIssueIds);
+      
+      if (onVisibleIssuesChange && isMountedRef.current) {
+        onVisibleIssuesChange(allIssueIds);
       }
     } catch (error) {
       console.error("Error updating map source:", error);
     }
-  }, [map, mapStyleLoaded, issues, center, categoryFilter, severityFilter, clusterClicked, onVisibleIssuesChange]);
+  }, [map, mapStyleLoaded, issues, center, categoryFilter, severityFilter, onVisibleIssuesChange]);
 
   const initializeMap = useCallback(() => {
     // Always cleanup any existing map first
@@ -129,66 +132,21 @@ export function useMapInitialization({
         setMapStyleLoaded(true);
         
         try {
-          // Setup cluster source and layers
+          // Setup non-clustering source
           if (!mapInstance.getSource('issues')) {
-            console.log("Adding issues source and layers");
+            console.log("Adding issues source");
             
             mapInstance.addSource('issues', {
               type: 'geojson',
               data: issuesToGeoJSON([]), // Start with empty data
-              cluster: true,
-              clusterMaxZoom: 14,
-              clusterRadius: 50
+              cluster: false, // Disable clustering
             });
             
-            // Add clusters layer
-            mapInstance.addLayer({
-              id: 'clusters',
-              type: 'circle',
-              source: 'issues',
-              filter: ['has', 'point_count'],
-              paint: {
-                'circle-color': [
-                  'step',
-                  ['get', 'point_count'],
-                  '#51bbd6',
-                  10, '#f1f075',
-                  20, '#f28cb1'
-                ],
-                'circle-radius': [
-                  'step',
-                  ['get', 'point_count'],
-                  25,
-                  10, 35,
-                  20, 45
-                ],
-                'circle-stroke-width': 2,
-                'circle-stroke-color': '#fff'
-              }
-            });
-            
-            // Add cluster count text layer
-            mapInstance.addLayer({
-              id: 'cluster-count',
-              type: 'symbol',
-              source: 'issues',
-              filter: ['has', 'point_count'],
-              layout: {
-                'text-field': '{point_count_abbreviated}',
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 14
-              },
-              paint: {
-                'text-color': '#ffffff'
-              }
-            });
-            
-            // Only add unclustered points with zero radius - we'll use custom markers instead
+            // Add unclustered points with zero radius - we'll use custom markers instead
             mapInstance.addLayer({
               id: 'unclustered-point',
               type: 'circle',
               source: 'issues',
-              filter: ['!', ['has', 'point_count']],
               paint: {
                 'circle-radius': 0,
                 'circle-opacity': 0
@@ -196,87 +154,14 @@ export function useMapInitialization({
             });
           }
           
-          // Handle cluster click with proper zoom and data handling
-          mapInstance.on('click', 'clusters', (e) => {
-            if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
-            
-            try {
-              const features = mapInstance.queryRenderedFeatures(e.point, {
-                layers: ['clusters']
-              });
-              
-              if (!features.length) return;
-              
-              console.log("Cluster clicked:", features[0].properties);
-              setClusterClicked(true);
-              
-              // Get cluster id and coordinates
-              const clusterId = features[0].properties?.cluster_id;
-              const coordinates = (features[0].geometry as any).coordinates.slice();
-              
-              if (clusterId) {
-                const source = mapInstance.getSource('issues') as mapboxgl.GeoJSONSource;
-                
-                source.getClusterExpansionZoom(clusterId, (err, expansionZoom) => {
-                  if (err) {
-                    console.error("Error getting cluster expansion zoom:", err);
-                    return;
-                  }
-                  
-                  console.log("Expanding cluster to zoom level:", expansionZoom);
-                  
-                  // Fly to cluster position with appropriate zoom level
-                  mapInstance.flyTo({
-                    center: coordinates,
-                    zoom: expansionZoom + 0.5, // Add slight zoom for better visibility
-                    duration: 500,
-                    essential: true
-                  });
-                  
-                  // After animation, get the visible points and update state
-                  setTimeout(() => {
-                    if (!mapInstance || !isMountedRef.current) return;
-                    
-                    try {
-                      // Get all features in the view
-                      const points = mapInstance.querySourceFeatures('issues', {
-                        sourceLayer: '',
-                        filter: ['!', ['has', 'point_count']] // Only get individual points, not clusters
-                      });
-                      
-                      // Extract IDs of visible issues
-                      const pointIds = points
-                        .filter(p => p.properties && p.properties.id)
-                        .map(p => p.properties!.id as string);
-                      
-                      console.log(`Found ${pointIds.length} visible issues after cluster expansion`);
-                      
-                      // Update visible issue IDs
-                      setVisibleIssueIds(pointIds);
-                      
-                      if (onVisibleIssuesChange) {
-                        onVisibleIssuesChange(pointIds);
-                      }
-                    } catch (error) {
-                      console.error("Error getting visible issues after cluster expansion:", error);
-                    }
-                  }, 600);
-                });
-              }
-            } catch (error) {
-              console.error("Error handling cluster click:", error);
-            }
-          });
-          
-          // Change cursor on cluster hover
-          mapInstance.on('mouseenter', 'clusters', () => {
+          // Change cursor on hover
+          mapInstance.on('mouseenter', 'unclustered-point', () => {
             if (mapInstance && isMountedRef.current) {
               mapInstance.getCanvas().style.cursor = 'pointer';
-              console.log("Cursor changed to pointer on cluster hover");
             }
           });
           
-          mapInstance.on('mouseleave', 'clusters', () => {
+          mapInstance.on('mouseleave', 'unclustered-point', () => {
             if (mapInstance && isMountedRef.current) {
               mapInstance.getCanvas().style.cursor = '';
             }
@@ -286,29 +171,17 @@ export function useMapInitialization({
           mapInstance.on('moveend', () => {
             if (!mapInstance || !isMountedRef.current) return;
             
-            if (clusterClicked) {
-              try {
-                // If a cluster was clicked, update visible issues based on current view
-                const points = mapInstance.querySourceFeatures('issues', {
-                  sourceLayer: '',
-                  filter: ['!', ['has', 'point_count']]
-                });
-                
-                const pointIds = points
-                  .filter(p => p.properties && p.properties.id)
-                  .map(p => p.properties!.id as string);
-                
-                if (pointIds.length > 0) {
-                  console.log(`Found ${pointIds.length} visible issues after map move`);
-                  setVisibleIssueIds(pointIds);
-                  
-                  if (onVisibleIssuesChange) {
-                    onVisibleIssuesChange(pointIds);
-                  }
-                }
-              } catch (error) {
-                console.error("Error updating visible issues after map move:", error);
+            try {
+              // Update visible issues based on current view
+              const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
+              const visibleIds = filteredIssues.map(issue => issue.id);
+              setVisibleIssueIds(visibleIds);
+              
+              if (onVisibleIssuesChange) {
+                onVisibleIssuesChange(visibleIds);
               }
+            } catch (error) {
+              console.error("Error updating visible issues after map move:", error);
             }
           });
           
@@ -340,7 +213,7 @@ export function useMapInitialization({
         });
       }
     }
-  }, [center, zoom, mapboxToken, toast, cleanupMap, updateMapSource, onVisibleIssuesChange]);
+  }, [center, zoom, mapboxToken, toast, cleanupMap, updateMapSource, onVisibleIssuesChange, issues, categoryFilter, severityFilter]);
 
   // Make sure the map is properly cleaned up when the component unmounts
   useEffect(() => {
@@ -357,9 +230,7 @@ export function useMapInitialization({
     mapContainer,
     map,
     mapStyleLoaded,
-    clusterClicked,
     visibleIssueIds,
-    setClusterClicked,
     setVisibleIssueIds,
     initializeMap,
     updateMapSource,

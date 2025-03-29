@@ -1,0 +1,15 @@
+
+@import url('https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css');
+
+/* Custom map styling overrides can be added here */
+.mapboxgl-map {
+  font-family: inherit;
+}
+
+.mapboxgl-ctrl-logo {
+  margin: 0 0 4px 4px !important;
+}
+
+.mapboxgl-ctrl-attrib-inner {
+  font-size: 10px;
+}

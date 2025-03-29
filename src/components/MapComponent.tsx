@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "@/styles/mapbox.css"; // Using our controlled CSS file
 import { IssueCategory, IssueData } from "@/types";
 import { mockIssues } from "@/data/issueData";
 import { Dialog, DialogContent } from "@/components/ui/dialog";

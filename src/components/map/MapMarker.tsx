@@ -15,19 +15,22 @@ const MapMarker = ({ issue, map, isSelected, onClick }: MapMarkerProps) => {
   const markerElement = document.createElement("div");
   markerElement.className = "marker-container relative cursor-pointer z-10";
   markerElement.setAttribute("data-issue-id", issue.id);
+  markerElement.setAttribute("data-category", issue.tags[0] || "other");
+  markerElement.setAttribute("data-severity", issue.severity);
 
   const mainCategory = issue.tags[0] || "other";
   const categoryColor = getCategoryColor(mainCategory);
   const severityColor = getSeverityColor(issue.severity);
 
+  // Apply initial styling based on selection state
+  const scaleClass = isSelected ? "scale-125" : "";
+  const borderWidth = isSelected ? "border-3" : "border-2";
+  const zIndex = isSelected ? 30 : 10;
+  
   markerElement.innerHTML = `
-    <div class="marker-inner w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md border-2 transition-all duration-200 hover:scale-110 ${
-      isSelected ? "scale-125 border-4" : ""
-    }"
-         style="border-color: ${categoryColor}; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: ${
-           isSelected ? 30 : 10
-         };">
-      <div class="w-6 h-6 rounded-full" 
+    <div class="marker-inner w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg ${borderWidth} ${scaleClass} transition-transform duration-300"
+         style="border-color: ${categoryColor}; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: ${zIndex};">
+      <div class="w-5 h-5 rounded-full" 
            style="background-color: ${severityColor}"></div>
     </div>
     <div class="marker-tooltip hidden absolute top-0 left-1/2 bg-white px-3 py-2 rounded-lg shadow-md text-sm text-gray-800 -mt-16 transform -translate-x-1/2 min-w-[160px] z-20">
@@ -39,27 +42,25 @@ const MapMarker = ({ issue, map, isSelected, onClick }: MapMarkerProps) => {
     </div>
   `;
 
-  const markerInner = markerElement.querySelector(".marker-inner");
-  const tooltip = markerElement.querySelector(".marker-tooltip");
-
   // Show tooltip on hover
-  markerInner?.addEventListener("mouseenter", () => {
+  markerElement.addEventListener("mouseenter", () => {
+    const tooltip = markerElement.querySelector(".marker-tooltip");
     tooltip?.classList.remove("hidden");
   });
-  markerInner?.addEventListener("mouseleave", () => {
+  
+  markerElement.addEventListener("mouseleave", () => {
+    const tooltip = markerElement.querySelector(".marker-tooltip");
     tooltip?.classList.add("hidden");
   });
 
-  // Handle click with debouncing
-  let clickTimeout: NodeJS.Timeout;
+  // Handle click with immediate response
   markerElement.addEventListener("click", (e) => {
     e.stopPropagation();
-    clearTimeout(clickTimeout);
-    clickTimeout = setTimeout(() => {
-      onClick(issue);
-    }, 200);
+    console.log("Marker clicked:", issue.id);
+    onClick(issue);
   });
 
+  // Create and add the marker to the map
   const marker = new mapboxgl.Marker({
     element: markerElement,
     anchor: "bottom",

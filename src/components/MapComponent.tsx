@@ -37,13 +37,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
   const isMountedRef = useRef(true);
+  const prevSelectedIssueRef = useRef<string | undefined>(undefined);
 
   const {
     mapContainer,
     map,
     mapStyleLoaded,
     visibleIssueIds,
-    setVisibleIssueIds,
     initializeMap,
     updateMapSource,
     cleanupMap,
@@ -58,10 +58,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   const { stopBlinking, startBlinking } = useMarkerAnimation();
 
+  // Update active tab when prop changes
   useEffect(() => {
     setActiveTab(selectedTab);
   }, [selectedTab]);
 
+  // Initialize map on component mount
   useEffect(() => {
     isMountedRef.current = true;
     initializeMap();
@@ -74,6 +76,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
+  // Fly to new center/zoom and update markers when filters change
   useEffect(() => {
     if (!map.current || !mapStyleLoaded) return;
 
@@ -90,20 +93,47 @@ const MapComponent: React.FC<MapComponentProps> = ({
     });
   }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
 
+  // Handle selected issue changes
   useEffect(() => {
-    if (selectedIssue) {
-      stopBlinking(markerElementsRef.current, selectedIssue);
-      startBlinking(selectedIssue, markerElementsRef.current);
-      const issue = mockIssues.find(issue => issue.id === selectedIssue);
-      if (issue && map.current) {
-        map.current.easeTo({
-          center: [issue.location.longitude, issue.location.latitude],
-          zoom: 15,
-        });
+    if (selectedIssue !== prevSelectedIssueRef.current) {
+      // Stop animation on previous selection
+      if (prevSelectedIssueRef.current) {
+        stopBlinking(markerElementsRef.current, prevSelectedIssueRef.current);
       }
+      
+      // Start animation on new selection
+      if (selectedIssue) {
+        console.log("Starting animation for:", selectedIssue);
+        const issue = mockIssues.find(issue => issue.id === selectedIssue);
+        
+        if (issue && map.current) {
+          map.current.easeTo({
+            center: [issue.location.longitude, issue.location.latitude],
+            zoom: 15,
+            duration: 1000,
+          });
+          
+          // Highlight the marker
+          startBlinking(selectedIssue, markerElementsRef.current);
+          
+          // Update selected issue data and open dialog
+          setSelectedIssueData(issue);
+          setIsDialogOpen(true);
+        }
+      }
+      
+      prevSelectedIssueRef.current = selectedIssue;
     }
-  }, [selectedIssue]);
+  }, [selectedIssue, stopBlinking, startBlinking]);
 
+  // Add markers when visible issues change
+  useEffect(() => {
+    if (mapStyleLoaded && map.current) {
+      addMarkers();
+    }
+  }, [visibleIssueIds, mapStyleLoaded]);
+
+  // Function to add markers to the map
   const addMarkers = () => {
     if (!map.current || !mapStyleLoaded) return;
 
@@ -125,6 +155,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       if (!shouldBeVisible) return;
 
       const handleIssueSelect = (selectedIssue: IssueData) => {
+        console.log("Issue selected:", selectedIssue.id);
         if (onSelectIssue) onSelectIssue(selectedIssue.id);
         setSelectedIssueData(selectedIssue);
         setIsDialogOpen(true);
@@ -132,6 +163,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           map.current.easeTo({
             center: [selectedIssue.location.longitude, selectedIssue.location.latitude],
             zoom: 15,
+            duration: 1000,
           });
         }
       };
@@ -146,13 +178,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
       markersRef.current[issue.id] = marker;
       markerElementsRef.current[issue.id] = element;
     });
-  };
-
-  useEffect(() => {
-    if (mapStyleLoaded && map.current) {
-      addMarkers();
+    
+    // Start blinking for selected issue if it exists
+    if (selectedIssue && markerElementsRef.current[selectedIssue]) {
+      startBlinking(selectedIssue, markerElementsRef.current);
     }
-  }, [visibleIssueIds, mapStyleLoaded]);
+  };
 
   return (
     <>

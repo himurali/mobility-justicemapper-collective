@@ -29,9 +29,6 @@ export interface IssueData {
   };
   createdAt: string;
   updatedAt: string;
-  upvotes: number;
-  downvotes: number;
-  severity: IssueSeverity;
 }
 
 export interface ForumPost {

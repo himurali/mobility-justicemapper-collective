@@ -1,14 +1,15 @@
-
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import "@/styles/mapbox.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { IssueCategory, IssueData } from "@/types";
 import { mockIssues } from "@/data/issueData";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
-import { useMapInitialization } from "@/hooks/map/useMapInitialization";
-import { useMarkerAnimation } from "@/hooks/useMarkerAnimation";
-import MapMarker from "@/components/map/MapMarker";
 
 interface MapComponentProps {
   center?: [number, number];
@@ -18,7 +19,6 @@ interface MapComponentProps {
   severityFilter?: string;
   onSelectIssue?: (issueId: string) => void;
   selectedTab?: string;
-  onVisibleIssuesChange?: (issueIds: string[]) => void;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -29,181 +29,242 @@ const MapComponent: React.FC<MapComponentProps> = ({
   severityFilter = "all",
   onSelectIssue,
   selectedTab = "video",
-  onVisibleIssuesChange,
 }) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
+  const blinkIntervalRef = useRef<number | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   const [activeTab, setActiveTab] = useState(selectedTab);
-  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
-  const isMountedRef = useRef(true);
-  const prevSelectedIssueRef = useRef<string | undefined>(undefined);
+  
+  const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
-  const {
-    mapContainer,
-    map,
-    mapStyleLoaded,
-    visibleIssueIds,
-    initializeMap,
-    updateMapSource,
-    cleanupMap,
-  } = useMapInitialization({
-    center,
-    zoom,
-    categoryFilter,
-    severityFilter,
-    onVisibleIssuesChange,
-    issues: mockIssues,
-  });
-
-  const { stopBlinking, startBlinking } = useMarkerAnimation();
-
-  // Update active tab when prop changes
   useEffect(() => {
     setActiveTab(selectedTab);
   }, [selectedTab]);
 
-  // Initialize map on component mount
-  useEffect(() => {
-    isMountedRef.current = true;
-    initializeMap();
+  const getCategoryColor = (category: string): string => {
+    switch (category) {
+      case "safety":
+        return "#ef4444";
+      case "traffic":
+        return "#f59e0b";
+      case "cycling":
+        return "#10b981";
+      case "sidewalks":
+        return "#6366f1";
+      case "accessibility":
+        return "#8b5cf6";
+      case "public_transport":
+        return "#0ea5e9";
+      default:
+        return "#64748b";
+    }
+  };
 
-    return () => {
-      isMountedRef.current = false;
-      stopBlinking(markerElementsRef.current, selectedIssue);
-      Object.values(markersRef.current).forEach(marker => marker.remove());
-      cleanupMap();
-    };
-  }, []);
+  const stopBlinking = () => {
+    if (blinkIntervalRef.current) {
+      window.clearInterval(blinkIntervalRef.current);
+      blinkIntervalRef.current = null;
+    }
 
-  // Fly to new center/zoom and update markers when filters change
-  useEffect(() => {
-    if (!map.current || !mapStyleLoaded) return;
-
-    // Fly to the new center and zoom
-    map.current.flyTo({ center, zoom, essential: true });
-
-    // Update map source and add markers
-    updateMapSource();
-    addMarkers();
-
-    // Handle map click to close dialog if clicking outside markers
-    map.current.on("click", () => {
-      setIsDialogOpen(false);
+    Object.entries(markerElementsRef.current).forEach(([issueId, element]) => {
+      const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
+      
+      const isSelected = issueId === selectedIssue;
+      
+      const scale = isSelected ? 'scale-150' : '';
+      const borderWidth = isSelected ? 'border-3' : 'border-2';
+      
+      if (element) {
+        element.innerHTML = `
+          <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md ${borderWidth} ${scale} transition-transform duration-300" 
+               style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
+            <div class="w-3 h-3 rounded-full" 
+                 style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
+          </div>
+        `;
+      }
     });
-  }, [center, zoom, categoryFilter, severityFilter, mapStyleLoaded]);
+  };
 
-  // Handle selected issue changes
-  useEffect(() => {
-    if (selectedIssue !== prevSelectedIssueRef.current) {
-      // Stop animation on previous selection
-      if (prevSelectedIssueRef.current) {
-        stopBlinking(markerElementsRef.current, prevSelectedIssueRef.current);
-      }
+  const startBlinking = (issueId: string) => {
+    if (!markerElementsRef.current[issueId]) return;
+    
+    const issueCategory = mockIssues.find(i => i.id === issueId)?.tags.find(tag => 
+      ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+    ) || "other";
+    
+    const color = getCategoryColor(issueCategory.toLowerCase());
+    let isLarge = true;
+    
+    blinkIntervalRef.current = window.setInterval(() => {
+      if (!markerElementsRef.current[issueId]) return;
       
-      // Start animation on new selection
-      if (selectedIssue) {
-        console.log("Starting animation for:", selectedIssue);
-        const issue = mockIssues.find(issue => issue.id === selectedIssue);
-        
-        if (issue && map.current) {
-          map.current.easeTo({
-            center: [issue.location.longitude, issue.location.latitude],
-            zoom: 15,
-            duration: 1000,
-          });
-          
-          // Highlight the marker
-          startBlinking(selectedIssue, markerElementsRef.current);
-          
-          // Update selected issue data and open dialog
-          setSelectedIssueData(issue);
-          setIsDialogOpen(true);
-        }
-      }
+      isLarge = !isLarge;
+      const scale = isLarge ? 'scale-150' : 'scale-125';
+      const glow = isLarge ? `box-shadow: 0 0 10px ${color}, 0 0 20px ${color}` : '';
       
-      prevSelectedIssueRef.current = selectedIssue;
-    }
-  }, [selectedIssue, stopBlinking, startBlinking]);
+      markerElementsRef.current[issueId].innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-3 ${scale} transition-transform duration-300" 
+             style="border-color: ${color}; ${glow}">
+          <div class="w-3 h-3 rounded-full" 
+               style="background-color: ${color}"></div>
+        </div>
+      `;
+    }, 500);
+  };
 
-  // Add markers when visible issues change
-  useEffect(() => {
-    if (mapStyleLoaded && map.current) {
-      addMarkers();
+  const initializeMap = () => {
+    if (map.current) return;
+    
+    try {
+      mapboxgl.accessToken = mapboxToken;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current!,
+        style: "mapbox://styles/mapbox/light-v10",
+        center: center,
+        zoom: zoom,
+      });
+  
+      map.current.addControl(
+        new mapboxgl.NavigationControl(),
+        "top-right"
+      );
+  
+      map.current.on("load", () => {
+        addMarkers();
+      });
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      toast({
+        title: "Map Error",
+        description: "Could not initialize the map. Please check your connection.",
+        variant: "destructive",
+      });
     }
-  }, [visibleIssueIds, mapStyleLoaded]);
+  };
 
-  // Function to add markers to the map
   const addMarkers = () => {
-    if (!map.current || !mapStyleLoaded) return;
+    if (!map.current) return;
 
-    // Clear existing markers
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
 
     const filteredIssues = mockIssues.filter(issue => {
-      const cityMatch = issue.city.toLowerCase() === "bangalore";
-      const categoryMatch = categoryFilter === "all" || issue.tags.includes(categoryFilter);
-      const severityMatch = severityFilter === "all" || issue.severity === severityFilter;
-      return cityMatch && categoryMatch && severityMatch;
+      const issueCategory = issue.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
+      
+      const issueSeverity = issue.tags.find(tag => 
+        ["low", "medium", "high"].includes(tag.toLowerCase())
+      ) || "medium";
+      
+      const categoryMatch = categoryFilter === "all" || 
+        (issueCategory.toLowerCase() === categoryFilter.toLowerCase());
+      const severityMatch = severityFilter === "all" || 
+        (issueSeverity.toLowerCase() === severityFilter.toLowerCase());
+        
+      return categoryMatch && severityMatch;
     });
 
     filteredIssues.forEach(issue => {
-      const shouldBeVisible = true; // Show all markers since clustering is disabled
+      const issueCategory = issue.tags.find(tag => 
+        ["safety", "traffic", "cycling", "sidewalks", "accessibility", "public_transport"].includes(tag.toLowerCase())
+      ) || "other";
       
-      if (!shouldBeVisible) return;
+      const isSelected = issue.id === selectedIssue;
+      
+      const markerElement = document.createElement("div");
+      markerElement.className = "cursor-pointer";
+      markerElement.innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
+             style="border-color: ${getCategoryColor(issueCategory.toLowerCase())}">
+          <div class="w-3 h-3 rounded-full" 
+               style="background-color: ${getCategoryColor(issueCategory.toLowerCase())}"></div>
+        </div>
+      `;
 
-      const handleIssueSelect = (selectedIssue: IssueData) => {
-        console.log("Issue selected:", selectedIssue.id);
-        if (onSelectIssue) onSelectIssue(selectedIssue.id);
-        setSelectedIssueData(selectedIssue);
-        setIsDialogOpen(true);
-        if (map.current) {
-          map.current.easeTo({
-            center: [selectedIssue.location.longitude, selectedIssue.location.latitude],
-            zoom: 15,
-            duration: 1000,
-          });
+      const marker = new mapboxgl.Marker(markerElement)
+        .setLngLat([issue.location.longitude, issue.location.latitude])
+        .addTo(map.current!);
+      
+      markerElement.addEventListener('click', () => {
+        if (onSelectIssue) {
+          onSelectIssue(issue.id);
         }
-      };
-
-      const { element, marker } = MapMarker({
-        issue,
-        map: map.current,
-        isSelected: issue.id === selectedIssue,
-        onClick: handleIssueSelect,
+        
+        setSelectedIssueData(issue);
+        setIsDialogOpen(true);
       });
 
       markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = element;
+      markerElementsRef.current[issue.id] = markerElement;
     });
-    
-    // Start blinking for selected issue if it exists
-    if (selectedIssue && markerElementsRef.current[selectedIssue]) {
-      startBlinking(selectedIssue, markerElementsRef.current);
+
+    if (selectedIssue && markersRef.current[selectedIssue]) {
+      map.current.flyTo({
+        center: markersRef.current[selectedIssue].getLngLat(),
+        zoom: 15,
+        essential: true
+      });
+      
+      stopBlinking();
+      startBlinking(selectedIssue);
     }
   };
 
+  useEffect(() => {
+    initializeMap();
+
+    return () => {
+      stopBlinking();
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (map.current) {
+      map.current.flyTo({
+        center: center,
+        zoom: zoom,
+        essential: true
+      });
+      addMarkers();
+    }
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
+
+  useEffect(() => {
+    stopBlinking();
+    
+    if (selectedIssue) {
+      startBlinking(selectedIssue);
+    }
+    
+    return () => stopBlinking();
+  }, [selectedIssue]);
+
   return (
     <>
-      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm relative">
-        {!mapStyleLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-lg">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        )}
-      </div>
-
+      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
+      
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
-          {selectedIssueData && (
-            <IssueDetail
-              issue={selectedIssueData}
-              onClose={() => setIsDialogOpen(false)}
-              initialTab={activeTab}
-            />
-          )}
+          <IssueDetail 
+            issue={selectedIssueData} 
+            onClose={() => setIsDialogOpen(false)} 
+            initialTab={activeTab}
+          />
         </DialogContent>
       </Dialog>
     </>

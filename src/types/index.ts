@@ -9,18 +9,15 @@ export interface IssueLocation {
 }
 
 export type IssueCategory = 
-  | 'pedestrian_infrastructure'
-  | 'cyclist_facilities'
-  | 'public_bus_transport'
-  | 'public_metro'
-  | 'high_risk_intersections'
-  | 'accessibility_issues'
-  | 'traffic_signal_compliance'
-  | 'green_spaces'
-  | 'pollution_hotspots'
+  | 'safety' 
+  | 'traffic' 
+  | 'cycling' 
+  | 'sidewalks' 
+  | 'accessibility' 
+  | 'public_transport'
   | 'other';
 
-export type IssueSeverity = 'critical' | 'moderate' | 'minor';
+export type IssueSeverity = 'low' | 'medium' | 'high';
 
 export interface City {
   id: string;

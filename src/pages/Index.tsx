@@ -1,22 +1,26 @@
+
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
 import { mockIssues } from "@/data/issueData";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { 
+  MapPin,
+  Filter,
+  Search
+} from "lucide-react";
 import CitySelector from "@/components/CitySelector";
 import IssueCard from "@/components/IssueCard";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
 import { IssueData } from "@/types";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import { useLocation } from "react-router-dom";
-import FilterBar from "@/components/FilterBar";
-import { useToast } from "@/components/ui/use-toast";
-import CustomFilter from "@/components/CustomFilter";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import NavTabs from "@/components/NavTabs";
 
+// Define the Bangalore city data
 const bangaloreCity: City = {
   id: "bangalore",
   name: "Bangalore",
@@ -24,6 +28,7 @@ const bangaloreCity: City = {
   zoom: 12,
 };
 
+// Create a cities array with Bangalore as the first city
 const cityOptions: City[] = [
   bangaloreCity,
   {
@@ -46,8 +51,23 @@ const cityOptions: City[] = [
   },
 ];
 
+// All possible tags for filtering
+const allTags = [
+  "safety", 
+  "traffic", 
+  "cycling", 
+  "sidewalks", 
+  "accessibility", 
+  "public_transport",
+  "infrastructure",
+  "pedestrian",
+  "urban_design",
+  "maintenance",
+  "commuting"
+];
+
 const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity);
+  const [selectedCity, setSelectedCity] = useState<City>(bangaloreCity); // Default to Bangalore
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | 'all'>('all');
   const [severityFilter, setSeverityFilter] = useState<IssueSeverity | 'all'>('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -55,47 +75,41 @@ const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
-  const [showMap, setShowMap] = useState(true);
-  const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
-  const [issues, setIssues] = useState<IssueData[]>(mockIssues);
-  const [showCustomFilter, setShowCustomFilter] = useState(false);
-  const [visibleIssueIds, setVisibleIssueIds] = useState<string[]>([]);
-  
   const selectedIssueRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
-  const { toast } = useToast();
 
+  // Filter issues based on selected city, category, severity, tags, and search query
   const filteredIssues = useMemo(() => {
-    let filtered = issues.filter(issue => {
+    return mockIssues.filter(issue => {
+      // Filter by city
       if (issue.city.toLowerCase() !== selectedCity.name.toLowerCase()) {
         return false;
       }
 
+      // Filter by category if not "all"
       if (categoryFilter !== 'all') {
-        const categoryNormalized = categoryFilter.toLowerCase().replace(/[_\s-]/g, '');
-        if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === categoryNormalized)) {
+        if (!issue.tags.includes(categoryFilter)) {
           return false;
         }
       }
 
+      // Filter by severity if not "all"
       if (severityFilter !== 'all') {
-        if (issue.severity !== severityFilter) {
+        if (!issue.tags.includes(severityFilter)) {
           return false;
         }
       }
 
+      // Filter by selected tags
       if (selectedTags.length > 0) {
-        const hasMatchingTag = selectedTags.some(selectedTag => {
-          const normalizedSelectedTag = selectedTag.toLowerCase().replace(/[_\s-]/g, '');
-          return issue.tags.some(tag => 
-            tag.toLowerCase().replace(/[_\s-]/g, '') === normalizedSelectedTag
-          );
-        });
+        const hasMatchingTag = selectedTags.some(tag => 
+          issue.tags.includes(tag)
+        );
         if (!hasMatchingTag) {
           return false;
         }
       }
 
+      // Filter by search query
       if (searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase();
         return (
@@ -106,85 +120,47 @@ const Index = () => {
 
       return true;
     });
+  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery]);
 
-    if (visibleIssueIds.length > 0) {
-      filtered = filtered.filter(issue => visibleIssueIds.includes(issue.id));
-    }
+  // Handle tag toggle
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
 
-    return filtered.sort((a, b) => {
-      if (sortBy === 'most_critical') {
-        const severityOrder = { 'critical': 0, 'moderate': 1, 'minor': 2 };
-        return severityOrder[a.severity as IssueSeverity] - severityOrder[b.severity as IssueSeverity];
-      } else if (sortBy === 'most_recent') {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      } else { // most_upvoted
-        return b.upvotes - a.upvotes;
-      }
-    });
-  }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery, issues, sortBy, visibleIssueIds]);
-
+  // Handle issue card click
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
     setIsDialogOpen(true);
   };
 
+  // Handle issue selection from map
   const handleSelectIssue = (issueId: string) => {
-    const issue = issues.find(i => i.id === issueId);
+    const issue = mockIssues.find(i => i.id === issueId);
     if (issue) {
       setSelectedIssue(issue);
     }
   };
 
-  const handleMapIssuesUpdate = (issueId: string) => {
-    handleSelectIssue(issueId);
-  };
-
-  const handleVisibleIssuesChange = (issueIds: string[]) => {
-    console.log("Visible issues changed:", issueIds.length);
-    setVisibleIssueIds(issueIds);
-  };
-
+  // Handle tab selection
   const handleTabSelect = (tab?: string) => {
     if (tab) {
       setActiveDialogTab(tab);
       
+      // If there's a selected issue, open the dialog with the selected tab
       if (selectedIssue) {
-        setIsDialogOpen(true);
-      } else if (filteredIssues.length > 0) {
-        setSelectedIssue(filteredIssues[0]);
         setIsDialogOpen(true);
       }
     }
   };
 
-  const handleUpvote = (id: string) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, upvotes: issue.upvotes + 1 } : issue
-    ));
-    toast({
-      title: "Upvoted",
-      description: "Thank you for your feedback!",
-      duration: 2000,
-    });
-  };
-
-  const handleDownvote = (id: string) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, downvotes: issue.downvotes + 1 } : issue
-    ));
-    toast({
-      title: "Downvoted",
-      description: "Thank you for your feedback!",
-      duration: 2000,
-    });
-  };
-
-  const toggleMapVisibility = () => {
-    setShowMap(prev => !prev);
-  };
-
+  // Scroll selected issue into view when it changes
   useEffect(() => {
     if (selectedIssue && selectedIssueRef.current) {
+      // Find the element with the issue ID
       const issueElement = document.getElementById(`issue-card-${selectedIssue.id}`);
       if (issueElement) {
         issueElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -192,98 +168,91 @@ const Index = () => {
     }
   }, [selectedIssue]);
 
-  useEffect(() => {
-    setVisibleIssueIds([]);
-  }, [selectedCity]);
-
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
       <Header />
+
+      {/* Hero section */}
       <Hero
         cities={cityOptions}
         selectedCity={selectedCity}
         onSelectCity={setSelectedCity}
       />
-      <div className="container mx-auto px-4 md:px-0 flex-1 flex flex-col">
-        <div className="relative mb-4">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search issues..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <FilterBar 
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          severityFilter={severityFilter}
-          setSeverityFilter={setSeverityFilter}
-          selectedTags={selectedTags}
-          setSelectedTags={setSelectedTags}
-          issueCount={filteredIssues.length}
-          showMap={showMap}
-          toggleMap={toggleMapVisibility}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          onShowCustomFilter={() => setShowCustomFilter(true)}
-        />
-        
-        <div className="flex-1 h-[calc(100vh-13rem)]">
-          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
-            <ResizablePanel defaultSize={50} minSize={30}>
-              <div className="h-full overflow-y-auto bg-sidebar" ref={selectedIssueRef}>
-                <div className="grid grid-cols-2 gap-2 p-2">
-                  {filteredIssues.length > 0 ? (
-                    filteredIssues.map(issue => (
-                      <div 
-                        key={issue.id} 
-                        id={`issue-card-${issue.id}`}
-                        className="col-span-1"
-                      >
-                        <IssueCard
-                          issue={issue}
-                          onClick={() => handleIssueClick(issue)}
-                          isSelected={selectedIssue?.id === issue.id}
-                          onUpvote={handleUpvote}
-                          onDownvote={handleDownvote}
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground col-span-2">
-                      {visibleIssueIds.length > 0 
-                        ? "Click on map clusters to see issues in that area" 
-                        : "No issues found matching your filters. Try clicking on map clusters to see issues."}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </ResizablePanel>
+      
+      {/* Navigation tabs */}
+      <div className="container mx-auto px-4 md:px-6 mt-4 mb-6">
+        <NavTabs onTabClick={handleTabSelect} />
+      </div>
+
+      <div className="container mx-auto px-4 md:px-6 flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col md:flex-row h-full">
+          {/* Left Sidebar */}
+          <div className="w-full md:w-96 bg-sidebar border-r p-4 flex flex-col h-[600px] md:h-auto overflow-hidden">
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search issues..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             
-            <ResizableHandle withHandle />
+            {/* Tag Filters */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {allTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? "secondary" : "outline"}
+                  className="text-sm rounded-full h-auto py-1"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag.replace('_', ' ')}
+                </Button>
+              ))}
+            </div>
             
-            <ResizablePanel defaultSize={50} minSize={30}>
-              {showMap && (
-                <div className="h-full">
-                  <MapComponent 
-                    center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
-                    zoom={selectedCity.zoom}
-                    categoryFilter={categoryFilter}
-                    severityFilter={severityFilter}
-                    selectedIssue={selectedIssue?.id}
-                    onSelectIssue={handleMapIssuesUpdate}
-                    selectedTab={activeDialogTab}
-                    onVisibleIssuesChange={handleVisibleIssuesChange}
-                  />
+            {/* Issue Cards */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2" ref={selectedIssueRef}>
+              {filteredIssues.length > 0 ? (
+                filteredIssues.map(issue => (
+                  <div 
+                    key={issue.id} 
+                    id={`issue-card-${issue.id}`}
+                  >
+                    <IssueCard
+                      issue={issue}
+                      onClick={() => handleIssueClick(issue)}
+                      isSelected={selectedIssue?.id === issue.id}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No issues found matching your filters
                 </div>
               )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </div>
+          </div>
+          
+          {/* Map Area */}
+          <div className="flex-1 relative h-[400px] md:h-auto">
+            <MapComponent 
+              center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
+              zoom={selectedCity.zoom}
+              categoryFilter={categoryFilter}
+              severityFilter={severityFilter}
+              selectedIssue={selectedIssue?.id}
+              onSelectIssue={handleSelectIssue}
+              selectedTab={activeDialogTab}
+            />
+          </div>
         </div>
       </div>
       
+      {/* Issue Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
           {selectedIssue && (
@@ -295,18 +264,6 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
-      
-      <CustomFilter
-        open={showCustomFilter}
-        onClose={() => setShowCustomFilter(false)}
-        selectedCity={selectedCity}
-        cityOptions={cityOptions}
-        onSelectCity={setSelectedCity}
-        selectedTags={selectedTags}
-        onTagsChange={setSelectedTags}
-        severityFilter={severityFilter}
-        onSeverityChange={setSeverityFilter}
-      />
     </div>
   );
 };

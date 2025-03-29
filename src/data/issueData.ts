@@ -1,45 +1,9 @@
+
 import { IssueData, ForumPost } from "@/types/issueData";
-import { IssueSeverity } from "@/types";
 
 export const cities = ['All Cities', 'Toronto', 'Vancouver', 'Montreal', 'Ottawa', 'Calgary', 'Bangalore'];
 
-export const mobilityCategories = [
-  {
-    id: 'active_mobility',
-    name: 'Active Mobility',
-    subcategories: [
-      { id: 'pedestrian_infrastructure', name: '🚶 Pedestrian Infrastructure', description: 'Footpaths, crossings' },
-      { id: 'cyclist_facilities', name: '🚴 Cyclist Facilities', description: 'Bike lanes, cycle parking' }
-    ]
-  },
-  {
-    id: 'public_transport',
-    name: 'Public Transport',
-    subcategories: [
-      { id: 'public_bus_transport', name: '🚌 Public Bus Transport', description: 'Bus stops, BRT corridors' },
-      { id: 'public_metro', name: '🚆 Public Metro', description: 'Stations, last-mile connectivity' }
-    ]
-  },
-  {
-    id: 'road_safety',
-    name: 'Road Safety & Accessibility',
-    subcategories: [
-      { id: 'high_risk_intersections', name: '⚠️ High-Risk Intersections', description: 'Accident-prone areas' },
-      { id: 'accessibility_issues', name: '♿ Accessibility Issues', description: 'Barriers for disabled people' },
-      { id: 'traffic_signal_compliance', name: '🚦 Traffic Signal Compliance', description: 'Zebra crossings, signals' }
-    ]
-  },
-  {
-    id: 'environmental',
-    name: 'Environmental Factors',
-    subcategories: [
-      { id: 'green_spaces', name: '🌳 Green Spaces', description: 'Parks, walkable areas' },
-      { id: 'pollution_hotspots', name: '🌫️ Pollution Hotspots', description: 'AQI data integration' }
-    ]
-  }
-];
-
-const baseMockIssues: IssueData[] = [
+export const mockIssues: IssueData[] = [
   // Bangalore issues
   {
     id: '6',
@@ -74,7 +38,7 @@ const baseMockIssues: IssueData[] = [
         type: 'pdf'
       }
     ],
-    tags: ['high_risk_intersections', 'traffic_signal_compliance', 'pedestrian_infrastructure'],
+    tags: ['Safety', 'Traffic', 'Pedestrian', 'Infrastructure'],
     justiceChampion: {
       id: 'user16',
       name: 'Priya Patel',
@@ -82,10 +46,7 @@ const baseMockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-02-10T09:30:00Z',
-    updatedAt: '2025-02-15T14:20:00Z',
-    upvotes: 24,
-    downvotes: 3,
-    severity: 'critical' as IssueSeverity
+    updatedAt: '2025-02-15T14:20:00Z'
   },
   {
     id: '7',
@@ -114,7 +75,7 @@ const baseMockIssues: IssueData[] = [
       }
     ],
     documents: [],
-    tags: ['cyclist_facilities', 'green_spaces', 'road_safety'],
+    tags: ['Cycling', 'Infrastructure', 'Safety', 'Urban Design'],
     justiceChampion: {
       id: 'user17',
       name: 'Vikram Menon',
@@ -122,10 +83,7 @@ const baseMockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-01-25T11:45:00Z',
-    updatedAt: '2025-02-05T10:30:00Z',
-    upvotes: 37,
-    downvotes: 5,
-    severity: 'moderate' as IssueSeverity
+    updatedAt: '2025-02-05T10:30:00Z'
   },
   {
     id: '8',
@@ -165,7 +123,7 @@ const baseMockIssues: IssueData[] = [
         type: 'pdf'
       }
     ],
-    tags: ['pedestrian_infrastructure', 'accessibility_issues'],
+    tags: ['Pedestrian', 'Sidewalks', 'Accessibility', 'Maintenance'],
     justiceChampion: {
       id: 'user20',
       name: 'Meera Iyer',
@@ -173,10 +131,7 @@ const baseMockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-03-05T08:15:00Z',
-    updatedAt: '2025-03-10T16:40:00Z',
-    upvotes: 42,
-    downvotes: 8,
-    severity: 'critical' as IssueSeverity
+    updatedAt: '2025-03-10T16:40:00Z'
   },
   {
     id: '9',
@@ -211,7 +166,7 @@ const baseMockIssues: IssueData[] = [
         type: 'pdf'
       }
     ],
-    tags: ['public_bus_transport', 'public_metro', 'pollution_hotspots'],
+    tags: ['Public Transit', 'Traffic', 'Infrastructure', 'Commuting'],
     justiceChampion: {
       id: 'user22',
       name: 'Lakshmi Rao',
@@ -219,63 +174,9 @@ const baseMockIssues: IssueData[] = [
       avatarUrl: ''
     },
     createdAt: '2025-02-20T13:10:00Z',
-    updatedAt: '2025-03-01T09:25:00Z',
-    upvotes: 56,
-    downvotes: 7,
-    severity: 'moderate' as IssueSeverity
+    updatedAt: '2025-03-01T09:25:00Z'
   }
 ];
-
-const generateAdditionalIssues = (): IssueData[] => {
-  const additionalIssues: IssueData[] = [];
-  
-  const templates = baseMockIssues;
-  const issueTypes = [
-    'Broken Traffic Light',
-    'Missing Pedestrian Crossing',
-    'Unsafe Bike Lane',
-    'Poor Road Conditions',
-    'Inaccessible Bus Stop',
-    'Flooding Prone Area',
-    'Traffic Congestion Hotspot',
-    'Missing Street Lights',
-    'Poorly Designed Intersection',
-    'Narrow Sidewalk',
-    'Lack of Wheelchair Access'
-  ];
-  
-  const totalNeeded = Math.max(0, 15 - baseMockIssues.length);
-  
-  for (let i = 0; i < totalNeeded; i++) {
-    const baseIssue = templates[i % templates.length];
-    const issueType = issueTypes[i % issueTypes.length];
-    
-    const latVariation = (Math.random() - 0.5) * 0.05;
-    const lngVariation = (Math.random() - 0.5) * 0.05;
-    
-    additionalIssues.push({
-      ...baseIssue,
-      id: `generated-${i+10}`,
-      title: `${issueType} at ${baseIssue.location.address.split(',')[0]} Area ${i+1}`,
-      description: `This ${issueType.toLowerCase()} issue needs urgent attention as it affects daily commuters.`,
-      location: {
-        ...baseIssue.location,
-        latitude: baseIssue.location.latitude + latVariation,
-        longitude: baseIssue.location.longitude + lngVariation,
-        address: `${issueType} Location ${i+1}, ${baseIssue.city}`
-      },
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString(),
-      upvotes: Math.floor(Math.random() * 50),
-      downvotes: Math.floor(Math.random() * 10),
-      severity: ['critical', 'moderate', 'minor'][Math.floor(Math.random() * 3)] as IssueSeverity
-    });
-  }
-  
-  return additionalIssues;
-};
-
-export const mockIssues: IssueData[] = [...baseMockIssues, ...generateAdditionalIssues()];
 
 export const mockForumPosts: ForumPost[] = [
   {

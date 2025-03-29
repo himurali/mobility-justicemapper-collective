@@ -250,10 +250,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   useEffect(() => {
     if (map.current) {
+      console.log("Map updating with center:", center, "zoom:", zoom);
       map.current.flyTo({
         center: center,
         zoom: zoom,
-        essential: true
+        essential: true,
+        duration: 1500
       });
       addMarkers();
     }

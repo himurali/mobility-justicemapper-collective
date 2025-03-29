@@ -1,3 +1,4 @@
+
 import { IssueData, ForumPost } from "@/types/issueData";
 import { IssueSeverity } from "@/types";
 
@@ -223,6 +224,354 @@ export const mockIssues: IssueData[] = [
     upvotes: 56,
     downvotes: 7,
     severity: 'moderate' as IssueSeverity
+  },
+  
+  // Delhi Issues
+  {
+    id: '10',
+    title: 'Congested Metro Stations',
+    description: 'Rajiv Chowk and Kashmere Gate metro stations are severely overcrowded during peak hours, creating safety hazards.',
+    solution: 'Implement better crowd management systems and increase the frequency of trains during rush hours.',
+    videoUrl: 'https://www.youtube.com/watch?v=delhi1',
+    city: 'Delhi',
+    location: {
+      latitude: 28.6330,
+      longitude: 77.2195,
+      address: 'Rajiv Chowk Metro Station, Delhi'
+    },
+    communityMembers: [
+      {
+        id: 'user23',
+        name: 'Amit Singh',
+        role: 'Daily Commuter',
+        avatarUrl: ''
+      },
+      {
+        id: 'user24',
+        name: 'Neha Gupta',
+        role: 'Urban Transport Researcher',
+        avatarUrl: ''
+      }
+    ],
+    documents: [
+      {
+        name: 'Crowd Analysis.pdf',
+        url: '#',
+        type: 'pdf'
+      }
+    ],
+    tags: ['public_metro', 'accessibility_issues'],
+    justiceChampion: {
+      id: 'user24',
+      name: 'Neha Gupta',
+      role: 'Urban Transport Researcher',
+      avatarUrl: ''
+    },
+    createdAt: '2025-01-15T08:30:00Z',
+    updatedAt: '2025-01-20T16:45:00Z',
+    upvotes: 87,
+    downvotes: 5,
+    severity: 'critical' as IssueSeverity
+  },
+  {
+    id: '11',
+    title: 'Air Pollution at Major Intersections',
+    description: 'ITO and Connaught Place intersections have dangerously high levels of air pollution affecting pedestrians and street vendors.',
+    solution: 'Install air purifiers at major intersections and implement vehicle pollution checks more strictly.',
+    videoUrl: 'https://www.youtube.com/watch?v=delhi2',
+    city: 'Delhi',
+    location: {
+      latitude: 28.6292,
+      longitude: 77.2410,
+      address: 'ITO Crossing, Delhi'
+    },
+    communityMembers: [
+      {
+        id: 'user25',
+        name: 'Dr. Rajesh Mehta',
+        role: 'Environmental Health Expert',
+        avatarUrl: ''
+      }
+    ],
+    documents: [
+      {
+        name: 'Air Quality Report.pdf',
+        url: '#',
+        type: 'pdf'
+      }
+    ],
+    tags: ['pollution_hotspots', 'pedestrian_infrastructure'],
+    justiceChampion: {
+      id: 'user25',
+      name: 'Dr. Rajesh Mehta',
+      role: 'Environmental Health Expert',
+      avatarUrl: ''
+    },
+    createdAt: '2025-03-01T10:20:00Z',
+    updatedAt: '2025-03-15T09:10:00Z',
+    upvotes: 103,
+    downvotes: 12,
+    severity: 'critical' as IssueSeverity
+  },
+  {
+    id: '12',
+    title: 'Lack of Cycling Infrastructure in Central Delhi',
+    description: 'Central Delhi lacks safe cycling lanes, discouraging eco-friendly commuting options.',
+    solution: 'Develop dedicated cycling lanes connecting major landmarks and residential areas in Central Delhi.',
+    videoUrl: 'https://www.youtube.com/watch?v=delhi3',
+    city: 'Delhi',
+    location: {
+      latitude: 28.6129,
+      longitude: 77.2295,
+      address: 'Central Delhi, New Delhi'
+    },
+    communityMembers: [
+      {
+        id: 'user26',
+        name: 'Sanjay Verma',
+        role: 'Cycling Advocate',
+        avatarUrl: ''
+      }
+    ],
+    documents: [],
+    tags: ['cyclist_facilities', 'green_spaces'],
+    justiceChampion: {
+      id: 'user26',
+      name: 'Sanjay Verma',
+      role: 'Cycling Advocate',
+      avatarUrl: ''
+    },
+    createdAt: '2025-02-05T14:50:00Z',
+    updatedAt: '2025-02-20T11:30:00Z',
+    upvotes: 45,
+    downvotes: 8,
+    severity: 'moderate' as IssueSeverity
+  },
+  
+  // Mumbai Issues
+  {
+    id: '13',
+    title: 'Overcrowded Local Trains',
+    description: 'Mumbai local trains are dangerously overcrowded, especially on the Western and Central lines during peak hours.',
+    solution: 'Increase train frequency and implement better crowd management systems at major stations.',
+    videoUrl: 'https://www.youtube.com/watch?v=mumbai1',
+    city: 'Mumbai',
+    location: {
+      latitude: 19.0821,
+      longitude: 72.8416,
+      address: 'Dadar Station, Mumbai'
+    },
+    communityMembers: [
+      {
+        id: 'user27',
+        name: 'Prakash Joshi',
+        role: 'Railway Safety Activist',
+        avatarUrl: ''
+      }
+    ],
+    documents: [
+      {
+        name: 'Railway Safety Audit.pdf',
+        url: '#',
+        type: 'pdf'
+      }
+    ],
+    tags: ['public_metro', 'accessibility_issues'],
+    justiceChampion: {
+      id: 'user27',
+      name: 'Prakash Joshi',
+      role: 'Railway Safety Activist',
+      avatarUrl: ''
+    },
+    createdAt: '2025-01-10T09:15:00Z',
+    updatedAt: '2025-01-25T16:40:00Z',
+    upvotes: 119,
+    downvotes: 7,
+    severity: 'critical' as IssueSeverity
+  },
+  {
+    id: '14',
+    title: 'Flooding on Major Roads',
+    description: 'Several major roads in Mumbai, including S.V. Road and LBS Marg, regularly flood during monsoon season, disrupting transportation.',
+    solution: 'Improve drainage systems and implement better water management protocols during heavy rainfall.',
+    videoUrl: 'https://www.youtube.com/watch?v=mumbai2',
+    city: 'Mumbai',
+    location: {
+      latitude: 19.0760,
+      longitude: 72.8777,
+      address: 'S.V. Road, Mumbai'
+    },
+    communityMembers: [
+      {
+        id: 'user28',
+        name: 'Anjali Patil',
+        role: 'Urban Infrastructure Specialist',
+        avatarUrl: ''
+      }
+    ],
+    documents: [],
+    tags: ['pedestrian_infrastructure', 'high_risk_intersections'],
+    justiceChampion: {
+      id: 'user28',
+      name: 'Anjali Patil',
+      role: 'Urban Infrastructure Specialist',
+      avatarUrl: ''
+    },
+    createdAt: '2025-03-05T11:30:00Z',
+    updatedAt: '2025-03-20T09:45:00Z',
+    upvotes: 81,
+    downvotes: 5,
+    severity: 'critical' as IssueSeverity
+  },
+  {
+    id: '15',
+    title: 'Inadequate Pedestrian Bridges',
+    description: 'Pedestrian bridges at key locations like Bandra and Andheri are insufficient for the volume of pedestrians, causing safety concerns.',
+    solution: 'Widen existing foot-over bridges and construct additional pedestrian crossings at high-traffic areas.',
+    videoUrl: 'https://www.youtube.com/watch?v=mumbai3',
+    city: 'Mumbai',
+    location: {
+      latitude: 19.0596,
+      longitude: 72.8295,
+      address: 'Bandra Station, Mumbai'
+    },
+    communityMembers: [
+      {
+        id: 'user29',
+        name: 'Rohan Desai',
+        role: 'Pedestrian Safety Advocate',
+        avatarUrl: ''
+      }
+    ],
+    documents: [
+      {
+        name: 'Pedestrian Flow Analysis.pdf',
+        url: '#',
+        type: 'pdf'
+      }
+    ],
+    tags: ['pedestrian_infrastructure', 'accessibility_issues'],
+    justiceChampion: {
+      id: 'user29',
+      name: 'Rohan Desai',
+      role: 'Pedestrian Safety Advocate',
+      avatarUrl: ''
+    },
+    createdAt: '2025-02-15T13:20:00Z',
+    updatedAt: '2025-03-01T10:15:00Z',
+    upvotes: 63,
+    downvotes: 9,
+    severity: 'moderate' as IssueSeverity
+  },
+  
+  // Chennai Issues
+  {
+    id: '16',
+    title: 'Poor Road Conditions in T. Nagar',
+    description: 'T. Nagar, a major commercial area, has deteriorating road conditions with potholes and uneven surfaces.',
+    solution: 'Implement regular road maintenance schedule and use higher quality materials for road construction.',
+    videoUrl: 'https://www.youtube.com/watch?v=chennai1',
+    city: 'Chennai',
+    location: {
+      latitude: 13.0418,
+      longitude: 80.2341,
+      address: 'T. Nagar, Chennai'
+    },
+    communityMembers: [
+      {
+        id: 'user30',
+        name: 'Karthik Raman',
+        role: 'Local Business Association Leader',
+        avatarUrl: ''
+      }
+    ],
+    documents: [],
+    tags: ['pedestrian_infrastructure', 'accessibility_issues'],
+    justiceChampion: {
+      id: 'user30',
+      name: 'Karthik Raman',
+      role: 'Local Business Association Leader',
+      avatarUrl: ''
+    },
+    createdAt: '2025-01-20T10:45:00Z',
+    updatedAt: '2025-02-05T15:30:00Z',
+    upvotes: 53,
+    downvotes: 7,
+    severity: 'moderate' as IssueSeverity
+  },
+  {
+    id: '17',
+    title: 'Insufficient Bus Services to Suburbs',
+    description: 'Chennai suburbs like Tambaram and Chromepet have inadequate bus services, especially during non-peak hours.',
+    solution: 'Increase bus frequency to suburbs and introduce mini-buses for better connectivity to metro stations.',
+    videoUrl: 'https://www.youtube.com/watch?v=chennai2',
+    city: 'Chennai',
+    location: {
+      latitude: 12.9247,
+      longitude: 80.1252,
+      address: 'Tambaram, Chennai'
+    },
+    communityMembers: [
+      {
+        id: 'user31',
+        name: 'Priya Sundaram',
+        role: 'Public Transport User Group Representative',
+        avatarUrl: ''
+      }
+    ],
+    documents: [
+      {
+        name: 'Suburban Connectivity Report.pdf',
+        url: '#',
+        type: 'pdf'
+      }
+    ],
+    tags: ['public_bus_transport', 'public_metro'],
+    justiceChampion: {
+      id: 'user31',
+      name: 'Priya Sundaram',
+      role: 'Public Transport User Group Representative',
+      avatarUrl: ''
+    },
+    createdAt: '2025-02-25T09:10:00Z',
+    updatedAt: '2025-03-10T14:25:00Z',
+    upvotes: 74,
+    downvotes: 6,
+    severity: 'critical' as IssueSeverity
+  },
+  {
+    id: '18',
+    title: 'Lack of Cycling Lanes Along East Coast Road',
+    description: 'East Coast Road, a scenic route, lacks dedicated cycling lanes despite being popular among recreational cyclists.',
+    solution: 'Develop dedicated cycling tracks along East Coast Road with proper safety barriers from motorized traffic.',
+    videoUrl: 'https://www.youtube.com/watch?v=chennai3',
+    city: 'Chennai',
+    location: {
+      latitude: 12.9850,
+      longitude: 80.2707,
+      address: 'East Coast Road, Chennai'
+    },
+    communityMembers: [
+      {
+        id: 'user32',
+        name: 'Venkat Krishnan',
+        role: 'Cycling Club Coordinator',
+        avatarUrl: ''
+      }
+    ],
+    documents: [],
+    tags: ['cyclist_facilities', 'green_spaces'],
+    justiceChampion: {
+      id: 'user32',
+      name: 'Venkat Krishnan',
+      role: 'Cycling Club Coordinator',
+      avatarUrl: ''
+    },
+    createdAt: '2025-03-01T11:20:00Z',
+    updatedAt: '2025-03-15T10:05:00Z',
+    upvotes: 47,
+    downvotes: 5,
+    severity: 'minor' as IssueSeverity
   }
 ];
 

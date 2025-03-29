@@ -60,10 +60,21 @@ const Index = () => {
   const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
   const [issues, setIssues] = useState<IssueData[]>(mockIssues);
   const [showCustomFilter, setShowCustomFilter] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(selectedCity.coordinates);
+  const [mapZoom, setMapZoom] = useState<number>(selectedCity.zoom);
   
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Update map when selected city changes
+    setMapCenter(selectedCity.coordinates);
+    setMapZoom(selectedCity.zoom);
+    
+    // Clear the selected issue when changing cities
+    setSelectedIssue(null);
+  }, [selectedCity]);
 
   const filteredIssues = useMemo(() => {
     let filtered = issues.filter(issue => {
@@ -122,13 +133,31 @@ const Index = () => {
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
     setIsDialogOpen(true);
+    
+    // When an issue is clicked, update the map center to focus on it
+    setMapCenter([issue.location.longitude, issue.location.latitude]);
+    setMapZoom(15);
   };
 
   const handleSelectIssue = (issueId: string) => {
     const issue = issues.find(i => i.id === issueId);
     if (issue) {
       setSelectedIssue(issue);
+      
+      // Also update map center when issue is selected from map
+      setMapCenter([issue.location.longitude, issue.location.latitude]);
+      setMapZoom(15);
     }
+  };
+
+  const handleCitySelect = (city: City) => {
+    console.log("Selected city:", city.name);
+    setSelectedCity(city);
+    toast({
+      title: `Viewing ${city.name}`,
+      description: `Showing mobility issues in ${city.name}`,
+      duration: 2000,
+    });
   };
 
   const handleTabSelect = (tab?: string) => {
@@ -185,7 +214,7 @@ const Index = () => {
       <Hero
         cities={cityOptions}
         selectedCity={selectedCity}
-        onSelectCity={setSelectedCity}
+        onSelectCity={handleCitySelect}
       />
       <div className="container mx-auto px-4 md:px-0 flex-1 flex flex-col">
         <div className="relative mb-4">
@@ -249,8 +278,8 @@ const Index = () => {
               {showMap && (
                 <div className="h-full">
                   <MapComponent 
-                    center={[selectedCity.coordinates[0], selectedCity.coordinates[1]]}
-                    zoom={selectedCity.zoom}
+                    center={mapCenter}
+                    zoom={mapZoom}
                     categoryFilter={categoryFilter}
                     severityFilter={severityFilter}
                     selectedIssue={selectedIssue?.id}
@@ -281,7 +310,7 @@ const Index = () => {
         onClose={() => setShowCustomFilter(false)}
         selectedCity={selectedCity}
         cityOptions={cityOptions}
-        onSelectCity={setSelectedCity}
+        onSelectCity={handleCitySelect}
         selectedTags={selectedTags}
         onTagsChange={setSelectedTags}
         severityFilter={severityFilter}

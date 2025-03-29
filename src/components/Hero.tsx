@@ -47,12 +47,20 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
                 </div>
               </div>
               
-              <Button 
-                className="bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-2"
-              >
-                <AlertTriangle size={16} />
-                Report Injustice
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  className="bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-2"
+                >
+                  <AlertTriangle size={16} />
+                  Report Injustice
+                </Button>
+                <Button 
+                  variant="secondary"
+                  className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium"
+                >
+                  Sign In
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -62,3 +70,4 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
 };
 
 export default Hero;
+

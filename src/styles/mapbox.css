@@ -95,13 +95,55 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.marker-tooltip {
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: none;
-  z-index: 10;
+/* Marker container styling */
+.marker-container {
+  position: relative;
 }
 
-.marker-container:hover .marker-tooltip {
-  opacity: 1;
+.marker-tooltip {
+  transition: opacity 0.2s;
+}
+
+.marker-tooltip.hidden {
+  opacity: 0;
+}
+
+.marker-inner:hover {
+  z-index: 20;
+}
+
+/* Ensure clusters are styled appropriately */
+.mapboxgl-marker.cluster {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cluster style overrides */
+.mapboxgl-canvas div[style*="border-radius: 50%"] {
+  background: #3b82f6 !important;
+  border: 2px solid white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Make sure navigation controls work */
+.mapboxgl-ctrl-group button.mapboxgl-ctrl-zoom-in,
+.mapboxgl-ctrl-group button.mapboxgl-ctrl-zoom-out {
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: none !important;
+  background-color: white !important;
+  pointer-events: auto !important;
 }

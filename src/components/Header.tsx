@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { PlusCircle, Map, List, Info, Menu, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -34,7 +34,7 @@ const Header: React.FC = () => {
         </Button>
       </Link>
       <Link to="/signin">
-        <Button variant="secondary" className="bg-yellow-400 text-purple-800 hover:bg-yellow-300 font-medium">
+        <Button variant="secondary" className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium">
           Sign In
         </Button>
       </Link>
@@ -46,15 +46,15 @@ const Header: React.FC = () => {
       <div className="container flex items-center justify-between h-16 mx-auto px-4 md:px-6">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-full bg-yellow-400 h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+            <div className="rounded-full bg-yellow-300 h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
               <img 
-                src="/lovable-uploads/aedeae24-5c3f-4111-80ea-4046aed9bc3d.png" 
+                src="/lovable-uploads/0c33469e-5edc-45f1-94c0-2ff47e135e34.png" 
                 alt="JUMP Logo" 
                 className="h-7 w-7"
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold text-yellow-400 tracking-tight">
+              <h1 className="text-2xl font-bold text-yellow-300 tracking-tight">
                 JUMP
               </h1>
               <span className="text-xs text-yellow-100 leading-none font-medium">
@@ -72,9 +72,9 @@ const Header: React.FC = () => {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="bg-purple-800">
+            <SheetContent className="bg-purple-900">
               <SheetHeader className="text-left">
-                <SheetTitle className="text-yellow-400">JUMP Platform</SheetTitle>
+                <SheetTitle className="text-yellow-300">JUMP Platform</SheetTitle>
                 <SheetDescription className="text-yellow-100">
                   Justice+ Urban Mobility Platform
                 </SheetDescription>

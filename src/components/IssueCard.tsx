@@ -61,14 +61,14 @@ const IssueCard: React.FC<IssueCardProps> = ({
     <Card 
       className={`mb-2 cursor-pointer transition-all duration-300 h-full ${
         isSelected 
-          ? "border-jump-purple border-2 bg-purple-50 shadow-md" 
-          : "hover:border-jump-purple jump-card"
+          ? "border-primary border-2 bg-primary/5 shadow-md" 
+          : "hover:border-primary"
       }`}
       onClick={onClick}
     >
       <CardHeader className="pb-1 pt-2 px-3">
         <div className="flex justify-between items-start gap-1">
-          <CardTitle className="text-sm text-purple-800 font-medium line-clamp-1 flex-1">
+          <CardTitle className="text-sm text-primary font-medium line-clamp-1 flex-1">
             {issue.title}
           </CardTitle>
           <Badge className={cn(
@@ -97,7 +97,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         </p>
         
         {visibleTag && (
-          <Badge variant="secondary" className="text-[10px] flex items-center mb-2 bg-yellow-100 text-purple-800">
+          <Badge variant="secondary" className="text-[10px] flex items-center mb-2">
             <span className="mr-1">{getCategoryEmoji(visibleTag)}</span>
             {formatCategoryName(visibleTag)}
           </Badge>

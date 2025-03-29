@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "@/styles/mapbox.css";
@@ -6,7 +5,7 @@ import { IssueCategory, IssueData } from "@/types";
 import { mockIssues } from "@/data/issueData";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
-import { useMapInitialization } from "@/hooks/useMapInitialization";
+import { useMapInitialization } from "@/hooks/map/useMapInitialization";
 import { useMarkerAnimation } from "@/hooks/useMarkerAnimation";
 import MapMarker from "@/components/map/MapMarker";
 

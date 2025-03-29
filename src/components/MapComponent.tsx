@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -54,6 +53,15 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     setActiveTab(selectedTab);
   }, [selectedTab]);
+
+  useEffect(() => {
+    if (selectedIssue) {
+      const issue = mockIssues.find(i => i.id === selectedIssue);
+      if (issue) {
+        setSelectedIssueData(issue);
+      }
+    }
+  }, [selectedIssue]);
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -179,6 +187,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   };
 
+  const handleMarkerClick = (issue: IssueData) => {
+    console.log(`Marker clicked: ${issue.id}`);
+    
+    if (onSelectIssue) {
+      onSelectIssue(issue.id);
+    }
+    
+    setSelectedIssueData(issue);
+    setIsDialogOpen(true);
+  };
+
   const addMarkers = () => {
     if (!map.current) return;
 
@@ -187,13 +206,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
     markerElementsRef.current = {};
 
     const filteredIssues = mockIssues.filter(issue => {
-      // Filter by category if specified
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) return false;
       }
       
-      // Filter by severity if specified
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
         return false;
       }
@@ -223,17 +240,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
         .setLngLat([issue.location.longitude, issue.location.latitude])
         .addTo(map.current!);
       
-      markerElement.addEventListener('click', () => {
-        console.log(`Marker clicked: ${issue.id}`);
-        
-        // Call the onSelectIssue callback to update the selected issue in the parent component
-        if (onSelectIssue) {
-          onSelectIssue(issue.id);
-        }
-        
-        // Also update the local state for the dialog
-        setSelectedIssueData(issue);
-        setIsDialogOpen(true);
+      markerWrapper.addEventListener('click', () => {
+        handleMarkerClick(issue);
       });
 
       markersRef.current[issue.id] = marker;
@@ -285,6 +293,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
     return () => stopBlinking();
   }, [selectedIssue]);
 
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+  };
+
   return (
     <TooltipProvider>
       <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm">
@@ -309,11 +321,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
-          <IssueDetail 
-            issue={selectedIssueData} 
-            onClose={() => setIsDialogOpen(false)} 
-            initialTab={activeTab}
-          />
+          {selectedIssueData && (
+            <IssueDetail 
+              issue={selectedIssueData} 
+              onClose={handleDialogClose} 
+              initialTab={activeTab}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </TooltipProvider>

@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -12,10 +13,28 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em rgba(101, 31, 255, 0.6));
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em rgba(101, 31, 255, 0.6));
+}
+
+.jump-gradient-text {
+  background: linear-gradient(90deg, #5d3fd3 0%, #9366e8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.jump-card {
+  border: 1px solid rgba(237, 233, 254, 0.5);
+  box-shadow: 0 4px 12px rgba(93, 63, 211, 0.08);
+  transition: all 0.3s ease;
+}
+
+.jump-card:hover {
+  box-shadow: 0 8px 16px rgba(93, 63, 211, 0.12);
+  transform: translateY(-2px);
 }
 
 @keyframes logo-spin {

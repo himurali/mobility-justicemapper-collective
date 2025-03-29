@@ -69,6 +69,9 @@ export default {
 					slate: '#64748b',
 					yellow: '#fbbf24',
 					red: '#ef4444',
+					// Add JUMP logo colors
+					purple: '#5D3FD3', // Main purple from logo
+					brightYellow: '#FFE11A', // Bright yellow from logo
 				}
 			},
 			borderRadius: {

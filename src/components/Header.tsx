@@ -19,22 +19,22 @@ const Header: React.FC = () => {
   const NavLinks = () => (
     <>
       <Link to="/about">
-        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
           About
         </Button>
       </Link>
       <Link to="/resources">
-        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
           Resources
         </Button>
       </Link>
       <Link to="/register">
-        <Button variant="ghost" className="text-white hover:text-white hover:bg-indigo-700">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
           Register
         </Button>
       </Link>
       <Link to="/signin">
-        <Button variant="secondary" className="bg-white text-indigo-700 hover:bg-gray-100">
+        <Button variant="secondary" className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium">
           Sign In
         </Button>
       </Link>
@@ -42,30 +42,22 @@ const Header: React.FC = () => {
   );
 
   return (
-    <header className="bg-gradient-to-r from-indigo-800 to-indigo-600 sticky top-0 z-10 shadow-md">
+    <header className="bg-purple-800 sticky top-0 z-10 shadow-md">
       <div className="container flex items-center justify-between h-16 mx-auto px-4 md:px-6">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-full bg-white h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-              <svg 
-                viewBox="0 0 24 24" 
-                width="24" 
-                height="24" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                fill="none" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="text-indigo-600"
-              >
-                <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
-              </svg>
+            <div className="rounded-full bg-yellow-300 h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+              <img 
+                src="/lovable-uploads/0c33469e-5edc-45f1-94c0-2ff47e135e34.png" 
+                alt="JUMP Logo" 
+                className="h-7 w-7"
+              />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-yellow-300 tracking-tight">
                 JUMP
               </h1>
-              <span className="text-xs text-indigo-200 leading-none font-medium">
+              <span className="text-xs text-yellow-100 leading-none font-medium">
                 Justice+ Urban Mobility Platform
               </span>
             </div>
@@ -80,10 +72,10 @@ const Header: React.FC = () => {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="bg-purple-900">
               <SheetHeader className="text-left">
-                <SheetTitle>JUMP Platform</SheetTitle>
-                <SheetDescription>
+                <SheetTitle className="text-yellow-300">JUMP Platform</SheetTitle>
+                <SheetDescription className="text-yellow-100">
                   Justice+ Urban Mobility Platform
                 </SheetDescription>
               </SheetHeader>

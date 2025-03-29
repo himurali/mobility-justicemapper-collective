@@ -30,8 +30,27 @@ export function useMapInitialization({
   const { toast } = useToast();
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
   const isMountedRef = useRef(true);
+  
+  // Safe map removal function to prevent errors
+  const cleanupMap = useCallback(() => {
+    if (!map.current) return;
+    
+    try {
+      // First check if the map is actually initialized and has methods
+      if (map.current && typeof map.current.remove === 'function') {
+        // Try to remove the map properly
+        map.current.remove();
+      }
+    } catch (error) {
+      console.error("Error removing map:", error);
+    } finally {
+      // Always ensure we clear the reference
+      map.current = null;
+      setMapStyleLoaded(false);
+    }
+  }, []);
 
-  // Define updateMapSource function first before it's used in initializeMap
+  // Define updateMapSource function before it's used in initializeMap
   const updateMapSource = useCallback(() => {
     if (!map.current || !mapStyleLoaded || !isMountedRef.current) return;
 
@@ -55,25 +74,6 @@ export function useMapInitialization({
       console.error("Error updating map source:", error);
     }
   }, [map, mapStyleLoaded, issues, center, categoryFilter, severityFilter, clusterClicked, onVisibleIssuesChange]);
-
-  // Safe map removal function to prevent errors
-  const cleanupMap = useCallback(() => {
-    if (!map.current) return;
-    
-    try {
-      // First check if the map is actually initialized and has methods
-      if (map.current && typeof map.current.remove === 'function') {
-        // Try to remove the map properly
-        map.current.remove();
-      }
-    } catch (error) {
-      console.error("Error removing map:", error);
-    } finally {
-      // Always ensure we clear the reference
-      map.current = null;
-      setMapStyleLoaded(false);
-    }
-  }, []);
 
   const initializeMap = useCallback(() => {
     // Always cleanup any existing map first
@@ -102,12 +102,21 @@ export function useMapInitialization({
       // Store the map reference
       map.current = mapInstance;
   
-      // Add navigation controls
+      // Add navigation controls - fix for scaling/zooming
       try {
-        mapInstance.addControl(
-          new mapboxgl.NavigationControl(),
-          "top-right"
-        );
+        const navControl = new mapboxgl.NavigationControl({
+          visualizePitch: true,
+          showCompass: true,
+          showZoom: true
+        });
+        
+        mapInstance.addControl(navControl, "top-right");
+        
+        // Ensure navigation controls are properly initialized
+        const controlContainer = mapContainer.current?.querySelector('.mapboxgl-ctrl-top-right');
+        if (controlContainer) {
+          controlContainer.classList.add('z-10');
+        }
       } catch (error) {
         console.error("Error adding navigation controls:", error);
       }
@@ -133,6 +142,7 @@ export function useMapInitialization({
               clusterRadius: 50
             });
             
+            // Improved cluster styling with larger, more visible markers
             mapInstance.addLayer({
               id: 'clusters',
               type: 'circle',
@@ -149,13 +159,16 @@ export function useMapInitialization({
                 'circle-radius': [
                   'step',
                   ['get', 'point_count'],
-                  20,
-                  10, 30,
-                  20, 40
-                ]
+                  25,  // Increased size for better visibility
+                  10, 35,
+                  20, 45
+                ],
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#fff'
               }
             });
             
+            // Improved cluster count text
             mapInstance.addLayer({
               id: 'cluster-count',
               type: 'symbol',
@@ -164,83 +177,93 @@ export function useMapInitialization({
               layout: {
                 'text-field': '{point_count_abbreviated}',
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 12
+                'text-size': 14 // Larger text size
               },
               paint: {
                 'text-color': '#ffffff'
               }
             });
             
-            // Add unclustered point layer
+            // Hide unclustered points initially - we'll show markers instead
             mapInstance.addLayer({
               id: 'unclustered-point',
               type: 'circle',
               source: 'issues',
               filter: ['!', ['has', 'point_count']],
               paint: {
-                'circle-color': '#11b4da',
-                'circle-radius': 8,
-                'circle-stroke-width': 1,
-                'circle-stroke-color': '#fff'
+                'circle-radius': 0,  // Set to 0 to hide these points
+                'circle-opacity': 0  // Make them invisible
               }
             });
           }
           
-          // Handle cluster click
+          // Handle cluster click - improved to ensure proper zooming
           mapInstance.on('click', 'clusters', (e) => {
             if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
             
-            setClusterClicked(true);
-            
+            // Get features under the mouse
             const features = mapInstance.queryRenderedFeatures(e.point, {
               layers: ['clusters']
             });
             
-            if (features.length > 0 && features[0].properties) {
-              const clusterId = features[0].properties.cluster_id;
+            if (!features.length) return;
+            
+            try {
+              // Set cluster clicked state
+              setClusterClicked(true);
+              
+              // Get cluster id
+              const clusterId = features[0].properties?.cluster_id;
               
               if (clusterId) {
-                try {
-                  const source = mapInstance.getSource('issues') as mapboxgl.GeoJSONSource;
-                  source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-                    if (err || !mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
+                const source = mapInstance.getSource('issues') as mapboxgl.GeoJSONSource;
+                
+                // Get the cluster expansion zoom level
+                source.getClusterExpansionZoom(clusterId, (err, expansionZoom) => {
+                  if (err) {
+                    console.error("Error getting cluster expansion zoom:", err);
+                    return;
+                  }
+                  
+                  if (!mapInstance || !features[0].geometry) return;
+                  
+                  // Get coordinates of the cluster
+                  const coordinates = (features[0].geometry as any).coordinates.slice();
+                  
+                  // Animate to the cluster with slightly higher zoom than the expansion zoom
+                  mapInstance.easeTo({
+                    center: coordinates,
+                    zoom: Math.min(expansionZoom + 0.5, 16), // Add 0.5 to zoom a bit more, capped at 16
+                    duration: 500,
+                    essential: true
+                  });
+                  
+                  // After animation completes, update visible issues
+                  setTimeout(() => {
+                    if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
                     
                     try {
-                      const coordinates = (features[0].geometry as any).coordinates.slice();
-                      mapInstance.easeTo({
-                        center: coordinates,
-                        zoom: zoom
+                      const newVisibleFeatures = mapInstance.queryRenderedFeatures({
+                        layers: ['unclustered-point']
                       });
                       
-                      setTimeout(() => {
-                        if (!mapInstance || mapInstance !== map.current || !isMountedRef.current) return;
-                        
-                        try {
-                          const newVisibleFeatures = mapInstance.queryRenderedFeatures({
-                            layers: ['unclustered-point']
-                          });
-                          
-                          const newVisibleIds = newVisibleFeatures
-                            .filter(f => f.properties && f.properties.id)
-                            .map(f => f.properties!.id as string);
-                          
-                          setVisibleIssueIds(newVisibleIds);
-                          
-                          if (onVisibleIssuesChange && isMountedRef.current) {
-                            onVisibleIssuesChange(newVisibleIds);
-                          }
-                        } catch (error) {
-                          console.error("Error updating visible features:", error);
-                        }
-                      }, 500);
+                      const newVisibleIds = newVisibleFeatures
+                        .filter(f => f.properties && f.properties.id)
+                        .map(f => f.properties!.id as string);
+                      
+                      setVisibleIssueIds(newVisibleIds);
+                      
+                      if (onVisibleIssuesChange && isMountedRef.current) {
+                        onVisibleIssuesChange(newVisibleIds);
+                      }
                     } catch (error) {
-                      console.error("Error handling cluster expansion:", error);
+                      console.error("Error updating visible features:", error);
                     }
-                  });
-                } catch (error) {
-                  console.error("Error accessing cluster source:", error);
-                }
+                  }, 600); // Wait for animation to complete
+                });
               }
+            } catch (error) {
+              console.error("Error handling cluster click:", error);
             }
           });
           

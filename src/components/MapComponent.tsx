@@ -188,16 +188,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return true;
     });
     
-    // Add markers for visible or selected issues
+    // Add markers only for visible or selected issues
     filteredIssues.forEach(issue => {
       if (!isMountedRef.current || !map.current) return;
       
+      // Only show markers for:
+      // 1. Selected issue
+      // 2. Issues that are in visibleIssueIds (when a cluster was clicked)
+      // 3. When no cluster has been clicked and no filters active
       const shouldBeVisible = 
         issue.id === selectedIssue || 
         visibleIssueIds.includes(issue.id) ||
-        clusterClicked;
+        (clusterClicked && visibleIssueIds.length === 0) ||
+        (visibleIssueIds.length === 0 && !clusterClicked);
       
-      if (!shouldBeVisible && visibleIssueIds.length > 0) return;
+      if (!shouldBeVisible) return;
       
       // Create marker
       const handleIssueSelect = (issue: IssueData) => {
@@ -257,6 +262,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       }
     }
   };
+
+  // Watch for changes in visibleIssueIds to update markers
+  useEffect(() => {
+    if (isMountedRef.current && mapStyleLoaded && map.current) {
+      addMarkers();
+    }
+  }, [visibleIssueIds, clusterClicked]);
 
   return (
     <>

@@ -91,14 +91,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const features = map.current?.queryRenderedFeatures(e.point, {
         layers: ["clusters"],
       });
-      const clusterId = features?.[0].properties?.cluster_id;
+      
+      if (!features || features.length === 0 || !map.current) return;
+      
+      const clusterId = features[0].properties?.cluster_id;
+      
+      // Type assertion to access geometry coordinates safely
+      const featureGeometry = features[0].geometry as GeoJSON.Point;
+      const coordinates = featureGeometry.coordinates;
 
       if (clusterId && map.current) {
         const source = map.current.getSource("issues") as mapboxgl.GeoJSONSource;
         source.getClusterExpansionZoom(clusterId, (err, zoom) => {
           if (err) return;
           map.current?.easeTo({
-            center: features[0].geometry.coordinates,
+            center: coordinates as [number, number],
             zoom: zoom,
           });
         });

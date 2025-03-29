@@ -19,6 +19,9 @@
   background-color: white;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: block !important;
+  z-index: 100;
+  margin: 10px;
 }
 
 .mapboxgl-ctrl-group button {
@@ -34,11 +37,36 @@
   cursor: pointer;
 }
 
+/* Ensure zoom buttons are visible and functioning */
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in,
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
+  display: block !important;
+}
+
 /* Pointer cursor for clusters */
 .mapboxgl-canvas-container {
   cursor: default;
 }
 
+/* Make clusters stand out more */
 .clusters {
   cursor: pointer;
+}
+
+/* Make sure map is interactive */
+.mapboxgl-interactive,
+.mapboxgl-interactive .mapboxgl-canvas-container {
+  cursor: pointer;
+}
+
+/* Ensure tooltip visibility */
+.mapboxgl-popup {
+  max-width: 200px;
+  z-index: 100;
+}
+
+.mapboxgl-popup-content {
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }

@@ -73,6 +73,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     isMountedRef.current = true;
     
     if (isMountedRef.current) {
+      console.log("Initializing map in MapComponent");
       initializeMap();
     }
 
@@ -107,6 +108,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     if (!isMountedRef.current || !map.current || !mapStyleLoaded) return;
     
     try {
+      console.log("Updating map center and zoom:", center, zoom);
       map.current.flyTo({
         center: center,
         zoom: zoom,
@@ -199,8 +201,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const shouldBeVisible = 
         issue.id === selectedIssue || 
         visibleIssueIds.includes(issue.id) ||
-        (clusterClicked && visibleIssueIds.length === 0) ||
-        (visibleIssueIds.length === 0 && !clusterClicked);
+        (visibleIssueIds.length > 0 && visibleIssueIds.includes(issue.id)) ||
+        (visibleIssueIds.length === 0); // Show all when no specific issues selected
       
       if (!shouldBeVisible) return;
       
@@ -266,13 +268,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
   // Watch for changes in visibleIssueIds to update markers
   useEffect(() => {
     if (isMountedRef.current && mapStyleLoaded && map.current) {
+      console.log("Visible issues changed, updating markers");
       addMarkers();
     }
   }, [visibleIssueIds, clusterClicked]);
 
   return (
     <>
-      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
+      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm relative">
+        {/* Add loading indicator */}
+        {!mapStyleLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-lg">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        )}
+      </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">

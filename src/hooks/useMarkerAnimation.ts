@@ -26,9 +26,9 @@ export function useMarkerAnimation() {
       const borderWidth = isSelected ? 'border-3' : 'border-2';
       
       element.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md ${borderWidth} ${scale} transition-transform duration-300" 
+        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg ${borderWidth} ${scale} transition-transform duration-300" 
              style="border-color: ${getCategoryColor(issue)}">
-          <div class="w-3 h-3 rounded-full" 
+          <div class="w-5 h-5 rounded-full" 
                style="background-color: ${getSeverityColor(severity)}"></div>
         </div>
       `;
@@ -54,9 +54,9 @@ export function useMarkerAnimation() {
       const glow = isLarge ? `box-shadow: 0 0 10px ${color}, 0 0 20px ${color}` : '';
       
       markerElements[issueId].innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-3 ${scale} transition-transform duration-300" 
+        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg border-3 ${scale} transition-transform duration-300" 
              style="border-color: ${color}; ${glow}">
-          <div class="w-3 h-3 rounded-full" 
+          <div class="w-5 h-5 rounded-full" 
                style="background-color: ${severityColor}"></div>
         </div>
       `;

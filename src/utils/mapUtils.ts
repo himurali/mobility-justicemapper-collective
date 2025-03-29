@@ -68,16 +68,27 @@ export const filterIssues = (
   severityFilter: string
 ) => {
   return issues.filter(issue => {
-    if (issue.city.toLowerCase() !== center[1].toString()) {
-      const cityMatch = issue.city.toLowerCase() === "bangalore";
-      if (!cityMatch) return false;
+    // For city comparison, check if the issue's city matches the current city
+    // Most center[1] values are coordinates, not city names, so we need a special case for Bangalore
+    const currentCity = center[1].toString();
+    const cityName = issue.city.toLowerCase();
+    
+    if (currentCity !== cityName) {
+      // Special case for Bangalore - its coordinates are frequently used
+      const isBangalore = cityName === "bangalore" && 
+                          (currentCity === "12.9716" || // Standard Bangalore latitude
+                           Math.abs(parseFloat(currentCity) - 12.9716) < 0.1); // Close to Bangalore
+      
+      if (!isBangalore) return false;
     }
     
+    // Category filter
     if (categoryFilter !== "all") {
       const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
       if (!categoryMatch) return false;
     }
     
+    // Severity filter
     if (severityFilter !== "all" && issue.severity !== severityFilter) {
       return false;
     }

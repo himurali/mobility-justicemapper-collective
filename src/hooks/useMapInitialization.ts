@@ -64,7 +64,7 @@ export function useMapInitialization({
         }
       }
       
-      // Update visible issue IDs with all filtered issues since clustering is disabled
+      // Update visible issue IDs with all filtered issues
       const allIssueIds = filteredIssues.map(issue => issue.id);
       setVisibleIssueIds(allIssueIds);
       
@@ -87,20 +87,23 @@ export function useMapInitialization({
     }
     
     try {
-      console.log("Initializing map with access token:", mapboxToken ? "Token exists" : "No token");
-      
       // Set the Mapbox token before creating the map
       mapboxgl.accessToken = mapboxToken;
       
-      // Create a new map instance
+      // Create a new map instance with enhanced zoom and scroll settings
       const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/light-v10",
         center: center,
         zoom: zoom,
+        minZoom: 3,  // Minimum zoom level
+        maxZoom: 18, // Maximum zoom level
         attributionControl: true,
         doubleClickZoom: true,
-        dragRotate: false, // Disable rotation for simplicity
+        scrollZoom: {
+          around: 'center'  // Zoom around the center of the map
+        },
+        dragRotate: false,
         touchZoomRotate: true,
         boxZoom: true,
       });
@@ -108,19 +111,19 @@ export function useMapInitialization({
       // Store the map reference
       map.current = mapInstance;
   
-      // Add navigation controls - ensure they work properly
-      try {
-        console.log("Adding navigation controls");
-        const navControl = new mapboxgl.NavigationControl({
-          visualizePitch: false, 
-          showCompass: false,
-          showZoom: true
-        });
-        
-        mapInstance.addControl(navControl, "top-right");
-      } catch (error) {
-        console.error("Error adding navigation controls:", error);
-      }
+      // Add navigation controls with zoom functionality
+      const navControl = new mapboxgl.NavigationControl({
+        visualizePitch: false, 
+        showCompass: false,
+        showZoom: true
+      });
+      
+      mapInstance.addControl(navControl, "top-right");
+      
+      // Enhanced scroll zoom with smoother scaling
+      mapInstance.scrollZoom.enable({
+        around: 'center'
+      });
       
       // Handle style loading
       mapInstance.on("style.load", () => {
@@ -128,18 +131,15 @@ export function useMapInitialization({
           return;
         }
         
-        console.log("Map style loaded successfully");
         setMapStyleLoaded(true);
         
         try {
           // Setup non-clustering source
           if (!mapInstance.getSource('issues')) {
-            console.log("Adding issues source");
-            
             mapInstance.addSource('issues', {
               type: 'geojson',
               data: issuesToGeoJSON([]), // Start with empty data
-              cluster: false, // Disable clustering
+              cluster: false,
             });
             
             // Add unclustered points with zero radius - we'll use custom markers instead
@@ -154,37 +154,6 @@ export function useMapInitialization({
             });
           }
           
-          // Change cursor on hover
-          mapInstance.on('mouseenter', 'unclustered-point', () => {
-            if (mapInstance && isMountedRef.current) {
-              mapInstance.getCanvas().style.cursor = 'pointer';
-            }
-          });
-          
-          mapInstance.on('mouseleave', 'unclustered-point', () => {
-            if (mapInstance && isMountedRef.current) {
-              mapInstance.getCanvas().style.cursor = '';
-            }
-          });
-          
-          // When map is moved, update visible issues
-          mapInstance.on('moveend', () => {
-            if (!mapInstance || !isMountedRef.current) return;
-            
-            try {
-              // Update visible issues based on current view
-              const filteredIssues = filterIssues(issues, center, categoryFilter, severityFilter);
-              const visibleIds = filteredIssues.map(issue => issue.id);
-              setVisibleIssueIds(visibleIds);
-              
-              if (onVisibleIssuesChange) {
-                onVisibleIssuesChange(visibleIds);
-              }
-            } catch (error) {
-              console.error("Error updating visible issues after map move:", error);
-            }
-          });
-          
           // After style is fully loaded, update with data
           updateMapSource();
         } catch (error) {
@@ -196,12 +165,6 @@ export function useMapInitialization({
       mapInstance.on('error', (e) => {
         console.error("Mapbox error:", e);
       });
-      
-      // Update zoom controls to ensure they work
-      mapInstance.scrollZoom.enable();
-      mapInstance.boxZoom.enable();
-      mapInstance.doubleClickZoom.enable();
-      mapInstance.touchZoomRotate.enable();
       
     } catch (error) {
       console.error("Error initializing map:", error);

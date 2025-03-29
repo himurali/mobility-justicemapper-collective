@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -10,6 +9,12 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 import IssueDetail from "@/components/IssueDetail";
 
 interface MapComponentProps {
@@ -199,8 +204,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       
+      const markerWrapper = document.createElement("div");
+      markerWrapper.className = "marker-wrapper";
+
       const markerElement = document.createElement("div");
-      markerElement.className = "cursor-pointer";
       markerElement.innerHTML = `
         <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
              style="border-color: ${getCategoryColor(mainCategory)}">
@@ -209,7 +216,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
         </div>
       `;
 
-      const marker = new mapboxgl.Marker(markerElement)
+      markerWrapper.appendChild(markerElement);
+
+      const marker = new mapboxgl.Marker(markerWrapper)
         .setLngLat([issue.location.longitude, issue.location.latitude])
         .addTo(map.current!);
       
@@ -223,7 +232,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = markerElement;
+      markerElementsRef.current[issue.id] = markerWrapper;
     });
 
     if (selectedIssue && markersRef.current[selectedIssue]) {
@@ -272,8 +281,26 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [selectedIssue]);
 
   return (
-    <>
-      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm" />
+    <TooltipProvider>
+      <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm">
+        {mockIssues.map(issue => (
+          <Tooltip key={issue.id}>
+            <TooltipTrigger asChild>
+              <div 
+                className="marker-tooltip-trigger" 
+                data-issue-id={issue.id}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-sm">
+                <p className="font-bold">{issue.title}</p>
+                <p className="text-muted-foreground">Severity: {issue.severity}</p>
+                <p className="text-muted-foreground">Category: {issue.tags[0]}</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-[90%] h-[80vh] max-h-[90vh] p-0">
@@ -284,7 +311,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           />
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 };
 

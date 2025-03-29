@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -223,10 +224,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
         .addTo(map.current!);
       
       markerElement.addEventListener('click', () => {
+        console.log(`Marker clicked: ${issue.id}`);
+        
+        // Call the onSelectIssue callback to update the selected issue in the parent component
         if (onSelectIssue) {
           onSelectIssue(issue.id);
         }
         
+        // Also update the local state for the dialog
         setSelectedIssueData(issue);
         setIsDialogOpen(true);
       });

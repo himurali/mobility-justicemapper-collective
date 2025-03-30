@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import CitySelector from "@/components/CitySelector";
 import { City } from "@/types";
-import { MapPin, AlertTriangle } from "lucide-react";
+import { MapPin, Scale } from "lucide-react";
 
 interface HeroProps {
   cities: City[];
@@ -28,10 +28,17 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
             <h3 className="text-xl font-medium text-purple-700 mb-3">Justice+ Urban Mobility Platform</h3>
             <p className="text-gray-700 mb-4">Document, visualize, and collaborate on mobility injustice issues in your city. Help create more equitable and accessible urban spaces for everyone.</p>
             
-            <div className="flex items-center gap-2 text-purple-700 mb-6">
+            <div className="flex items-center gap-2 text-purple-700 mb-2">
               <MapPin size={16} className="flex-shrink-0" />
               <span className="font-medium">Currently viewing: {selectedCity.name}</span>
             </div>
+            
+            <Button 
+              className="bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-2 mb-6"
+            >
+              <Scale size={16} />
+              Report Injustice
+            </Button>
           </div>
           
           <div className="w-full md:w-auto bg-white rounded-lg shadow-md p-5 border border-yellow-200">
@@ -47,13 +54,7 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button 
-                  className="bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-2"
-                >
-                  <AlertTriangle size={16} />
-                  Report Injustice
-                </Button>
+              <div>
                 <Button 
                   variant="secondary"
                   className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium"
@@ -70,4 +71,3 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
 };
 
 export default Hero;
-

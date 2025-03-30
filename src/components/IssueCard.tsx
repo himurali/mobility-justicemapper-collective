@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +37,9 @@ const IssueCard: React.FC<IssueCardProps> = ({
   };
   
   const formatCategoryName = (tag: string) => {
-    return tag.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    // Shorten long tags to keep them compact
+    const formatted = tag.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return formatted.length > 12 ? formatted.substring(0, 10) + '...' : formatted;
   };
   
   const handleUpvote = (e: React.MouseEvent) => {
@@ -97,7 +98,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         </p>
         
         {visibleTag && (
-          <Badge variant="secondary" className="text-[10px] flex items-center mb-2">
+          <Badge variant="secondary" className="text-[10px] flex items-center mb-2 max-w-[90%] truncate">
             <span className="mr-1">{getCategoryEmoji(visibleTag)}</span>
             {formatCategoryName(visibleTag)}
           </Badge>

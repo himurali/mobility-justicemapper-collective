@@ -1,7 +1,8 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapIcon, FilterIcon, SlidersHorizontal, Settings } from "lucide-react";
+import { MapIcon, FilterIcon, SlidersHorizontal, Settings, Search, Tag } from "lucide-react";
 import { mobilityCategories } from "@/data/issueData";
 import { IssueCategory, IssueSeverity } from "@/types";
 import { 
@@ -11,8 +12,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface FilterBarProps {
   categoryFilter: IssueCategory | 'all';
@@ -43,6 +50,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
   setSortBy,
   onShowCustomFilter
 }) => {
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
+  
   const handleTagSelect = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter(t => t !== tag));
@@ -68,6 +77,34 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const activeFilterCount = (categoryFilter !== 'all' ? 1 : 0) + 
                            (severityFilter !== 'all' ? 1 : 0) + 
                            selectedTags.length;
+                           
+  // Helper function to get all available tags sorted alphabetically
+  const getAllTags = () => {
+    let allTags: {id: string, name: string, category: string}[] = [];
+    
+    mobilityCategories.forEach(category => {
+      category.subcategories.forEach(subcategory => {
+        allTags.push({
+          id: subcategory.id,
+          name: subcategory.name,
+          category: category.name
+        });
+      });
+    });
+    
+    return allTags.sort((a, b) => a.name.localeCompare(b.name));
+  };
+  
+  // Filter tags based on search query
+  const getFilteredTags = () => {
+    const allTags = getAllTags();
+    if (!tagSearchQuery) return allTags;
+    
+    return allTags.filter(tag => 
+      tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase()) ||
+      tag.category.toLowerCase().includes(tagSearchQuery.toLowerCase())
+    );
+  };
 
   return (
     <div className="w-full">
@@ -103,6 +140,63 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   Most Upvoted
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8">
+                <Tag className="h-4 w-4 mr-1" />
+                Tags
+                {selectedTags.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                    {selectedTags.length}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-72">
+              <div className="p-2">
+                <Input
+                  placeholder="Search tags..."
+                  value={tagSearchQuery}
+                  onChange={(e) => setTagSearchQuery(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
+              
+              <DropdownMenuSeparator />
+              
+              <div className="max-h-80 overflow-y-auto">
+                {getFilteredTags().map(tag => {
+                  const isSelected = selectedTags.includes(tag.id);
+                  return (
+                    <DropdownMenuItem
+                      key={tag.id}
+                      className={cn(
+                        "flex items-center justify-between",
+                        isSelected && "bg-accent"
+                      )}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleTagSelect(tag.id);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <span className="mr-2">{tag.name.split(' ')[0]}</span>
+                        <span>{tag.name.split(' ').slice(1).join(' ')}</span>
+                      </div>
+                      {isSelected && <Badge variant="secondary">Selected</Badge>}
+                    </DropdownMenuItem>
+                  );
+                })}
+                
+                {getFilteredTags().length === 0 && (
+                  <div className="text-center py-2 text-muted-foreground">
+                    No tags found
+                  </div>
+                )}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
           
@@ -149,7 +243,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
             for (const category of mobilityCategories) {
               const subcategory = category.subcategories.find(sub => sub.id === tag);
               if (subcategory) {
-                displayName = subcategory.name;
+                // Shorten display name for badge
+                const name = subcategory.name;
+                displayName = name.length > 12 ? name.substring(0, 10) + '...' : name;
                 break;
               }
             }
@@ -157,7 +253,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             return (
               <Badge 
                 key={tag} 
-                className="bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer"
+                className="bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer truncate max-w-[120px]"
                 onClick={() => handleTagSelect(tag)}
               >
                 {displayName}

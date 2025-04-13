@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { 
+  Sidebar, 
+  SidebarProvider, 
+  SidebarContent, 
+  SidebarGroup, 
+  SidebarGroupContent, 
+  SidebarGroupLabel, 
+  SidebarMenuItem, 
+  SidebarMenuButton 
+} from '@/components/ui/sidebar';
+import { Home, User, Settings } from 'lucide-react';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -152,161 +163,191 @@ const Profile: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto py-10 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-900 to-purple-600">Your Profile</h1>
-          <p className="text-gray-600 mt-1">Manage your personal information and account settings</p>
-        </div>
+    <SidebarProvider>
+      <div className="flex w-full">
+        <Sidebar>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link to="/">
+                      <Home className="mr-2 h-4 w-4" />
+                      <span>Home</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link to="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
         
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="profile">Profile Information</TabsTrigger>
-            <TabsTrigger value="account">Account Settings</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Profile</CardTitle>
-                <CardDescription>
-                  Update your profile information visible to other users
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-6 items-start">
-                      <div className="flex flex-col items-center gap-3">
-                        <Avatar className="w-24 h-24">
-                          <AvatarImage src={avatarPreview || profile?.avatar_url} />
-                          <AvatarFallback className="text-2xl bg-purple-100 text-purple-800">
-                            {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                          className="max-w-[240px]"
-                        />
-                        <FormDescription className="text-center text-xs">
-                          JPG, PNG or GIF, Max 2MB
-                        </FormDescription>
-                      </div>
-                      
-                      <div className="flex-1 space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl>
-                                <Input placeholder="username" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                Your unique username on the platform
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+        <div className="flex-1 container mx-auto py-10 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-900 to-purple-600">Your Profile</h1>
+              <p className="text-gray-600 mt-1">Manage your personal information and account settings</p>
+            </div>
+            
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="profile">Profile Information</TabsTrigger>
+                <TabsTrigger value="account">Account Settings</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profile">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Edit Profile</CardTitle>
+                    <CardDescription>
+                      Update your profile information visible to other users
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                        <div className="flex flex-col sm:flex-row gap-6 items-start">
+                          <div className="flex flex-col items-center gap-3">
+                            <Avatar className="w-24 h-24">
+                              <AvatarImage src={avatarPreview || profile?.avatar_url} />
+                              <AvatarFallback className="text-2xl bg-purple-100 text-purple-800">
+                                {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <Input 
+                              type="file" 
+                              accept="image/*"
+                              onChange={handleAvatarChange}
+                              className="max-w-[240px]"
+                            />
+                            <FormDescription className="text-center text-xs">
+                              JPG, PNG or GIF, Max 2MB
+                            </FormDescription>
+                          </div>
+                          
+                          <div className="flex-1 space-y-4">
+                            <FormField
+                              control={form.control}
+                              name="username"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Username</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="username" {...field} />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Your unique username on the platform
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="full_name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Full Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Jane Doe" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="bio"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Bio</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Tell us about yourself..." 
+                                      className="resize-none min-h-[100px]"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                         
-                        <FormField
-                          control={form.control}
-                          name="full_name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Jane Doe" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="bio"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Bio</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Tell us about yourself..." 
-                                  className="resize-none min-h-[100px]"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <Button 
-                        type="submit" 
-                        className="bg-purple-700 hover:bg-purple-800"
-                        disabled={isUpdating}
-                      >
-                        {isUpdating ? "Saving..." : "Save Changes"}
+                        <div className="flex justify-end">
+                          <Button 
+                            type="submit" 
+                            className="bg-purple-700 hover:bg-purple-800"
+                            disabled={isUpdating}
+                          >
+                            {isUpdating ? "Saving..." : "Save Changes"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="account">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>
+                      Manage your account and authentication settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Email Address</h3>
+                      <p className="text-gray-500 mb-2">{user?.email}</p>
+                      <Button variant="outline" size="sm" disabled>
+                        Change Email
                       </Button>
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="account">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
-                <CardDescription>
-                  Manage your account and authentication settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Email Address</h3>
-                  <p className="text-gray-500 mb-2">{user?.email}</p>
-                  <Button variant="outline" size="sm" disabled>
-                    Change Email
-                  </Button>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Password</h3>
-                  <p className="text-gray-500 mb-2">Reset or change your password</p>
-                  <Button variant="outline" size="sm" disabled>
-                    Change Password
-                  </Button>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h3 className="text-lg font-medium text-red-600">Danger Zone</h3>
-                  <p className="text-gray-500 mb-4">Permanently log out from all devices</p>
-                  <Button 
-                    variant="destructive" 
-                    onClick={signOut}
-                  >
-                    Sign Out
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Password</h3>
+                      <p className="text-gray-500 mb-2">Reset or change your password</p>
+                      <Button variant="outline" size="sm" disabled>
+                        Change Password
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium text-red-600">Danger Zone</h3>
+                      <p className="text-gray-500 mb-4">Permanently log out from all devices</p>
+                      <Button 
+                        variant="destructive" 
+                        onClick={signOut}
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

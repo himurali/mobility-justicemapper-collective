@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Map, List, Info, Menu, X } from "lucide-react";
+import { PlusCircle, Map, List, Info, Menu, X, User, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -11,10 +11,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header: React.FC = () => {
   const isMobile = useIsMobile();
+  const { user, profile, signOut } = useAuth();
   
   const NavLinks = () => (
     <>
@@ -28,16 +39,73 @@ const Header: React.FC = () => {
           Resources
         </Button>
       </Link>
-      <Link to="/register">
-        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
-          Register
-        </Button>
-      </Link>
-      <Link to="/signin">
-        <Button variant="secondary" className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium">
-          Sign In
-        </Button>
-      </Link>
+      
+      {!user ? (
+        <>
+          <Link to="/auth">
+            <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
+              Register
+            </Button>
+          </Link>
+          <Link to="/auth">
+            <Button variant="secondary" className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium">
+              Sign In
+            </Button>
+          </Link>
+        </>
+      ) : (
+        isMobile ? (
+          <>
+            <Link to="/profile">
+              <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
+                My Profile
+              </Button>
+            </Link>
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-white hover:bg-purple-800"
+              onClick={() => signOut()}
+            >
+              Sign Out
+            </Button>
+          </>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10 border-2 border-white/20">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback className="bg-yellow-300 text-purple-800">
+                    {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+              <DropdownMenuLabel>
+                <div className="flex flex-col">
+                  <span>{profile?.full_name || 'User'}</span>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {user?.email}
+                  </span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <Link to="/profile">
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>My Profile</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut()}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      )}
     </>
   );
 

@@ -21,6 +21,8 @@ export type Database = {
           latitude_of_issue: number | null
           longitude_of_issue: number | null
           solution_of_issue: string | null
+          tags: string[] | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -33,6 +35,8 @@ export type Database = {
           latitude_of_issue?: number | null
           longitude_of_issue?: number | null
           solution_of_issue?: string | null
+          tags?: string[] | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -45,6 +49,38 @@ export type Database = {
           latitude_of_issue?: number | null
           longitude_of_issue?: number | null
           solution_of_issue?: string | null
+          tags?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }

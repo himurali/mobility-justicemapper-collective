@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import CitySelector from "@/components/CitySelector";
 import { City } from "@/types";
 import { MapPin, Scale } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeroProps {
   cities: City[];
@@ -55,12 +56,23 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
               </div>
               
               <div>
-                <Button 
-                  variant="secondary"
-                  className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium"
-                >
-                  Sign In
-                </Button>
+                {!useAuth().user ? (
+                  <Button 
+                    variant="secondary"
+                    className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium"
+                    onClick={() => window.location.href = '/auth'}
+                  >
+                    Sign In
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="secondary"
+                    className="bg-purple-700 text-white hover:bg-purple-800 font-medium"
+                    onClick={() => window.location.href = '/profile'}
+                  >
+                    My Profile
+                  </Button>
+                )}
               </div>
             </div>
           </div>

@@ -12,6 +12,8 @@ interface AuthContextType {
   isLoading: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
+  signInWithTwitter: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -149,6 +151,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Google sign in failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Google sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const signInWithTwitter = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Twitter sign in failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Twitter sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     toast({
@@ -167,6 +227,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         signUp,
         signIn,
+        signInWithGoogle,
+        signInWithTwitter,
         signOut,
         refreshProfile,
       }}

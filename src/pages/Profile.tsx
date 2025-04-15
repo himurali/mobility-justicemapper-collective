@@ -122,17 +122,17 @@ const Profile: React.FC = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/avatar-${Date.now()}.${fileExt}`;
       
-      // Upload with progress tracking
+      // Manual progress tracking
+      setUploadProgress(10); // Start progress
+      
+      // Upload file without the onUploadProgress option
       const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { 
-          upsert: true,
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setUploadProgress(percent);
-          }
-        });
+        .upload(fileName, file, { upsert: true });
         
+      // Update progress after upload complete
+      setUploadProgress(100);
+      
       if (error) {
         console.error("Upload error details:", error);
         throw error;
@@ -143,6 +143,9 @@ const Profile: React.FC = () => {
         .from('avatars')
         .getPublicUrl(fileName);
         
+      // Add a small delay to reset progress
+      setTimeout(() => setUploadProgress(0), 500);
+      
       return urlData.publicUrl;
     } catch (error: any) {
       console.error("Avatar upload error:", error);
@@ -151,9 +154,8 @@ const Profile: React.FC = () => {
         description: error.message || "Failed to upload avatar",
         variant: 'destructive',
       });
+      setUploadProgress(0); // Reset progress on error
       return null;
-    } finally {
-      setUploadProgress(0); // Reset progress
     }
   };
   
@@ -170,6 +172,8 @@ const Profile: React.FC = () => {
         const uploadedUrl = await uploadAvatar(user.id, avatarFile);
         if (uploadedUrl) {
           avatarUrl = uploadedUrl;
+          // Update form value with new URL so it persists in the form
+          form.setValue('avatar_url', uploadedUrl);
         } else {
           // If avatar upload failed but other profile info is valid, continue
           toast({
@@ -203,7 +207,10 @@ const Profile: React.FC = () => {
       
       // Refresh profile data
       await refreshProfile();
-      setAvatarFile(null); // Clear selected file
+      
+      // Clear avatar file selection after successful update
+      setAvatarFile(null);
+      setAvatarPreview(null);
     } catch (error: any) {
       console.error("Profile update error:", error);
       toast({

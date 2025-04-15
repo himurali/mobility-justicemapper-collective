@@ -106,6 +106,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           <TabsList className="w-full justify-start px-6 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950">
             <TabsTrigger value="video" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 dark:data-[state=active]:bg-blue-900 dark:data-[state=active]:text-blue-200">Video</TabsTrigger>
             <TabsTrigger value="solution" className="data-[state=active]:bg-green-100 data-[state=active]:text-green-800 dark:data-[state=active]:bg-green-900 dark:data-[state=active]:text-green-200">Solution</TabsTrigger>
+            <TabsTrigger value="join" className="data-[state=active]:bg-yellow-100 data-[state=active]:text-yellow-800 dark:data-[state=active]:bg-yellow-900 dark:data-[state=active]:text-yellow-200">Join Community</TabsTrigger>
             <TabsTrigger value="community" className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 dark:data-[state=active]:bg-purple-900 dark:data-[state=active]:text-purple-200">Community</TabsTrigger>
             <TabsTrigger value="forum" className="data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 dark:data-[state=active]:bg-orange-900 dark:data-[state=active]:text-orange-200">Forum</TabsTrigger>
             <TabsTrigger value="documents" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 dark:data-[state=active]:bg-amber-900 dark:data-[state=active]:text-amber-200">Documents</TabsTrigger>
@@ -135,6 +136,23 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           <TabsContent value="solution" className="p-6 pt-4">
             <h3 className="text-lg font-medium mb-2 text-green-700 dark:text-green-300">Proposed Solution</h3>
             <p className="text-muted-foreground">{issue.solution}</p>
+          </TabsContent>
+          
+          <TabsContent value="join" className="p-6 pt-4">
+            <div className="text-center space-y-4">
+              <h3 className="text-lg font-medium text-yellow-700 dark:text-yellow-300">Join the Community</h3>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Join our community of advocates working together to address mobility justice issues. Your voice matters in creating positive change.
+              </p>
+              <div className="flex flex-col items-center gap-4">
+                <Button className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8">
+                  Join Now
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Already a member? Sign in to participate
+                </p>
+              </div>
+            </div>
           </TabsContent>
           
           <TabsContent value="community" className="p-6 pt-4">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import CitySelector from "@/components/CitySelector";
@@ -23,13 +22,13 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
           <div className="max-w-xl">
             <div className="flex items-center gap-2 mb-2">
               <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-900 to-purple-600">
-                JUMP
+                JUSTMOV
               </h2>
               <div className="rounded-md bg-yellow-200 px-2 py-1">
                 <span className="text-xs font-medium text-purple-800">BETA</span>
               </div>
             </div>
-            <h3 className="text-xl font-medium text-purple-700 mb-3">Justice+ Urban Mobility Platform</h3>
+            <h3 className="text-xl font-medium text-purple-700 mb-3">Justice in Movement</h3>
             <p className="text-gray-700 mb-4">Document, visualize, and collaborate on mobility injustice issues in your city. Help create more equitable and accessible urban spaces for everyone.</p>
             
             <div className="flex items-center gap-2 text-purple-700 mb-2">

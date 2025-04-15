@@ -117,16 +117,16 @@ const Header: React.FC = () => {
             <div className="rounded-full bg-yellow-300 h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
               <img 
                 src="/lovable-uploads/0c33469e-5edc-45f1-94c0-2ff47e135e34.png" 
-                alt="JUMP Logo" 
+                alt="JUSTMOV Logo" 
                 className="h-7 w-7"
               />
             </div>
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold text-yellow-300 tracking-tight">
-                JUMP
+                JUSTMOV
               </h1>
               <span className="text-xs text-yellow-100 leading-none font-medium">
-                Justice+ Urban Mobility Platform
+                Justice in Movement
               </span>
             </div>
           </Link>

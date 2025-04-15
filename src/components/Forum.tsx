@@ -28,12 +28,13 @@ const Forum: React.FC<ForumProps> = ({ posts }) => {
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
                 <Avatar>
-                  <AvatarFallback>{post.author.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarImage src={post.author.avatarUrl} />
+                  <AvatarFallback>{post.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-medium">{post.title}</h3>
                   <p className="text-xs text-muted-foreground">
-                    by {post.author} · {new Date(post.date).toLocaleDateString()}
+                    by {post.author.name} · {new Date(post.date).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -61,9 +62,10 @@ const Forum: React.FC<ForumProps> = ({ posts }) => {
                   <div key={reply.id} className="text-sm">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">{reply.author.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarImage src={reply.author.avatarUrl} />
+                        <AvatarFallback className="text-xs">{reply.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{reply.author}</span>
+                      <span className="font-medium">{reply.author.name}</span>
                       <span className="text-xs text-muted-foreground">{new Date(reply.date).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-1 ml-8">{reply.content}</p>

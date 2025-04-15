@@ -107,6 +107,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
             <TabsTrigger value="video" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 dark:data-[state=active]:bg-blue-900 dark:data-[state=active]:text-blue-200">Video</TabsTrigger>
             <TabsTrigger value="solution" className="data-[state=active]:bg-green-100 data-[state=active]:text-green-800 dark:data-[state=active]:bg-green-900 dark:data-[state=active]:text-green-200">Solution</TabsTrigger>
             <TabsTrigger value="community" className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 dark:data-[state=active]:bg-purple-900 dark:data-[state=active]:text-purple-200">Community</TabsTrigger>
+            <TabsTrigger value="forum" className="data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 dark:data-[state=active]:bg-orange-900 dark:data-[state=active]:text-orange-200">Forum</TabsTrigger>
             <TabsTrigger value="documents" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 dark:data-[state=active]:bg-amber-900 dark:data-[state=active]:text-amber-200">Documents</TabsTrigger>
           </TabsList>
           
@@ -152,6 +153,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 </div>
               ))}
             </div>
+          </TabsContent>
+          
+          <TabsContent value="forum" className="p-6 pt-4">
+            <Forum posts={mockForumPosts} />
           </TabsContent>
           
           <TabsContent value="documents" className="p-6 pt-4">

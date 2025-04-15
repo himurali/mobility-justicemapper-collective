@@ -38,14 +38,20 @@ export interface ForumPost {
   id: string;
   issueId: string;
   title: string;
-  author: string;
+  author: {
+    name: string;
+    avatarUrl: string;
+  };
   date: string;
   content: string;
   tags: string[];
   likes: number;
   replies: {
     id: string;
-    author: string;
+    author: {
+      name: string;
+      avatarUrl: string;
+    };
     date: string;
     content: string;
     likes: number;

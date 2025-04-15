@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import CommunityProfile from "./pages/CommunityProfile";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import ReportInjustice from "./pages/ReportInjustice"; // Added this import
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient({
@@ -36,7 +37,7 @@ const App = () => {
                 <Route path="/resources" element={<div>Resources page (coming soon)</div>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/report" element={<ReportInjustice />} />
+                <Route path="/report" element={<ReportInjustice />} /> 
                 <Route path="/community/profile/:userId" element={<CommunityProfile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

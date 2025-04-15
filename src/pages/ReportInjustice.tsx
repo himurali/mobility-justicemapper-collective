@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -27,6 +27,10 @@ interface IssueFormData {
   latitude_of_issue: number;
   longitude_of_issue: number;
   tags: string[];
+  issue_video_problem_statement: string;
+  solution_of_issue: string;
+  doclink1_of_issue: string;
+  doclink2_of_issue: string;
 }
 
 const ReportInjustice = () => {
@@ -43,6 +47,10 @@ const ReportInjustice = () => {
       issue_title: "",
       issue_desc: "",
       tags: [],
+      issue_video_problem_statement: "",
+      solution_of_issue: "",
+      doclink1_of_issue: "",
+      doclink2_of_issue: "",
     },
   });
 
@@ -207,6 +215,90 @@ const ReportInjustice = () => {
                 </FormControl>
                 <FormDescription>
                   Provide detailed information about the issue
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="issue_video_problem_statement"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Issue Video Link</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter YouTube video URL showing the issue" 
+                    type="url"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Add a YouTube video link that demonstrates the issue
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="solution_of_issue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Solution Video Link</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter YouTube video URL explaining the solution" 
+                    type="url"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Add a YouTube video link that explains your proposed solution
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="doclink1_of_issue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Document Link 1</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter URL for supporting document" 
+                    type="url"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Add a link to any supporting documentation (e.g., PDF, images)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="doclink2_of_issue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Document Link 2</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter URL for additional supporting document" 
+                    type="url"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Add another link to supporting documentation if needed
                 </FormDescription>
                 <FormMessage />
               </FormItem>

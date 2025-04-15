@@ -5,6 +5,7 @@ import CitySelector from "@/components/CitySelector";
 import { City } from "@/types";
 import { MapPin, Scale } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface HeroProps {
   cities: City[];
@@ -13,6 +14,8 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-gradient-to-b from-yellow-100 to-white py-10 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -36,6 +39,7 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
             
             <Button 
               className="bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-2 mb-6"
+              onClick={() => navigate('/report')}
             >
               <Scale size={16} />
               Report Injustice

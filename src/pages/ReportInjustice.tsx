@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { CitySelector } from "@/components/CitySelector";
+import { City } from "@/types";
 import {
   Form,
   FormControl,
@@ -31,7 +32,15 @@ interface IssueFormData {
   solution_of_issue: string;
   doclink1_of_issue: string;
   doclink2_of_issue: string;
+  city: string;
 }
+
+const cities: City[] = [
+  { id: "bangalore", name: "Bangalore", coordinates: [77.5946, 12.9716], zoom: 12 },
+  { id: "mumbai", name: "Mumbai", coordinates: [72.8777, 19.0760], zoom: 12 },
+  { id: "delhi", name: "Delhi", coordinates: [77.2090, 28.6139], zoom: 12 },
+  { id: "chennai", name: "Chennai", coordinates: [80.2707, 13.0827], zoom: 12 }
+];
 
 const ReportInjustice = () => {
   const { user } = useAuth();
@@ -41,6 +50,7 @@ const ReportInjustice = () => {
   const mapContainer = React.useRef<HTMLDivElement>(null);
   const map = React.useRef<mapboxgl.Map | null>(null);
   const marker = React.useRef<mapboxgl.Marker | null>(null);
+  const [selectedCity, setSelectedCity] = React.useState<City>(cities[0]);
 
   const form = useForm<IssueFormData>({
     defaultValues: {
@@ -51,6 +61,7 @@ const ReportInjustice = () => {
       solution_of_issue: "",
       doclink1_of_issue: "",
       doclink2_of_issue: "",
+      city: cities[0].id,
     },
   });
 
@@ -68,7 +79,6 @@ const ReportInjustice = () => {
   React.useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Initialize map
     mapboxgl.accessToken = 'pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ';
     
     map.current = new mapboxgl.Map({
@@ -78,15 +88,12 @@ const ReportInjustice = () => {
       zoom: 12
     });
 
-    // Add navigation control
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Create a marker
     marker.current = new mapboxgl.Marker({
       draggable: true
     });
 
-    // Click on map to set marker
     map.current.on('click', (e) => {
       const { lng, lat } = e.lngLat;
       setLocation({ lng, lat });
@@ -96,7 +103,6 @@ const ReportInjustice = () => {
       marker.current?.setLngLat([lng, lat]).addTo(map.current!);
     });
 
-    // Handle marker drag end
     marker.current.on('dragend', () => {
       const lngLat = marker.current?.getLngLat();
       if (lngLat) {
@@ -121,7 +127,6 @@ const ReportInjustice = () => {
           form.setValue('latitude_of_issue', latitude);
           form.setValue('longitude_of_issue', longitude);
           
-          // Update map and marker
           map.current?.flyTo({
             center: [longitude, latitude],
             zoom: 14
@@ -183,6 +188,36 @@ const ReportInjustice = () => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City</FormLabel>
+                <FormControl>
+                  <CitySelector
+                    cities={cities}
+                    selectedCity={selectedCity}
+                    onSelectCity={(city) => {
+                      setSelectedCity(city);
+                      field.onChange(city.id);
+                      if (map.current) {
+                        map.current.flyTo({
+                          center: city.coordinates,
+                          zoom: city.zoom
+                        });
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Select the city where the issue is located
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="issue_title"

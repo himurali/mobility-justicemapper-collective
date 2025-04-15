@@ -1,3 +1,4 @@
+
 export const mobilityCategories = [
   {
     id: "pedestrian_infrastructure",
@@ -90,3 +91,6 @@ export const mobilityCategories = [
     ],
   },
 ];
+
+// Create an empty array for mockIssues - it's no longer used but still imported
+export const mockIssues: any[] = [];

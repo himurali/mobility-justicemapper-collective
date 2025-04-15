@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
-import { mockIssues } from "@/data/issueData";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import CitySelector from "@/components/CitySelector";
@@ -60,7 +59,7 @@ const Index = () => {
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
   const [showMap, setShowMap] = useState(true);
   const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
-  const [issues, setIssues] = useState<IssueData[]>(mockIssues);
+  const [issues, setIssues] = useState<IssueData[]>([]);
   const [showCustomFilter, setShowCustomFilter] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(selectedCity.coordinates);
   const [mapZoom, setMapZoom] = useState<number>(selectedCity.zoom);
@@ -101,7 +100,7 @@ const Index = () => {
           address: issue.address || '',
         },
         communityMembers: issue.issue_community_members.map(member => ({
-          id: member.id,
+          id: String(member.id),
           name: member.name,
           role: member.role || '',
           avatarUrl: member.avatar_url || '',
@@ -113,7 +112,7 @@ const Index = () => {
         })),
         tags: issue.tags || [],
         justiceChampion: issue.justice_champions[0] ? {
-          id: issue.justice_champions[0].id,
+          id: String(issue.justice_champions[0].id),
           name: issue.justice_champions[0].name,
           role: issue.justice_champions[0].role || '',
           avatarUrl: issue.justice_champions[0].avatar_url || '',
@@ -236,10 +235,19 @@ const Index = () => {
   };
 
   const handleUpvote = async (id: string) => {
+    const issueToUpdate = issues.find(i => i.id === id);
+    if (!issueToUpdate) return;
+    
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      console.error("Invalid issue ID:", id);
+      return;
+    }
+
     const { error } = await supabase
       .from('JusticeIssue')
-      .update({ upvotes: issues.find(i => i.id === id)?.upvotes! + 1 })
-      .eq('id', id);
+      .update({ upvotes: issueToUpdate.upvotes + 1 })
+      .eq('id', numericId);
 
     if (!error) {
       setIssues(prev => prev.map(issue => 
@@ -250,14 +258,25 @@ const Index = () => {
         description: "Thank you for your feedback!",
         duration: 2000,
       });
+    } else {
+      console.error("Error upvoting:", error);
     }
   };
 
   const handleDownvote = async (id: string) => {
+    const issueToUpdate = issues.find(i => i.id === id);
+    if (!issueToUpdate) return;
+    
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      console.error("Invalid issue ID:", id);
+      return;
+    }
+
     const { error } = await supabase
       .from('JusticeIssue')
-      .update({ downvotes: issues.find(i => i.id === id)?.downvotes! + 1 })
-      .eq('id', id);
+      .update({ downvotes: issueToUpdate.downvotes + 1 })
+      .eq('id', numericId);
 
     if (!error) {
       setIssues(prev => prev.map(issue => 
@@ -268,6 +287,8 @@ const Index = () => {
         description: "Thank you for your feedback!",
         duration: 2000,
       });
+    } else {
+      console.error("Error downvoting:", error);
     }
   };
 

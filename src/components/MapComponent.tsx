@@ -48,8 +48,57 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   const [activeTab, setActiveTab] = useState(selectedTab);
+  const [issues, setIssues] = useState<IssueData[]>([]);
   
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      const { data, error } = await supabase
+        .from('JusticeIssue')
+        .select(`
+          *,
+          issue_community_members (*),
+          justice_champions (*),
+          issue_documents (*)
+        `);
+
+      if (error) {
+        console.error("Error fetching issues:", error);
+        return;
+      }
+      
+      if (data) {
+        const formattedData = data.map((issue: any) => ({
+          id: String(issue.id),
+          title: issue.issue_title || '',
+          description: issue.issue_desc || '',
+          solution: issue.solution_of_issue || '',
+          videoUrl: issue.issue_video_problem_statement || '',
+          city: issue.city || '',
+          location: {
+            latitude: issue.latitude_of_issue || 0,
+            longitude: issue.longitude_of_issue || 0,
+            address: issue.address || '',
+          },
+          communityMembers: issue.issue_community_members || [],
+          documents: issue.issue_documents || [],
+          tags: issue.tags || [],
+          justiceChampion: issue.justice_champions && issue.justice_champions[0] 
+            ? issue.justice_champions[0] 
+            : undefined,
+          createdAt: issue.created_at,
+          updatedAt: issue.created_at,
+          upvotes: issue.upvotes || 0,
+          downvotes: issue.downvotes || 0,
+          severity: issue.severity || 'moderate',
+        }));
+        setIssues(formattedData);
+      }
+    };
+
+    fetchIssues();
+  }, []);
 
   useEffect(() => {
     setActiveTab(selectedTab);
@@ -57,12 +106,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   useEffect(() => {
     if (selectedIssue) {
-      const issue = mockIssues.find(i => i.id === selectedIssue);
+      const issue = issues.find(i => i.id === selectedIssue);
       if (issue) {
         setSelectedIssueData(issue);
       }
     }
-  }, [selectedIssue]);
+  }, [selectedIssue, issues]);
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -108,7 +157,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
 
     Object.entries(markerElementsRef.current).forEach(([issueId, element]) => {
-      const issue = mockIssues.find(i => i.id === issueId);
+      const issue = issues.find(i => i.id === issueId);
       if (!issue) return;
       
       const mainCategory = issue.tags[0] || "other";
@@ -132,7 +181,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const startBlinking = (issueId: string) => {
     if (!markerElementsRef.current[issueId]) return;
     
-    const issue = mockIssues.find(i => i.id === issueId);
+    const issue = issues.find(i => i.id === issueId);
     if (!issue) return;
     
     const mainCategory = issue.tags[0] || "other";
@@ -206,7 +255,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     markersRef.current = {};
     markerElementsRef.current = {};
 
-    const filteredIssues = mockIssues.filter(issue => {
+    const filteredIssues = issues.filter(issue => {
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) return false;
@@ -282,7 +331,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
       addMarkers();
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues]);
 
   useEffect(() => {
     stopBlinking();
@@ -301,7 +350,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <TooltipProvider>
       <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm">
-        {mockIssues.map(issue => (
+        {issues.map(issue => (
           <Tooltip key={issue.id}>
             <TooltipTrigger asChild>
               <div 

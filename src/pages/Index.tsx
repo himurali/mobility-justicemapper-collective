@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
 import { IssueCategory, IssueSeverity, City } from "@/types";
@@ -17,6 +16,9 @@ import FilterBar from "@/components/FilterBar";
 import { useToast } from "@/components/ui/use-toast";
 import CustomFilter from "@/components/CustomFilter";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+import { useQuery } from "@tanstack/react-query";
 
 const bangaloreCity: City = {
   id: "bangalore",
@@ -67,12 +69,74 @@ const Index = () => {
   const location = useLocation();
   const { toast } = useToast();
 
+  const { data: fetchedIssues, isLoading } = useQuery({
+    queryKey: ['issues', selectedCity.name],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('JusticeIssue')
+        .select(`
+          *,
+          issue_community_members (*),
+          justice_champions (*),
+          issue_documents (*)
+        `)
+        .eq('city', selectedCity.name);
+
+      if (error) throw error;
+      
+      return data.map((issue: Tables<'JusticeIssue'> & {
+        issue_community_members: Tables<'issue_community_members'>[],
+        justice_champions: Tables<'justice_champions'>[],
+        issue_documents: Tables<'issue_documents'>[],
+      }) => ({
+        id: String(issue.id),
+        title: issue.issue_title || '',
+        description: issue.issue_desc || '',
+        solution: issue.solution_of_issue || '',
+        videoUrl: issue.issue_video_problem_statement || '',
+        city: issue.city || '',
+        location: {
+          latitude: issue.latitude_of_issue || 0,
+          longitude: issue.longitude_of_issue || 0,
+          address: issue.address || '',
+        },
+        communityMembers: issue.issue_community_members.map(member => ({
+          id: member.id,
+          name: member.name,
+          role: member.role || '',
+          avatarUrl: member.avatar_url || '',
+        })),
+        documents: issue.issue_documents.map(doc => ({
+          name: doc.name,
+          url: doc.url,
+          type: doc.type || '',
+        })),
+        tags: issue.tags || [],
+        justiceChampion: issue.justice_champions[0] ? {
+          id: issue.justice_champions[0].id,
+          name: issue.justice_champions[0].name,
+          role: issue.justice_champions[0].role || '',
+          avatarUrl: issue.justice_champions[0].avatar_url || '',
+        } : undefined,
+        createdAt: issue.created_at,
+        updatedAt: issue.created_at,
+        upvotes: issue.upvotes || 0,
+        downvotes: issue.downvotes || 0,
+        severity: issue.severity || 'moderate',
+      }));
+    },
+  });
+
   useEffect(() => {
-    // Update map when selected city changes
+    if (fetchedIssues) {
+      setIssues(fetchedIssues);
+    }
+  }, [fetchedIssues]);
+
+  useEffect(() => {
     setMapCenter(selectedCity.coordinates);
     setMapZoom(selectedCity.zoom);
     
-    // Clear the selected issue when changing cities
     setSelectedIssue(null);
   }, [selectedCity]);
 
@@ -134,7 +198,6 @@ const Index = () => {
     setSelectedIssue(issue);
     setIsDialogOpen(true);
     
-    // When an issue is clicked, update the map center to focus on it
     setMapCenter([issue.location.longitude, issue.location.latitude]);
     setMapZoom(15);
   };
@@ -144,7 +207,6 @@ const Index = () => {
     if (issue) {
       setSelectedIssue(issue);
       
-      // Also update map center when issue is selected from map
       setMapCenter([issue.location.longitude, issue.location.latitude]);
       setMapZoom(15);
     }
@@ -173,26 +235,40 @@ const Index = () => {
     }
   };
 
-  const handleUpvote = (id: string) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, upvotes: issue.upvotes + 1 } : issue
-    ));
-    toast({
-      title: "Upvoted",
-      description: "Thank you for your feedback!",
-      duration: 2000,
-    });
+  const handleUpvote = async (id: string) => {
+    const { error } = await supabase
+      .from('JusticeIssue')
+      .update({ upvotes: issues.find(i => i.id === id)?.upvotes! + 1 })
+      .eq('id', id);
+
+    if (!error) {
+      setIssues(prev => prev.map(issue => 
+        issue.id === id ? { ...issue, upvotes: issue.upvotes + 1 } : issue
+      ));
+      toast({
+        title: "Upvoted",
+        description: "Thank you for your feedback!",
+        duration: 2000,
+      });
+    }
   };
 
-  const handleDownvote = (id: string) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, downvotes: issue.downvotes + 1 } : issue
-    ));
-    toast({
-      title: "Downvoted",
-      description: "Thank you for your feedback!",
-      duration: 2000,
-    });
+  const handleDownvote = async (id: string) => {
+    const { error } = await supabase
+      .from('JusticeIssue')
+      .update({ downvotes: issues.find(i => i.id === id)?.downvotes! + 1 })
+      .eq('id', id);
+
+    if (!error) {
+      setIssues(prev => prev.map(issue => 
+        issue.id === id ? { ...issue, downvotes: issue.downvotes + 1 } : issue
+      ));
+      toast({
+        title: "Downvoted",
+        description: "Thank you for your feedback!",
+        duration: 2000,
+      });
+    }
   };
 
   const toggleMapVisibility = () => {

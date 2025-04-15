@@ -16,6 +16,7 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import IssueDetail from "@/components/IssueDetail";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MapComponentProps {
   center?: [number, number];

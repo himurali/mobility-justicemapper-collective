@@ -114,47 +114,167 @@ export type Database = {
           },
         ]
       }
+      issue_community_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          issue_id: number | null
+          name: string
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name: string
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_community_members_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "JusticeIssue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issue_documents: {
+        Row: {
+          created_at: string | null
+          id: string
+          issue_id: number | null
+          name: string
+          type: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name: string
+          type?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name?: string
+          type?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_documents_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "JusticeIssue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      justice_champions: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          issue_id: number | null
+          name: string
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name: string
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: number | null
+          name?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "justice_champions_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "JusticeIssue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       JusticeIssue: {
         Row: {
+          address: string | null
+          city: string | null
           created_at: string
           doclink1_of_issue: string | null
           doclink2_of_issue: string | null
+          downvotes: number | null
           id: number
           issue_desc: string | null
           issue_title: string | null
           issue_video_problem_statement: string | null
           latitude_of_issue: number | null
           longitude_of_issue: number | null
+          severity: Database["public"]["Enums"]["issue_severity"] | null
           solution_of_issue: string | null
           tags: string[] | null
+          upvotes: number | null
           user_id: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           created_at?: string
           doclink1_of_issue?: string | null
           doclink2_of_issue?: string | null
+          downvotes?: number | null
           id?: number
           issue_desc?: string | null
           issue_title?: string | null
           issue_video_problem_statement?: string | null
           latitude_of_issue?: number | null
           longitude_of_issue?: number | null
+          severity?: Database["public"]["Enums"]["issue_severity"] | null
           solution_of_issue?: string | null
           tags?: string[] | null
+          upvotes?: number | null
           user_id?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           created_at?: string
           doclink1_of_issue?: string | null
           doclink2_of_issue?: string | null
+          downvotes?: number | null
           id?: number
           issue_desc?: string | null
           issue_title?: string | null
           issue_video_problem_statement?: string | null
           latitude_of_issue?: number | null
           longitude_of_issue?: number | null
+          severity?: Database["public"]["Enums"]["issue_severity"] | null
           solution_of_issue?: string | null
           tags?: string[] | null
+          upvotes?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -197,7 +317,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      issue_severity: "critical" | "moderate" | "minor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -312,6 +432,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      issue_severity: ["critical", "moderate", "minor"],
+    },
   },
 } as const

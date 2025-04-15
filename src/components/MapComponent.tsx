@@ -64,6 +64,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
       if (error) {
         console.error("Error fetching issues:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch issues. Please try again later.",
+          variant: "destructive",
+        });
         return;
       }
       
@@ -84,7 +89,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
           documents: issue.issue_documents || [],
           tags: issue.tags || [],
           justiceChampion: issue.justice_champions && issue.justice_champions[0] 
-            ? issue.justice_champions[0] 
+            ? {
+                id: String(issue.justice_champions[0].id),
+                name: issue.justice_champions[0].name,
+                role: issue.justice_champions[0].role,
+                avatarUrl: issue.justice_champions[0].avatar_url || '',
+              }
             : undefined,
           createdAt: issue.created_at,
           updatedAt: issue.created_at,
@@ -97,7 +107,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
 
     fetchIssues();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     setActiveTab(selectedTab);

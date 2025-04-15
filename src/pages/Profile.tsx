@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { z } from 'zod';
@@ -54,7 +53,6 @@ const Profile: React.FC = () => {
     },
   });
   
-  // Update form when profile data changes
   useEffect(() => {
     if (profile) {
       form.reset({
@@ -66,7 +64,6 @@ const Profile: React.FC = () => {
     }
   }, [profile, form]);
   
-  // Redirect if not authenticated
   if (!user) {
     return <Navigate to="/auth" />;
   }
@@ -75,7 +72,6 @@ const Profile: React.FC = () => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // File size validation (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -87,7 +83,6 @@ const Profile: React.FC = () => {
       
       setAvatarFile(file);
       
-      // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         setAvatarPreview(reader.result as string);
@@ -98,7 +93,6 @@ const Profile: React.FC = () => {
   
   const uploadAvatar = async (userId: string, file: File): Promise<string | null> => {
     try {
-      // Check if Storage bucket exists
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
       
       if (bucketsError) {
@@ -106,7 +100,6 @@ const Profile: React.FC = () => {
         throw new Error("Error checking storage buckets");
       }
       
-      // Make sure 'avatars' bucket exists
       const avatarsBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
       
       if (!avatarsBucketExists) {
@@ -122,15 +115,12 @@ const Profile: React.FC = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/avatar-${Date.now()}.${fileExt}`;
       
-      // Manual progress tracking
-      setUploadProgress(10); // Start progress
+      setUploadProgress(10);
       
-      // Upload file without the onUploadProgress option
       const { data, error } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
         
-      // Update progress after upload complete
       setUploadProgress(100);
       
       if (error) {
@@ -138,12 +128,10 @@ const Profile: React.FC = () => {
         throw error;
       }
       
-      // Get public URL after successful upload
       const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
         
-      // Add a small delay to reset progress
       setTimeout(() => setUploadProgress(0), 500);
       
       return urlData.publicUrl;
@@ -154,7 +142,7 @@ const Profile: React.FC = () => {
         description: error.message || "Failed to upload avatar",
         variant: 'destructive',
       });
-      setUploadProgress(0); // Reset progress on error
+      setUploadProgress(0);
       return null;
     }
   };
@@ -163,19 +151,17 @@ const Profile: React.FC = () => {
     if (!user) return;
     
     setIsUpdating(true);
+    console.log("Updating profile with values:", values);
     
     try {
       let avatarUrl = values.avatar_url;
       
-      // Upload new avatar if selected
       if (avatarFile) {
         const uploadedUrl = await uploadAvatar(user.id, avatarFile);
         if (uploadedUrl) {
           avatarUrl = uploadedUrl;
-          // Update form value with new URL so it persists in the form
           form.setValue('avatar_url', uploadedUrl);
         } else {
-          // If avatar upload failed but other profile info is valid, continue
           toast({
             title: 'Warning',
             description: 'Profile updated but avatar upload failed',
@@ -184,31 +170,36 @@ const Profile: React.FC = () => {
         }
       }
       
-      // Update profile
-      const { error } = await supabase
+      const profileData = {
+        username: values.username,
+        full_name: values.full_name,
+        bio: values.bio || null,
+        avatar_url: avatarUrl || null,
+        updated_at: new Date().toISOString(),
+      };
+      
+      console.log("Sending profile update:", profileData);
+      
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
-          username: values.username,
-          full_name: values.full_name,
-          bio: values.bio,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        .update(profileData)
+        .eq('id', user.id)
+        .select();
         
       if (error) {
+        console.error("Profile update error:", error);
         throw error;
       }
+      
+      console.log("Profile update response:", data);
       
       toast({
         title: 'Profile updated',
         description: 'Your profile has been updated successfully',
       });
       
-      // Refresh profile data
       await refreshProfile();
       
-      // Clear avatar file selection after successful update
       setAvatarFile(null);
       setAvatarPreview(null);
     } catch (error: any) {

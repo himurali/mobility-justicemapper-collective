@@ -26,6 +26,7 @@ import {
   SidebarMenuButton 
 } from '@/components/ui/sidebar';
 import { Home, User, Settings } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -41,6 +42,7 @@ const Profile: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -72,6 +74,17 @@ const Profile: React.FC = () => {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      
+      // File size validation (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Avatar image must be less than 2MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setAvatarFile(file);
       
       // Create preview
@@ -84,27 +97,64 @@ const Profile: React.FC = () => {
   };
   
   const uploadAvatar = async (userId: string, file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}/avatar.${fileExt}`;
-    
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file, { upsert: true });
+    try {
+      // Check if Storage bucket exists
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
       
-    if (error) {
+      if (bucketsError) {
+        console.error("Error checking buckets:", bucketsError);
+        throw new Error("Error checking storage buckets");
+      }
+      
+      // Make sure 'avatars' bucket exists
+      const avatarsBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
+      
+      if (!avatarsBucketExists) {
+        toast({
+          title: 'Storage not configured',
+          description: 'Avatar storage is not properly configured',
+          variant: 'destructive',
+        });
+        console.error("Avatars bucket does not exist");
+        return null;
+      }
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/avatar-${Date.now()}.${fileExt}`;
+      
+      // Upload with progress tracking
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { 
+          upsert: true,
+          onUploadProgress: (progress) => {
+            const percent = (progress.loaded / progress.total) * 100;
+            setUploadProgress(percent);
+          }
+        });
+        
+      if (error) {
+        console.error("Upload error details:", error);
+        throw error;
+      }
+      
+      // Get public URL after successful upload
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+        
+      return urlData.publicUrl;
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
       toast({
         title: 'Error uploading avatar',
-        description: error.message,
+        description: error.message || "Failed to upload avatar",
         variant: 'destructive',
       });
       return null;
+    } finally {
+      setUploadProgress(0); // Reset progress
     }
-    
-    const { data: urlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-      
-    return urlData.publicUrl;
   };
   
   const handleSubmit = async (values: z.infer<typeof profileSchema>) => {
@@ -120,6 +170,13 @@ const Profile: React.FC = () => {
         const uploadedUrl = await uploadAvatar(user.id, avatarFile);
         if (uploadedUrl) {
           avatarUrl = uploadedUrl;
+        } else {
+          // If avatar upload failed but other profile info is valid, continue
+          toast({
+            title: 'Warning',
+            description: 'Profile updated but avatar upload failed',
+            variant: 'default',
+          });
         }
       }
       
@@ -136,12 +193,7 @@ const Profile: React.FC = () => {
         .eq('id', user.id);
         
       if (error) {
-        toast({
-          title: 'Error updating profile',
-          description: error.message,
-          variant: 'destructive',
-        });
-        return;
+        throw error;
       }
       
       toast({
@@ -151,10 +203,12 @@ const Profile: React.FC = () => {
       
       // Refresh profile data
       await refreshProfile();
+      setAvatarFile(null); // Clear selected file
     } catch (error: any) {
+      console.error("Profile update error:", error);
       toast({
         title: 'Error updating profile',
-        description: error.message,
+        description: error.message || "Failed to update profile",
         variant: 'destructive',
       });
     } finally {
@@ -223,15 +277,25 @@ const Profile: React.FC = () => {
                                 {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                               </AvatarFallback>
                             </Avatar>
-                            <Input 
-                              type="file" 
-                              accept="image/*"
-                              onChange={handleAvatarChange}
-                              className="max-w-[240px]"
-                            />
-                            <FormDescription className="text-center text-xs">
-                              JPG, PNG or GIF, Max 2MB
-                            </FormDescription>
+                            
+                            <div className="w-full max-w-[240px]">
+                              <Input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                className="mb-2"
+                              />
+                              <FormDescription className="text-center text-xs mb-2">
+                                JPG, PNG or GIF, Max 2MB
+                              </FormDescription>
+                              
+                              {uploadProgress > 0 && (
+                                <div className="w-full space-y-2">
+                                  <Progress value={uploadProgress} className="h-2" />
+                                  <p className="text-xs text-center">{Math.round(uploadProgress)}% uploaded</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           
                           <div className="flex-1 space-y-4">

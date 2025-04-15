@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { CitySelector } from "@/components/CitySelector";
+import CitySelector from "@/components/CitySelector";
 import { City } from "@/types";
 import {
   Form,

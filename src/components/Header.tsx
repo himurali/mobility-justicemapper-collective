@@ -116,14 +116,14 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center gap-2">
             <div className="rounded-full bg-yellow-300 h-10 w-10 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
               <img 
-                src="/lovable-uploads/0c33469e-5edc-45f1-94c0-2ff47e135e34.png" 
-                alt="JUSTMOV Logo" 
+                src="/lovable-uploads/7220eff1-e833-4e4a-804e-c092dc48ff4c.png" 
+                alt="JUST MOVE Logo" 
                 className="h-7 w-7"
               />
             </div>
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold text-yellow-300 tracking-tight">
-                JUSTMOV
+                JUST MOVE
               </h1>
               <span className="text-xs text-yellow-100 leading-none font-medium">
                 Justice in Movement
@@ -142,7 +142,7 @@ const Header: React.FC = () => {
             </SheetTrigger>
             <SheetContent className="bg-purple-900">
               <SheetHeader className="text-left">
-                <SheetTitle className="text-yellow-300">JUMP Platform</SheetTitle>
+                <SheetTitle className="text-yellow-300">JUST MOVE Platform</SheetTitle>
                 <SheetDescription className="text-yellow-100">
                   Justice+ Urban Mobility Platform
                 </SheetDescription>
@@ -163,3 +163,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

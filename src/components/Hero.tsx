@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import CitySelector from "@/components/CitySelector";
@@ -22,7 +23,7 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
           <div className="max-w-xl">
             <div className="flex items-center gap-2 mb-2">
               <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-900 to-purple-600">
-                JUSTMOV
+                JUST MOVE
               </h2>
               <div className="rounded-md bg-yellow-200 px-2 py-1">
                 <span className="text-xs font-medium text-purple-800">BETA</span>
@@ -86,3 +87,4 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
 };
 
 export default Hero;
+

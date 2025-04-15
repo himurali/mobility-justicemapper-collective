@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IssueData } from '@/types';
 import Forum from '@/components/Forum';
 import { mockForumPosts } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -38,10 +41,48 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   onClose, 
   initialTab = "video"
 }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   if (!issue) return null;
 
   const getTagColor = (tag: string) => {
     return tagColors[tag] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+  };
+
+  const handleJoinCommunity = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to join the community",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('community_members')
+        .insert({
+          user_id: user.id,
+          issue_id: parseInt(issue.id),
+          role: 'member',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You've joined the community. Welcome!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error joining community",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -156,20 +197,31 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsContent>
           
           <TabsContent value="community" className="p-6 pt-4">
-            <h3 className="text-lg font-medium mb-4 text-purple-700 dark:text-purple-300">Community Members</h3>
-            <div className="space-y-3">
-              {issue.communityMembers.map((member) => (
-                <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
-                  <Avatar>
-                    <AvatarImage src={member.avatarUrl} />
-                    <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">{member.role}</p>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-purple-700 dark:text-purple-300">Community Members</h3>
+                <Button 
+                  onClick={handleJoinCommunity}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
+                >
+                  Join Community
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {issue.communityMembers.map((member) => (
+                  <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
+                    <Avatar>
+                      <AvatarImage src={member.avatarUrl} />
+                      <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{member.name}</p>
+                      <p className="text-sm text-muted-foreground">{member.role}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </TabsContent>
           

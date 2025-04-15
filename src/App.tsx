@@ -1,3 +1,4 @@
+
 import React from 'react'; 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -35,6 +36,7 @@ const App = () => {
                 <Route path="/resources" element={<div>Resources page (coming soon)</div>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/report" element={<ReportInjustice />} />
                 <Route path="/community/profile/:userId" element={<CommunityProfile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

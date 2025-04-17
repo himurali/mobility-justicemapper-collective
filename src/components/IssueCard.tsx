@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,13 +105,18 @@ const IssueCard: React.FC<IssueCardProps> = ({
           </Badge>
         )}
         
-        {/* Display the image below the tags */}
-        {issue.image_url && (
+        {/* Display the image if available */}
+        {issue.image_url && issue.image_url.trim() !== "" && (
           <div className="mb-2 w-full">
             <img 
               src={issue.image_url} 
               alt={issue.title} 
               className="w-full h-24 object-cover rounded-md"
+              onError={(e) => {
+                console.error("Failed to load image:", issue.image_url);
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none'; // Hide the image if it fails to load
+              }}
             />
           </div>
         )}

@@ -228,6 +228,7 @@ export type Database = {
           doclink2_of_issue: string | null
           downvotes: number | null
           id: number
+          image_url: string | null
           issue_desc: string | null
           issue_title: string | null
           issue_video_problem_statement: string | null
@@ -247,6 +248,7 @@ export type Database = {
           doclink2_of_issue?: string | null
           downvotes?: number | null
           id?: number
+          image_url?: string | null
           issue_desc?: string | null
           issue_title?: string | null
           issue_video_problem_statement?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           doclink2_of_issue?: string | null
           downvotes?: number | null
           id?: number
+          image_url?: string | null
           issue_desc?: string | null
           issue_title?: string | null
           issue_video_problem_statement?: string | null

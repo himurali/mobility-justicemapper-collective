@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -53,6 +54,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   useEffect(() => {
     const fetchIssues = async () => {
+      console.log("Fetching issues from database...");
+      
       const { data, error } = await supabase
         .from('JusticeIssue')
         .select(`
@@ -73,35 +76,43 @@ const MapComponent: React.FC<MapComponentProps> = ({
       }
       
       if (data) {
-        const formattedData = data.map((issue: any) => ({
-          id: String(issue.id),
-          title: issue.issue_title || '',
-          description: issue.issue_desc || '',
-          solution: issue.solution_of_issue || '',
-          videoUrl: issue.issue_video_problem_statement || '',
-          city: issue.city || '',
-          location: {
-            latitude: issue.latitude_of_issue || 0,
-            longitude: issue.longitude_of_issue || 0,
-            address: issue.address || '',
-          },
-          communityMembers: issue.issue_community_members || [],
-          documents: issue.issue_documents || [],
-          tags: issue.tags || [],
-          justiceChampion: issue.justice_champions && issue.justice_champions[0] 
-            ? {
-                id: String(issue.justice_champions[0].id),
-                name: issue.justice_champions[0].name,
-                role: issue.justice_champions[0].role,
-                avatarUrl: issue.justice_champions[0].avatar_url || '',
-              }
-            : undefined,
-          createdAt: issue.created_at,
-          updatedAt: issue.created_at,
-          upvotes: issue.upvotes || 0,
-          downvotes: issue.downvotes || 0,
-          severity: issue.severity || 'moderate',
-        }));
+        console.log("Raw data from database:", data);
+        
+        const formattedData = data.map((issue: any) => {
+          console.log(`Processing issue ID: ${issue.id}, Title: ${issue.issue_title}`);
+          
+          return {
+            id: String(issue.id),
+            title: issue.issue_title || '',
+            description: issue.issue_desc || '',
+            solution: issue.solution_of_issue || '',
+            videoUrl: issue.issue_video_problem_statement || '',
+            city: issue.city || '',
+            location: {
+              latitude: issue.latitude_of_issue || 0,
+              longitude: issue.longitude_of_issue || 0,
+              address: issue.address || '',
+            },
+            communityMembers: issue.issue_community_members || [],
+            documents: issue.issue_documents || [],
+            tags: issue.tags || [],
+            justiceChampion: issue.justice_champions && issue.justice_champions[0] 
+              ? {
+                  id: String(issue.justice_champions[0].id),
+                  name: issue.justice_champions[0].name,
+                  role: issue.justice_champions[0].role,
+                  avatarUrl: issue.justice_champions[0].avatar_url || '',
+                }
+              : undefined,
+            createdAt: issue.created_at,
+            updatedAt: issue.created_at,
+            upvotes: issue.upvotes || 0,
+            downvotes: issue.downvotes || 0,
+            severity: issue.severity || 'moderate',
+          };
+        });
+        
+        console.log("Formatted data:", formattedData);
         setIssues(formattedData);
       }
     };
@@ -247,7 +258,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const handleMarkerClick = (issue: IssueData) => {
-    console.log(`Marker clicked: ${issue.id}`);
+    console.log(`Marker clicked: ${issue.id}, Title: ${issue.title}`);
     
     if (onSelectIssue) {
       onSelectIssue(issue.id);
@@ -264,6 +275,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
     markersRef.current = {};
     markerElementsRef.current = {};
 
+    console.log(`Adding markers for ${issues.length} issues`);
+    console.log(`Category filter: ${categoryFilter}, Severity filter: ${severityFilter}`);
+
     const filteredIssues = issues.filter(issue => {
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
@@ -277,7 +291,16 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return true;
     });
 
+    console.log(`Filtered to ${filteredIssues.length} issues`);
+
     filteredIssues.forEach(issue => {
+      console.log(`Creating marker for issue: ${issue.id}, Title: ${issue.title}, Location: [${issue.location.longitude}, ${issue.location.latitude}]`);
+      
+      if (!issue.location.latitude || !issue.location.longitude) {
+        console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
+        return;
+      }
+
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       

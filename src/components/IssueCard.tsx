@@ -7,6 +7,7 @@ import type { IssueData } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { mobilityCategories } from "@/data/issueData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface IssueCardProps {
   issue: IssueData;
@@ -25,21 +26,48 @@ const IssueCard: React.FC<IssueCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [directImageUrl, setDirectImageUrl] = useState<string | null>(null);
   
   useEffect(() => {
     // Reset image states when issue changes
     setImageError(false);
     setImageLoaded(false);
+    setDirectImageUrl(null);
 
-    // Log full image URL with params
-    console.log("Full image URL with params:", issue.image_url);
+    // Check if issue has an image_url directly from the database
+    const checkImageUrl = async () => {
+      try {
+        if (issue.id) {
+          console.log(`Fetching image data directly for issue ${issue.id}...`);
+          
+          const { data, error } = await supabase
+            .from('JusticeIssue')
+            .select('image_url')
+            .eq('id', parseInt(issue.id, 10))
+            .single();
+          
+          if (error) {
+            console.error("Error fetching image URL from database:", error);
+            return;
+          }
+          
+          if (data) {
+            console.log(`Direct database image_url for issue ${issue.id}:`, data.image_url);
+            setDirectImageUrl(data.image_url);
+          }
+        }
+      } catch (err) {
+        console.error("Error in database image fetch:", err);
+      }
+    };
+    
+    checkImageUrl();
 
-    // Log image URL for debugging
-    if (issue.image_url) {
-      console.log(`Issue ${issue.id} has image URL:`, issue.image_url);
-    } else {
-      console.log(`Issue ${issue.id} has no image URL`);
-    }
+    // Log all available image URLs for debugging
+    console.log(`Issue ${issue.id} data:`, {
+      'image_url from props': issue.image_url,
+      'full issue object': issue
+    });
   }, [issue]);
   
   // Get the first tag to display
@@ -79,7 +107,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
   };
 
   const handleImageError = () => {
-    console.error("Failed to load image for issue:", issue.id, "URL:", issue.image_url);
+    console.error("Failed to load image for issue:", issue.id, "URL:", issue.image_url || directImageUrl);
     setImageError(true);
   };
 
@@ -88,8 +116,10 @@ const IssueCard: React.FC<IssueCardProps> = ({
     setImageLoaded(true);
   };
 
+  // Use the direct URL from database if available, otherwise fallback to the one in the issue object
+  let imageUrl = directImageUrl || issue.image_url;
+  
   // Normalize image URL if needed
-  let imageUrl = issue.image_url;
   if (imageUrl && !imageUrl.startsWith('http')) {
     imageUrl = `https://${imageUrl}`;
     console.log("Normalized image URL:", imageUrl);
@@ -97,6 +127,12 @@ const IssueCard: React.FC<IssueCardProps> = ({
 
   // Check if image URL is valid
   const hasValidImage = imageUrl && imageUrl.trim() !== "" && !imageError;
+
+  // For testing - use a placeholder image if no image URL is provided
+  if (!imageUrl && parseInt(issue.id, 10) === 1) {
+    imageUrl = "https://fastly.picsum.photos/id/478/200/200.jpg?hmac=YfKBYcZHT991lmrKfB0pYNaztmUvQecXbVrc5V4mj8E";
+    console.log("Using test placeholder image for issue 1:", imageUrl);
+  }
 
   return (
     <Card 
@@ -145,7 +181,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         )}
         
         {/* Display the image if available */}
-        {hasValidImage ? (
+        {imageUrl ? (
           <div className="mb-2 w-full h-24 rounded-md overflow-hidden bg-gray-100 relative">
             <img 
               src={imageUrl} 
@@ -155,20 +191,26 @@ const IssueCard: React.FC<IssueCardProps> = ({
               onLoad={handleImageLoad}
               loading="eager"
             />
-            {!imageLoaded && (
+            {!imageLoaded && !imageError && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                 <div className="animate-pulse">Loading image...</div>
               </div>
             )}
+            {imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <ImageIcon className="h-8 w-8 text-gray-400" />
+                <span className="text-xs text-gray-500 ml-2">Image failed to load</span>
+              </div>
+            )}
           </div>
-        ) : issue.image_url ? (
+        ) : (
           <div className="mb-2 w-full h-24 flex items-center justify-center bg-gray-100 rounded-md">
             <ImageIcon className="h-8 w-8 text-gray-400" />
             <span className="text-xs text-gray-500 ml-2">
-              Image unavailable: {issue.image_url.substring(0, 30)}...
+              No image available
             </span>
           </div>
-        ) : null}
+        )}
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">

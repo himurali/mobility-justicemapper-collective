@@ -105,12 +105,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         )}
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-[10px] text-muted-foreground">
-            <span>
-              {issue.communityMembers.length} supporters
-            </span>
-          </div>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -120,7 +115,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
               <ThumbsUp className="h-3 w-3" />
               <span className="sr-only">Upvote</span>
             </Button>
-            <span className="text-xs font-medium">{issue.upvotes || 0}</span>
+            <span className="font-medium">{issue.upvotes || 0}</span>
             
             <Button 
               variant="ghost" 
@@ -131,7 +126,11 @@ const IssueCard: React.FC<IssueCardProps> = ({
               <ThumbsDown className="h-3 w-3" />
               <span className="sr-only">Downvote</span>
             </Button>
-            <span className="text-xs font-medium">{issue.downvotes || 0}</span>
+            <span className="text-xs font-medium mr-2">{issue.downvotes || 0}</span>
+
+            <span>
+              {issue.communityMembers.length} supporters
+            </span>
           </div>
         </div>
       </CardContent>

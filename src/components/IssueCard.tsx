@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, ThumbsUp, ThumbsDown, AlertTriangle, Clock } from "lucide-react";
+import { MapPin, ThumbsUp, ThumbsDown, AlertTriangle, Clock, Image as ImageIcon } from "lucide-react";
 import type { IssueData } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,8 +23,10 @@ const IssueCard: React.FC<IssueCardProps> = ({
   onUpvote,
   onDownvote
 }) => {
+  const [imageError, setImageError] = useState(false);
+  
   // Get the first tag to display
-  const visibleTag = issue.tags.length > 0 ? issue.tags[0] : null;
+  const visibleTag = issue.tags?.length > 0 ? issue.tags[0] : null;
   
   const getCategoryEmoji = (tag: string) => {
     // Find the category that contains this tag
@@ -58,6 +60,16 @@ const IssueCard: React.FC<IssueCardProps> = ({
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
+
+  const handleImageError = () => {
+    console.error("Failed to load image:", issue.image_url);
+    setImageError(true);
+  };
+
+  // Check if image URL is valid
+  const hasValidImage = issue.image_url && 
+                        issue.image_url.trim() !== "" && 
+                        !imageError;
 
   return (
     <Card 
@@ -106,20 +118,21 @@ const IssueCard: React.FC<IssueCardProps> = ({
         )}
         
         {/* Display the image if available */}
-        {issue.image_url && issue.image_url.trim() !== "" && (
-          <div className="mb-2 w-full">
+        {hasValidImage ? (
+          <div className="mb-2 w-full h-24 rounded-md overflow-hidden bg-gray-100 relative">
             <img 
               src={issue.image_url} 
               alt={issue.title} 
-              className="w-full h-24 object-cover rounded-md"
-              onError={(e) => {
-                console.error("Failed to load image:", issue.image_url);
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none'; // Hide the image if it fails to load
-              }}
+              className="w-full h-full object-cover"
+              onError={handleImageError}
             />
           </div>
-        )}
+        ) : issue.image_url ? (
+          <div className="mb-2 w-full h-24 flex items-center justify-center bg-gray-100 rounded-md">
+            <ImageIcon className="h-8 w-8 text-gray-400" />
+            <span className="text-xs text-gray-500 ml-2">Image unavailable</span>
+          </div>
+        ) : null}
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">

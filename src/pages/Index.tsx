@@ -18,6 +18,14 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const bangaloreCity: City = {
   id: "bangalore",
@@ -63,6 +71,8 @@ const Index = () => {
   const [showCustomFilter, setShowCustomFilter] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(selectedCity.coordinates);
   const [mapZoom, setMapZoom] = useState<number>(selectedCity.zoom);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   
   const selectedIssueRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -192,6 +202,21 @@ const Index = () => {
       }
     });
   }, [selectedCity, categoryFilter, severityFilter, selectedTags, searchQuery, issues, sortBy]);
+
+  const paginatedIssues = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredIssues.slice(startIndex, endIndex);
+  }, [filteredIssues, currentPage, itemsPerPage]);
+
+  const totalPages = useMemo(() => 
+    Math.ceil(filteredIssues.length / itemsPerPage)
+  , [filteredIssues.length, itemsPerPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleIssueClick = (issue: IssueData) => {
     setSelectedIssue(issue);
@@ -343,26 +368,77 @@ const Index = () => {
           <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border">
             <ResizablePanel defaultSize={50} minSize={30}>
               <div className="h-full overflow-y-auto bg-sidebar" ref={selectedIssueRef}>
-                <div className="grid grid-cols-2 gap-2 p-2">
-                  {filteredIssues.length > 0 ? (
-                    filteredIssues.map(issue => (
-                      <div 
-                        key={issue.id} 
-                        id={`issue-card-${issue.id}`}
-                        className="col-span-1"
-                      >
-                        <IssueCard
-                          issue={issue}
-                          onClick={() => handleIssueClick(issue)}
-                          isSelected={selectedIssue?.id === issue.id}
-                          onUpvote={handleUpvote}
-                          onDownvote={handleDownvote}
-                        />
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center justify-between px-4 py-2 border-b">
+                    <span className="text-sm text-muted-foreground">
+                      Showing {paginatedIssues.length} of {filteredIssues.length} issues
+                    </span>
+                    <select
+                      className="text-sm border rounded p-1"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={30}>30 per page</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 p-2 flex-1">
+                    {paginatedIssues.length > 0 ? (
+                      paginatedIssues.map(issue => (
+                        <div 
+                          key={issue.id} 
+                          id={`issue-card-${issue.id}`}
+                          className="col-span-1"
+                        >
+                          <IssueCard
+                            issue={issue}
+                            onClick={() => handleIssueClick(issue)}
+                            isSelected={selectedIssue?.id === issue.id}
+                            onUpvote={handleUpvote}
+                            onDownvote={handleDownvote}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground col-span-2">
+                        No issues found matching your filters
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground col-span-2">
-                      No issues found matching your filters
+                    )}
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="border-t p-4">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                            />
+                          </PaginationItem>
+                          {Array.from({ length: totalPages }).map((_, index) => (
+                            <PaginationItem key={index + 1}>
+                              <PaginationLink
+                                onClick={() => handlePageChange(index + 1)}
+                                isActive={currentPage === index + 1}
+                              >
+                                {index + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
                   )}
                 </div>

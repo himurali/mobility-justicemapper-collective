@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -69,9 +68,8 @@ export default {
 					slate: '#64748b',
 					yellow: '#fbbf24',
 					red: '#ef4444',
-					// Add JUMP logo colors
-					purple: '#5D3FD3', // Main purple from logo
-					brightYellow: '#FFE11A', // Bright yellow from logo
+					purple: '#5D3FD3',
+					brightYellow: '#FFE11A',
 				}
 			},
 			borderRadius: {
@@ -100,6 +98,9 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			fontFamily: {
+				'libre-baskerville': ['Libre Baskerville', 'serif'],
 			}
 		}
 	},

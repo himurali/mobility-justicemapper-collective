@@ -34,7 +34,6 @@ interface IssueFormData {
   doclink2_of_issue: string;
   city: string;
   image_url?: string;
-  image_file?: File;
 }
 
 const cities: City[] = [
@@ -65,6 +64,7 @@ const ReportInjustice = () => {
       doclink1_of_issue: "",
       doclink2_of_issue: "",
       city: cities[0].id,
+      image_url: "",
     },
   });
 
@@ -148,34 +148,10 @@ const ReportInjustice = () => {
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `issue-images/${fileName}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from('issue_images')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('issue_images')
-          .getPublicUrl(filePath);
-
-        form.setValue('image_url', publicUrl);
-        setImagePreview(URL.createObjectURL(file));
-      } catch (error) {
-        toast({
-          title: "Upload Error",
-          description: "Failed to upload image",
-          variant: "destructive",
-        });
-      }
-    }
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    form.setValue('image_url', url);
+    setImagePreview(url);
   };
 
   const onSubmit = async (data: IssueFormData) => {
@@ -403,34 +379,33 @@ const ReportInjustice = () => {
             name="image_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Issue Image</FormLabel>
+                <FormLabel>Issue Image URL</FormLabel>
                 <FormControl>
-                  <div className="flex items-center gap-4">
+                  <div className="space-y-4">
                     <Input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      id="issue-image-upload"
-                      onChange={handleImageUpload}
+                      placeholder="Enter URL for issue image" 
+                      type="url"
+                      {...field} 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleImageUrlChange(e);
+                      }}
                     />
-                    <label 
-                      htmlFor="issue-image-upload" 
-                      className="flex items-center gap-2 cursor-pointer bg-purple-50 text-purple-700 px-4 py-2 rounded hover:bg-purple-100"
-                    >
-                      <ImageIcon size={16} />
-                      Upload Image
-                    </label>
                     {imagePreview && (
-                      <img 
-                        src={imagePreview} 
-                        alt="Issue preview" 
-                        className="w-20 h-20 object-cover rounded" 
-                      />
+                      <div className="mt-2">
+                        <p className="text-sm text-muted-foreground mb-1">Image Preview:</p>
+                        <img 
+                          src={imagePreview} 
+                          alt="Issue preview" 
+                          className="w-full max-h-60 object-contain rounded border border-gray-200" 
+                          onError={() => setImagePreview(null)}
+                        />
+                      </div>
                     )}
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Upload an image that illustrates the issue
+                  Provide a URL to an image that illustrates the issue
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -117,10 +117,14 @@ const IssueCard: React.FC<IssueCardProps> = ({
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span>
+              {issue.communityMembers.length} supporters
+            </span>
+            
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-6 w-6 p-0 rounded-full hover:bg-green-50 hover:text-green-600"
+              className="h-6 w-6 p-0 rounded-full hover:bg-green-50 hover:text-green-600 ml-1"
               onClick={handleUpvote}
             >
               <ThumbsUp className="h-3 w-3" />
@@ -137,11 +141,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
               <ThumbsDown className="h-3 w-3" />
               <span className="sr-only">Downvote</span>
             </Button>
-            <span className="text-xs font-medium mr-2">{issue.downvotes || 0}</span>
-
-            <span>
-              {issue.communityMembers.length} supporters
-            </span>
+            <span className="text-xs font-medium">{issue.downvotes || 0}</span>
           </div>
         </div>
       </CardContent>

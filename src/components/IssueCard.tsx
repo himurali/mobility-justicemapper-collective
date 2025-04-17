@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,6 +103,17 @@ const IssueCard: React.FC<IssueCardProps> = ({
             <span className="mr-1">{getCategoryEmoji(visibleTag)}</span>
             {formatCategoryName(visibleTag)}
           </Badge>
+        )}
+        
+        {/* Display the image below the tags */}
+        {issue.imageUrl && (
+          <div className="mb-2 w-full">
+            <img 
+              src={issue.imageUrl} 
+              alt={issue.title} 
+              className="w-full h-24 object-cover rounded-md"
+            />
+          </div>
         )}
         
         <div className="flex items-center justify-between">

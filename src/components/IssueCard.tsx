@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,10 +105,10 @@ const IssueCard: React.FC<IssueCardProps> = ({
         )}
         
         {/* Display the image below the tags */}
-        {issue.imageUrl && (
+        {issue.image_url && (
           <div className="mb-2 w-full">
             <img 
-              src={issue.imageUrl} 
+              src={issue.image_url} 
               alt={issue.title} 
               className="w-full h-24 object-cover rounded-md"
             />

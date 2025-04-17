@@ -77,9 +77,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
       
       if (data) {
         console.log("Raw data from database:", data);
+        console.log(`Total number of issues fetched: ${data.length}`);
         
         const formattedData = data.map((issue: any) => {
-          console.log(`Processing issue ID: ${issue.id}, Title: ${issue.issue_title}`);
+          console.log(`Processing issue ID: ${issue.id}, Title: ${issue.issue_title}, City: ${issue.city}, Coordinates: [${issue.longitude_of_issue}, ${issue.latitude_of_issue}]`);
           
           return {
             id: String(issue.id),
@@ -278,29 +279,62 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log(`Adding markers for ${issues.length} issues`);
     console.log(`Category filter: ${categoryFilter}, Severity filter: ${severityFilter}`);
 
+    // Case-insensitive city name matching
+    const selectedCityName = center[0] === 77.5946 && center[1] === 12.9716 ? "Bangalore" : 
+                            center[0] === 72.8777 && center[1] === 19.0760 ? "Mumbai" :
+                            center[0] === 77.2090 && center[1] === 28.6139 ? "Delhi" :
+                            center[0] === 80.2707 && center[1] === 13.0827 ? "Chennai" : "";
+    
+    console.log(`Selected city for filtering: ${selectedCityName}`);
+
     const filteredIssues = issues.filter(issue => {
-      if (categoryFilter !== "all") {
-        const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
-        if (!categoryMatch) return false;
+      // Skip issues with invalid coordinates
+      if (!issue.location.latitude || !issue.location.longitude) {
+        console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
+        return false;
+      }
+
+      // City filtering - case-insensitive
+      if (selectedCityName && issue.city) {
+        const issueCity = issue.city.trim().toLowerCase();
+        const selectedCity = selectedCityName.trim().toLowerCase();
+        
+        // Check both lowercase versions for matching
+        if (issueCity !== selectedCity && 
+            issueCity !== selectedCity.charAt(0).toLowerCase() + selectedCity.slice(1)) {
+          console.log(`Filtering out issue ${issue.id} due to city mismatch: '${issue.city}' vs '${selectedCityName}'`);
+          return false;
+        }
       }
       
+      // Category filtering
+      if (categoryFilter !== "all") {
+        const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
+        if (!categoryMatch) {
+          console.log(`Filtering out issue ${issue.id} due to category mismatch`);
+          return false;
+        }
+      }
+      
+      // Severity filtering
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
+        console.log(`Filtering out issue ${issue.id} due to severity mismatch`);
         return false;
       }
         
       return true;
     });
 
-    console.log(`Filtered to ${filteredIssues.length} issues`);
+    console.log(`Filtered to ${filteredIssues.length} issues after applying all filters`);
+    
+    // Print all filtered issues for debugging
+    filteredIssues.forEach(issue => {
+      console.log(`Issue in filtered list: ID=${issue.id}, Title=${issue.title}, City=${issue.city}, Coords=[${issue.location.longitude}, ${issue.location.latitude}]`);
+    });
 
     filteredIssues.forEach(issue => {
       console.log(`Creating marker for issue: ${issue.id}, Title: ${issue.title}, Location: [${issue.location.longitude}, ${issue.location.latitude}]`);
       
-      if (!issue.location.latitude || !issue.location.longitude) {
-        console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
-        return;
-      }
-
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       

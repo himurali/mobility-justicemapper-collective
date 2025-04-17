@@ -15,6 +15,7 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="bg-gradient-to-b from-yellow-100 to-white py-10 px-4">
@@ -60,11 +61,11 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
               </div>
               
               <div>
-                {!useAuth().user ? (
+                {!user ? (
                   <Button 
                     variant="secondary"
                     className="bg-yellow-300 text-purple-800 hover:bg-yellow-400 font-medium"
-                    onClick={() => window.location.href = '/auth'}
+                    onClick={() => navigate('/auth')}
                   >
                     Sign In
                   </Button>
@@ -72,7 +73,7 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
                   <Button 
                     variant="secondary"
                     className="bg-purple-700 text-white hover:bg-purple-800 font-medium"
-                    onClick={() => window.location.href = '/profile'}
+                    onClick={() => navigate('/profile')}
                   >
                     My Profile
                   </Button>

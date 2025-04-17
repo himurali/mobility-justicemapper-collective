@@ -32,6 +32,7 @@ export interface IssueData {
   upvotes: number;
   downvotes: number;
   severity: IssueSeverity;
+  image_url?: string; // Add this field to match the database schema
 }
 
 export interface ForumPost {

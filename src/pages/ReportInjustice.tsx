@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -37,10 +36,10 @@ interface IssueFormData {
 }
 
 const cities: City[] = [
-  { id: "bangalore", name: "Bangalore", coordinates: [77.5946, 12.9716], zoom: 12 },
-  { id: "mumbai", name: "Mumbai", coordinates: [72.8777, 19.0760], zoom: 12 },
-  { id: "delhi", name: "Delhi", coordinates: [77.2090, 28.6139], zoom: 12 },
-  { id: "chennai", name: "Chennai", coordinates: [80.2707, 13.0827], zoom: 12 }
+  { id: "Bangalore", name: "Bangalore", coordinates: [77.5946, 12.9716], zoom: 12 },
+  { id: "Mumbai", name: "Mumbai", coordinates: [72.8777, 19.0760], zoom: 12 },
+  { id: "Delhi", name: "Delhi", coordinates: [77.2090, 28.6139], zoom: 12 },
+  { id: "Chennai", name: "Chennai", coordinates: [80.2707, 13.0827], zoom: 12 }
 ];
 
 const ReportInjustice = () => {
@@ -156,6 +155,8 @@ const ReportInjustice = () => {
         });
         return;
       }
+
+      console.log("Submitting form with data:", data);
 
       const { error } = await supabase
         .from('JusticeIssue')

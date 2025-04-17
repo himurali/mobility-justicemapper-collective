@@ -87,4 +87,3 @@ const Hero: React.FC<HeroProps> = ({ cities, selectedCity, onSelectCity }) => {
 };
 
 export default Hero;
-

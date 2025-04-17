@@ -10,6 +10,7 @@ import { mockForumPosts } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import VideoPlayer from './video/VideoPlayer';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -156,18 +157,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           <TabsContent value="video" className="p-6 pt-4">
             <div className="flex justify-center mb-4">
               <div className="w-3/4 aspect-video bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden shadow-md">
-                {issue.videoUrl ? (
-                  <iframe 
-                    src={`https://www.youtube.com/embed/${getYoutubeId(issue.videoUrl)}`}
-                    className="w-full h-full"
-                    allowFullScreen
-                    title={issue.title}
-                  ></iframe>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-muted-foreground">No video available</p>
-                  </div>
-                )}
+                <VideoPlayer 
+                  url={issue.videoUrl || ''}
+                  title={issue.title}
+                />
               </div>
             </div>
             <h3 className="text-lg font-medium mb-2 text-blue-700 dark:text-blue-300">Problem Description</h3>

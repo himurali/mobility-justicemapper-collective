@@ -31,6 +31,9 @@ const IssueCard: React.FC<IssueCardProps> = ({
     setImageError(false);
     setImageLoaded(false);
 
+    // Log full image URL with params
+    console.log("Full image URL with params:", issue.image_url);
+
     // Log image URL for debugging
     if (issue.image_url) {
       console.log(`Issue ${issue.id} has image URL:`, issue.image_url);

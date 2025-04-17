@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, ThumbsUp, ThumbsDown, AlertTriangle, Clock, Image as ImageIcon } from "lucide-react";
@@ -24,6 +24,20 @@ const IssueCard: React.FC<IssueCardProps> = ({
   onDownvote
 }) => {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Reset image states when issue changes
+    setImageError(false);
+    setImageLoaded(false);
+
+    // Log image URL for debugging
+    if (issue.image_url) {
+      console.log(`Issue ${issue.id} has image URL:`, issue.image_url);
+    } else {
+      console.log(`Issue ${issue.id} has no image URL`);
+    }
+  }, [issue]);
   
   // Get the first tag to display
   const visibleTag = issue.tags?.length > 0 ? issue.tags[0] : null;
@@ -62,14 +76,24 @@ const IssueCard: React.FC<IssueCardProps> = ({
   };
 
   const handleImageError = () => {
-    console.error("Failed to load image:", issue.image_url);
+    console.error("Failed to load image for issue:", issue.id, "URL:", issue.image_url);
     setImageError(true);
   };
 
+  const handleImageLoad = () => {
+    console.log("Successfully loaded image for issue:", issue.id);
+    setImageLoaded(true);
+  };
+
+  // Normalize image URL if needed
+  let imageUrl = issue.image_url;
+  if (imageUrl && !imageUrl.startsWith('http')) {
+    imageUrl = `https://${imageUrl}`;
+    console.log("Normalized image URL:", imageUrl);
+  }
+
   // Check if image URL is valid
-  const hasValidImage = issue.image_url && 
-                        issue.image_url.trim() !== "" && 
-                        !imageError;
+  const hasValidImage = imageUrl && imageUrl.trim() !== "" && !imageError;
 
   return (
     <Card 
@@ -121,16 +145,25 @@ const IssueCard: React.FC<IssueCardProps> = ({
         {hasValidImage ? (
           <div className="mb-2 w-full h-24 rounded-md overflow-hidden bg-gray-100 relative">
             <img 
-              src={issue.image_url} 
+              src={imageUrl} 
               alt={issue.title} 
               className="w-full h-full object-cover"
               onError={handleImageError}
+              onLoad={handleImageLoad}
+              loading="eager"
             />
+            {!imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="animate-pulse">Loading image...</div>
+              </div>
+            )}
           </div>
         ) : issue.image_url ? (
           <div className="mb-2 w-full h-24 flex items-center justify-center bg-gray-100 rounded-md">
             <ImageIcon className="h-8 w-8 text-gray-400" />
-            <span className="text-xs text-gray-500 ml-2">Image unavailable</span>
+            <span className="text-xs text-gray-500 ml-2">
+              Image unavailable: {issue.image_url.substring(0, 30)}...
+            </span>
           </div>
         ) : null}
         

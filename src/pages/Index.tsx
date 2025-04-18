@@ -448,19 +448,18 @@ const Index = () => {
             <ResizableHandle withHandle />
             
             <ResizablePanel defaultSize={50} minSize={30}>
-              {showMap && (
-                <div className="h-full">
-                  <MapComponent 
-                    center={mapCenter}
-                    zoom={mapZoom}
-                    categoryFilter={categoryFilter}
-                    severityFilter={severityFilter}
-                    selectedIssue={selectedIssue?.id}
-                    onSelectIssue={handleSelectIssue}
-                    selectedTab={activeDialogTab}
-                  />
-                </div>
-              )}
+              <div className="h-full">
+                <MapComponent 
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  categoryFilter={categoryFilter}
+                  severityFilter={severityFilter}
+                  selectedIssue={selectedIssue?.id}
+                  onSelectIssue={handleSelectIssue}
+                  selectedTab={activeDialogTab}
+                  isVisible={showMap}
+                />
+              </div>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

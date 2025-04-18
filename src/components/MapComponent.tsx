@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -26,6 +25,7 @@ interface MapComponentProps {
   severityFilter?: string;
   onSelectIssue?: (issueId: string) => void;
   selectedTab?: string;
+  isVisible?: boolean;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -36,12 +36,15 @@ const MapComponent: React.FC<MapComponentProps> = ({
   severityFilter = "all",
   onSelectIssue,
   selectedTab = "video",
+  isVisible = true,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const markerElementsRef = useRef<{ [key: string]: HTMLElement }>({});
+  const cachedIssuesRef = useRef<IssueData[]>([]);
   const blinkIntervalRef = useRef<number | null>(null);
+  const mapInitializedRef = useRef<boolean>(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -115,6 +118,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         
         console.log("Formatted data:", formattedData);
         setIssues(formattedData);
+        cachedIssuesRef.current = formattedData;
       }
     };
 
@@ -137,37 +141,37 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const getCategoryColor = (category: string): string => {
     switch (category) {
       case "pedestrian_infrastructure":
-        return "#ef4444"; // red
+        return "#ef4444";
       case "cyclist_facilities":
-        return "#10b981"; // green
+        return "#10b981";
       case "public_bus_transport":
       case "public_metro":
-        return "#3b82f6"; // blue
+        return "#3b82f6";
       case "high_risk_intersections":
-        return "#f59e0b"; // amber
+        return "#f59e0b";
       case "accessibility_issues":
-        return "#8b5cf6"; // purple
+        return "#8b5cf6";
       case "traffic_signal_compliance":
-        return "#ec4899"; // pink
+        return "#ec4899";
       case "green_spaces":
-        return "#22c55e"; // green
+        return "#22c55e";
       case "pollution_hotspots":
-        return "#64748b"; // slate
+        return "#64748b";
       default:
-        return "#64748b"; // default slate
+        return "#64748b";
     }
   };
 
   const getSeverityColor = (severity: string): string => {
     switch (severity) {
       case "critical":
-        return "#ef4444"; // red
+        return "#ef4444";
       case "moderate":
-        return "#f59e0b"; // amber
+        return "#f59e0b";
       case "minor":
-        return "#22c55e"; // green
+        return "#22c55e";
       default:
-        return "#64748b"; // slate
+        return "#64748b";
     }
   };
 
@@ -228,7 +232,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const initializeMap = () => {
-    if (map.current) return;
+    if (map.current || !isVisible) return;
     
     try {
       mapboxgl.accessToken = mapboxToken;
@@ -246,6 +250,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       );
   
       map.current.on("load", () => {
+        mapInitializedRef.current = true;
         addMarkers();
       });
     } catch (error) {
@@ -270,7 +275,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const addMarkers = () => {
-    if (!map.current) return;
+    if (!map.current || !isVisible) return;
 
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
@@ -279,7 +284,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log(`Adding markers for ${issues.length} issues`);
     console.log(`Category filter: ${categoryFilter}, Severity filter: ${severityFilter}`);
 
-    // Case-insensitive city name matching
     const selectedCityName = center[0] === 77.5946 && center[1] === 12.9716 ? "Bangalore" : 
                             center[0] === 72.8777 && center[1] === 19.0760 ? "Mumbai" :
                             center[0] === 77.2090 && center[1] === 28.6139 ? "Delhi" :
@@ -288,18 +292,15 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log(`Selected city for filtering: ${selectedCityName}`);
 
     const filteredIssues = issues.filter(issue => {
-      // Skip issues with invalid coordinates
       if (!issue.location.latitude || !issue.location.longitude) {
         console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
         return false;
       }
 
-      // City filtering - case-insensitive
       if (selectedCityName && issue.city) {
         const issueCity = issue.city.trim().toLowerCase();
         const selectedCity = selectedCityName.trim().toLowerCase();
         
-        // Check both lowercase versions for matching
         if (issueCity !== selectedCity && 
             issueCity !== selectedCity.charAt(0).toLowerCase() + selectedCity.slice(1)) {
           console.log(`Filtering out issue ${issue.id} due to city mismatch: '${issue.city}' vs '${selectedCityName}'`);
@@ -307,7 +308,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
-      // Category filtering
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) {
@@ -316,7 +316,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
-      // Severity filtering
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
         console.log(`Filtering out issue ${issue.id} due to severity mismatch`);
         return false;
@@ -327,7 +326,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     console.log(`Filtered to ${filteredIssues.length} issues after applying all filters`);
     
-    // Print all filtered issues for debugging
     filteredIssues.forEach(issue => {
       console.log(`Issue in filtered list: ID=${issue.id}, Title=${issue.title}, City=${issue.city}, Coords=[${issue.location.longitude}, ${issue.location.latitude}]`);
     });
@@ -377,17 +375,42 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   useEffect(() => {
-    initializeMap();
+    if (isVisible) {
+      if (mapContainer.current && !map.current) {
+        console.log("Map becoming visible, initializing...");
+        initializeMap();
+      } else if (map.current) {
+        console.log("Map already exists and becoming visible, resizing...");
+        map.current.resize();
+        
+        if (mapInitializedRef.current && cachedIssuesRef.current.length > 0) {
+          console.log("Restoring markers from cache...");
+          addMarkers();
+        }
+      }
+    } else {
+      console.log("Map becoming hidden, stopping blink effect");
+      stopBlinking();
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isVisible) {
+      initializeMap();
+    }
 
     return () => {
       stopBlinking();
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+        mapInitializedRef.current = false;
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (map.current) {
+    if (map.current && isVisible && mapInitializedRef.current) {
       console.log("Map updating with center:", center, "zoom:", zoom);
       map.current.flyTo({
         center: center,
@@ -397,21 +420,32 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
       addMarkers();
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues, isVisible]);
 
   useEffect(() => {
     stopBlinking();
     
-    if (selectedIssue) {
+    if (selectedIssue && isVisible) {
       startBlinking(selectedIssue);
     }
     
     return () => stopBlinking();
-  }, [selectedIssue]);
+  }, [selectedIssue, isVisible]);
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
   };
+
+  if (!isVisible) {
+    return (
+      <div className="w-full h-full rounded-lg shadow-sm bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-500 text-center p-4">
+          <p>Map is currently hidden</p>
+          <p className="text-sm">Toggle map to view markers</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>

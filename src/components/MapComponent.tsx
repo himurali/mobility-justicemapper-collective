@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -26,7 +25,6 @@ interface MapComponentProps {
   severityFilter?: string;
   onSelectIssue?: (issueId: string) => void;
   selectedTab?: string;
-  isVisible?: boolean;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -37,7 +35,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   severityFilter = "all",
   onSelectIssue,
   selectedTab = "video",
-  isVisible = true,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -46,7 +43,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const cachedIssuesRef = useRef<IssueData[]>([]);
   const blinkIntervalRef = useRef<number | null>(null);
   const mapInitializedRef = useRef<boolean>(false);
-  const previousVisibilityRef = useRef<boolean>(isVisible);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -234,7 +230,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const initializeMap = () => {
-    if (map.current || !isVisible || !mapContainer.current) return;
+    if (map.current || !mapContainer.current) return;
     
     try {
       console.log("Initializing map...");
@@ -281,7 +277,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const addMarkers = () => {
-    if (!map.current || !isVisible || !mapInitializedRef.current) return;
+    if (!map.current || !mapInitializedRef.current) return;
 
     // Clean up existing markers first
     Object.values(markersRef.current).forEach(marker => marker.remove());
@@ -382,40 +378,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   useEffect(() => {
-    // Only handle visibility changes
-    if (previousVisibilityRef.current !== isVisible) {
-      console.log(`Map visibility changed from ${previousVisibilityRef.current} to ${isVisible}`);
-      
-      if (isVisible) {
-        if (!map.current) {
-          console.log("Map becoming visible, initializing...");
-          initializeMap();
-        } else {
-          console.log("Map already exists and becoming visible, resizing...");
-          map.current.resize();
-          
-          // Wait a moment for the resize to complete
-          setTimeout(() => {
-            if (mapInitializedRef.current && cachedIssuesRef.current.length > 0) {
-              console.log("Restoring markers from cache...");
-              addMarkers();
-            }
-          }, 100);
-        }
-      } else {
-        console.log("Map becoming hidden, stopping blink effect");
-        stopBlinking();
-      }
-      
-      previousVisibilityRef.current = isVisible;
-    }
-  }, [isVisible]);
-
-  // Initial map setup
-  useEffect(() => {
-    if (isVisible) {
-      initializeMap();
-    }
+    initializeMap();
 
     return () => {
       stopBlinking();
@@ -429,7 +392,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   // Update markers when relevant props change
   useEffect(() => {
-    if (map.current && isVisible && mapInitializedRef.current) {
+    if (map.current && mapInitializedRef.current) {
       console.log("Map updating with center:", center, "zoom:", zoom);
       map.current.flyTo({
         center: center,
@@ -439,33 +402,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
       addMarkers();
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues, isVisible]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues]);
 
   // Handle blinking effect for selected marker
   useEffect(() => {
     stopBlinking();
     
-    if (selectedIssue && isVisible && mapInitializedRef.current) {
+    if (selectedIssue && mapInitializedRef.current) {
       startBlinking(selectedIssue);
     }
     
     return () => stopBlinking();
-  }, [selectedIssue, isVisible]);
+  }, [selectedIssue]);
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
   };
-
-  if (!isVisible) {
-    return (
-      <div className="w-full h-full rounded-lg shadow-sm bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500 text-center p-4">
-          <p>Map is currently hidden</p>
-          <p className="text-sm">Toggle map to view markers</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <TooltipProvider>

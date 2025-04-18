@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapIcon, FilterIcon, SlidersHorizontal, Settings, Search, Tag } from "lucide-react";
+import { SlidersHorizontal, Settings, Search, Tag } from "lucide-react";
 import { mobilityCategories } from "@/data/issueData";
 import { IssueCategory, IssueSeverity } from "@/types";
 import { 
@@ -13,10 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -29,8 +24,6 @@ interface FilterBarProps {
   selectedTags: string[];
   setSelectedTags: (tags: string[]) => void;
   issueCount: number;
-  showMap: boolean;
-  toggleMap: () => void;
   sortBy: 'most_critical' | 'most_recent' | 'most_upvoted';
   setSortBy: (sort: 'most_critical' | 'most_recent' | 'most_upvoted') => void;
   onShowCustomFilter?: () => void;
@@ -44,8 +37,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
   selectedTags,
   setSelectedTags,
   issueCount,
-  showMap,
-  toggleMap,
   sortBy,
   setSortBy,
   onShowCustomFilter
@@ -78,7 +69,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
                            (severityFilter !== 'all' ? 1 : 0) + 
                            selectedTags.length;
                            
-  // Helper function to get all available tags sorted alphabetically
   const getAllTags = () => {
     let allTags: {id: string, name: string, category: string}[] = [];
     
@@ -95,7 +85,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
     return allTags.sort((a, b) => a.name.localeCompare(b.name));
   };
   
-  // Filter tags based on search query
   const getFilteredTags = () => {
     const allTags = getAllTags();
     if (!tagSearchQuery) return allTags;
@@ -200,16 +189,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={toggleMap}
-            className={cn("h-8", showMap ? "bg-primary text-primary-foreground hover:bg-primary/90" : "")}
-          >
-            <MapIcon className="h-4 w-4 mr-1" />
-            Map
-          </Button>
-          
           <Button
             variant="outline"
             size="sm"
@@ -243,9 +222,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             for (const category of mobilityCategories) {
               const subcategory = category.subcategories.find(sub => sub.id === tag);
               if (subcategory) {
-                // Shorten display name for badge
-                const name = subcategory.name;
-                displayName = name.length > 12 ? name.substring(0, 10) + '...' : name;
+                displayName = subcategory.name;
                 break;
               }
             }

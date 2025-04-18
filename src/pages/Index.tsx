@@ -316,10 +316,6 @@ const Index = () => {
     }
   };
 
-  const toggleMapVisibility = () => {
-    setShowMap(prev => !prev);
-  };
-
   useEffect(() => {
     if (selectedIssue && selectedIssueRef.current) {
       const issueElement = document.getElementById(`issue-card-${selectedIssue.id}`);

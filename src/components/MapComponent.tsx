@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -45,6 +46,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const cachedIssuesRef = useRef<IssueData[]>([]);
   const blinkIntervalRef = useRef<number | null>(null);
   const mapInitializedRef = useRef<boolean>(false);
+  const previousVisibilityRef = useRef<boolean>(isVisible);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -232,13 +234,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const initializeMap = () => {
-    if (map.current || !isVisible) return;
+    if (map.current || !isVisible || !mapContainer.current) return;
     
     try {
+      console.log("Initializing map...");
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
-        container: mapContainer.current!,
+        container: mapContainer.current,
         style: "mapbox://styles/mapbox/light-v10",
         center: center,
         zoom: zoom,
@@ -250,8 +253,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
       );
   
       map.current.on("load", () => {
+        console.log("Map loaded successfully");
         mapInitializedRef.current = true;
-        addMarkers();
+        if (cachedIssuesRef.current.length > 0) {
+          addMarkers();
+        }
       });
     } catch (error) {
       console.error("Error initializing map:", error);
@@ -275,8 +281,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const addMarkers = () => {
-    if (!map.current || !isVisible) return;
+    if (!map.current || !isVisible || !mapInitializedRef.current) return;
 
+    // Clean up existing markers first
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
@@ -375,25 +382,36 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   useEffect(() => {
-    if (isVisible) {
-      if (mapContainer.current && !map.current) {
-        console.log("Map becoming visible, initializing...");
-        initializeMap();
-      } else if (map.current) {
-        console.log("Map already exists and becoming visible, resizing...");
-        map.current.resize();
-        
-        if (mapInitializedRef.current && cachedIssuesRef.current.length > 0) {
-          console.log("Restoring markers from cache...");
-          addMarkers();
+    // Only handle visibility changes
+    if (previousVisibilityRef.current !== isVisible) {
+      console.log(`Map visibility changed from ${previousVisibilityRef.current} to ${isVisible}`);
+      
+      if (isVisible) {
+        if (!map.current) {
+          console.log("Map becoming visible, initializing...");
+          initializeMap();
+        } else {
+          console.log("Map already exists and becoming visible, resizing...");
+          map.current.resize();
+          
+          // Wait a moment for the resize to complete
+          setTimeout(() => {
+            if (mapInitializedRef.current && cachedIssuesRef.current.length > 0) {
+              console.log("Restoring markers from cache...");
+              addMarkers();
+            }
+          }, 100);
         }
+      } else {
+        console.log("Map becoming hidden, stopping blink effect");
+        stopBlinking();
       }
-    } else {
-      console.log("Map becoming hidden, stopping blink effect");
-      stopBlinking();
+      
+      previousVisibilityRef.current = isVisible;
     }
   }, [isVisible]);
 
+  // Initial map setup
   useEffect(() => {
     if (isVisible) {
       initializeMap();
@@ -409,6 +427,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
+  // Update markers when relevant props change
   useEffect(() => {
     if (map.current && isVisible && mapInitializedRef.current) {
       console.log("Map updating with center:", center, "zoom:", zoom);
@@ -422,10 +441,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues, isVisible]);
 
+  // Handle blinking effect for selected marker
   useEffect(() => {
     stopBlinking();
     
-    if (selectedIssue && isVisible) {
+    if (selectedIssue && isVisible && mapInitializedRef.current) {
       startBlinking(selectedIssue);
     }
     
@@ -434,6 +454,43 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
+  };
+
+  const getCategoryColor = (category: string): string => {
+    switch (category) {
+      case "pedestrian_infrastructure":
+        return "#ef4444";
+      case "cyclist_facilities":
+        return "#10b981";
+      case "public_bus_transport":
+      case "public_metro":
+        return "#3b82f6";
+      case "high_risk_intersections":
+        return "#f59e0b";
+      case "accessibility_issues":
+        return "#8b5cf6";
+      case "traffic_signal_compliance":
+        return "#ec4899";
+      case "green_spaces":
+        return "#22c55e";
+      case "pollution_hotspots":
+        return "#64748b";
+      default:
+        return "#64748b";
+    }
+  };
+
+  const getSeverityColor = (severity: string): string => {
+    switch (severity) {
+      case "critical":
+        return "#ef4444";
+      case "moderate":
+        return "#f59e0b";
+      case "minor":
+        return "#22c55e";
+      default:
+        return "#64748b";
+    }
   };
 
   if (!isVisible) {

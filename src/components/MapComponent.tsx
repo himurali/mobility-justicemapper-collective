@@ -456,43 +456,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setIsDialogOpen(false);
   };
 
-  const getCategoryColor = (category: string): string => {
-    switch (category) {
-      case "pedestrian_infrastructure":
-        return "#ef4444";
-      case "cyclist_facilities":
-        return "#10b981";
-      case "public_bus_transport":
-      case "public_metro":
-        return "#3b82f6";
-      case "high_risk_intersections":
-        return "#f59e0b";
-      case "accessibility_issues":
-        return "#8b5cf6";
-      case "traffic_signal_compliance":
-        return "#ec4899";
-      case "green_spaces":
-        return "#22c55e";
-      case "pollution_hotspots":
-        return "#64748b";
-      default:
-        return "#64748b";
-    }
-  };
-
-  const getSeverityColor = (severity: string): string => {
-    switch (severity) {
-      case "critical":
-        return "#ef4444";
-      case "moderate":
-        return "#f59e0b";
-      case "minor":
-        return "#22c55e";
-      default:
-        return "#64748b";
-    }
-  };
-
   if (!isVisible) {
     return (
       <div className="w-full h-full rounded-lg shadow-sm bg-gray-100 flex items-center justify-center">

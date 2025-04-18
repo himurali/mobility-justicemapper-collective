@@ -65,7 +65,6 @@ const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<IssueData | null>(null);
   const [activeDialogTab, setActiveDialogTab] = useState<string>("video");
-  const [showMap, setShowMap] = useState(true);
   const [sortBy, setSortBy] = useState<'most_critical' | 'most_recent' | 'most_upvoted'>('most_recent');
   const [issues, setIssues] = useState<IssueData[]>([]);
   const [showCustomFilter, setShowCustomFilter] = useState(false);
@@ -357,8 +356,6 @@ const Index = () => {
           selectedTags={selectedTags}
           setSelectedTags={setSelectedTags}
           issueCount={filteredIssues.length}
-          showMap={showMap}
-          toggleMap={toggleMapVisibility}
           sortBy={sortBy}
           setSortBy={setSortBy}
           onShowCustomFilter={() => setShowCustomFilter(true)}
@@ -457,7 +454,6 @@ const Index = () => {
                   selectedIssue={selectedIssue?.id}
                   onSelectIssue={handleSelectIssue}
                   selectedTab={activeDialogTab}
-                  isVisible={showMap}
                 />
               </div>
             </ResizablePanel>

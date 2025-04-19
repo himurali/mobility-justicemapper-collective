@@ -28,6 +28,11 @@ const Header: React.FC = () => {
   
   const NavLinks = () => (
     <>
+      <Link to="/explore">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
+          Explore Map
+        </Button>
+      </Link>
       <Link to="/about">
         <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
           About

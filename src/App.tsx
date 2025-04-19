@@ -5,12 +5,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
 import CommunityProfile from "./pages/CommunityProfile";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
-import ReportInjustice from "./pages/ReportInjustice"; // Added this import
+import ReportInjustice from "./pages/ReportInjustice";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient({
@@ -32,7 +33,8 @@ const App = () => {
               <Toaster />
               <Sonner />
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/explore" element={<Explore />} />
                 <Route path="/about" element={<div>About page (coming soon)</div>} />
                 <Route path="/resources" element={<div>Resources page (coming soon)</div>} />
                 <Route path="/auth" element={<Auth />} />

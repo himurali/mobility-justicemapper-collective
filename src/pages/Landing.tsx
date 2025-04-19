@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +16,7 @@ const Landing = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-24 pb-16 text-center bg-gradient-to-b from-purple-50 to-white">
+      <section className="container mx-auto px-4 py-16 text-center bg-gradient-to-b from-purple-50 to-white">
         <h1 className="text-4xl md:text-6xl font-serif mb-6 text-purple-900">
           Transform Urban<br />Mobility Today
         </h1>
@@ -35,7 +33,6 @@ const Landing = () => {
         </Button>
       </section>
 
-      {/* Why Choose Section */}
       <section className="container mx-auto px-4 py-16 grid md:grid-cols-2 gap-12 bg-white">
         <div>
           <h2 className="text-3xl font-serif mb-6 text-purple-900">
@@ -95,35 +92,66 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="container mx-auto px-4 py-16 bg-purple-50">
+      <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-serif mb-8 text-purple-900">
-          Frequently Asked Questions
+          Your Questions Answered
         </h2>
-        <div className="max-w-2xl">
-          <p className="text-purple-700 mb-6">
-            Got questions? We've got answers! Here are some common queries
-          </p>
-          <Accordion type="single" collapsible>
-            <AccordionItem value="what-is">
-              <AccordionTrigger className="text-left text-purple-900">
-                What is JUSTMOVE?
+        <div className="max-w-3xl mx-auto bg-purple-50/50 rounded-lg p-8">
+          <Accordion type="single" collapsible className="space-y-6">
+            <AccordionItem value="what-is" className="border-b-0">
+              <AccordionTrigger className="text-left hover:no-underline">
+                <div className="flex items-center gap-6">
+                  <span className="text-2xl font-serif text-purple-900">01</span>
+                  <span className="text-xl font-medium text-purple-900">What is JUSTMOVE all about?</span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700">
+              <AccordionContent className="text-purple-700 pl-14">
                 JUSTMOVE is a community-driven platform that empowers people to identify, 
                 document, and address mobility justice issues in their communities. We 
                 provide tools and resources to help create more equitable and accessible 
                 urban spaces.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="get-involved">
-              <AccordionTrigger className="text-left text-purple-900">
-                How can I get involved?
+
+            <AccordionItem value="get-involved" className="border-b-0">
+              <AccordionTrigger className="text-left hover:no-underline">
+                <div className="flex items-center gap-6">
+                  <span className="text-2xl font-serif text-purple-900">02</span>
+                  <span className="text-xl font-medium text-purple-900">How can I get involved?</span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700">
+              <AccordionContent className="text-purple-700 pl-14">
                 You can start by signing up for an account, reporting mobility issues 
                 in your area, joining community discussions, and participating in local 
                 initiatives. Every contribution helps make our cities more accessible!
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="cost" className="border-b-0">
+              <AccordionTrigger className="text-left hover:no-underline">
+                <div className="flex items-center gap-6">
+                  <span className="text-2xl font-serif text-purple-900">03</span>
+                  <span className="text-xl font-medium text-purple-900">Is there a cost to use?</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-purple-700 pl-14">
+                No, JUSTMOVE is completely free for community members. We believe that 
+                access to mobility justice tools should be available to everyone who 
+                wants to make a difference in their community.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="contribute" className="border-b-0">
+              <AccordionTrigger className="text-left hover:no-underline">
+                <div className="flex items-center gap-6">
+                  <span className="text-2xl font-serif text-purple-900">04</span>
+                  <span className="text-xl font-medium text-purple-900">Can I contribute my own data?</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-purple-700 pl-14">
+                Yes! We encourage community members to contribute their observations, 
+                experiences, and data about mobility issues. Your contributions help 
+                build a more comprehensive understanding of mobility challenges in your area.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

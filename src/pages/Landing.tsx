@@ -33,6 +33,31 @@ const Landing = () => {
         </Button>
       </section>
 
+      <section className="relative overflow-hidden py-24">
+        <div className="absolute inset-0 bg-[url('/public/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
+        
+        <div className="relative container mx-auto px-4">
+          <div className="max-w-2xl">
+            <h2 className="text-5xl font-bold text-white mb-6">
+              Join the Movement
+            </h2>
+            <p className="text-xl text-white mb-8">
+              Be part of the change!<br />
+              Together, we can create urban spaces that work for everyone.
+            </p>
+            <Button 
+              onClick={() => navigate('/auth')}
+              size="lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Get Involved
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <section className="container mx-auto px-4 py-16 grid md:grid-cols-2 gap-12 bg-white">
         <div>
           <h2 className="text-3xl font-serif mb-6 text-purple-900">

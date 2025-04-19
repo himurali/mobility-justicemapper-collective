@@ -278,7 +278,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const addMarkers = () => {
-    if (!map.current || !mapInitializedRef.current) return;
+    if (!map.current || !mapInitializedRef.current) {
+      console.log("Map not initialized yet, cannot add markers");
+      return;
+    }
 
     // Clean up existing markers first
     Object.values(markersRef.current).forEach(marker => marker.remove());

@@ -13,106 +13,77 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <section className="container mx-auto px-4 py-16 text-center bg-gradient-to-b from-purple-50 to-white">
-        <h1 className="text-4xl md:text-6xl font-serif mb-6 text-purple-900">
-          Transform Urban<br />Mobility Today
-        </h1>
-        <p className="text-lg md:text-xl text-purple-700 max-w-2xl mx-auto mb-8">
-          Join the movement for fair and accessible urban spaces. Together, we can tackle mobility justice 
-          issues and make cities work for everyone!
-        </p>
-        <Button 
-          onClick={() => navigate('/auth')}
-          size="lg"
-          className="bg-purple-700 hover:bg-purple-800 text-white"
-        >
-          Join Us
-        </Button>
-      </section>
-
-      <section className="relative overflow-hidden py-24">
-        <div className="absolute inset-0 bg-[url('/public/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-        
-        <div className="relative container mx-auto px-4">
-          <div className="max-w-2xl">
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Join the Movement
-            </h2>
-            <p className="text-xl text-white mb-8">
-              Be part of the change!<br />
-              Together, we can create urban spaces that work for everyone.
-            </p>
+      <section className="flex items-center justify-between p-12 bg-purple-50/50">
+        <div className="max-w-2xl">
+          <p className="text-purple-600 mb-2 font-medium">More than just reporting</p>
+          <h1 className="text-5xl font-serif font-bold mb-6 text-purple-900">
+            Your mobility justice toolkit.<br/>
+            Urban change made accessible.
+          </h1>
+          <p className="text-lg text-purple-700 mb-8">
+            Smart reporting, community-driven tools, seamless collaboration, and built-in resources — 
+            reimagine how you create change in your urban spaces.
+          </p>
+          <div className="space-x-4">
+            <Button 
+              onClick={() => navigate('/explore')}
+              size="lg"
+              className="bg-purple-900 hover:bg-purple-800 text-white"
+            >
+              Explore Map
+            </Button>
             <Button 
               onClick={() => navigate('/auth')}
               size="lg"
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              variant="outline"
+              className="border-purple-600 text-purple-600 hover:bg-purple-50"
             >
-              Get Involved
+              Join Us
             </Button>
           </div>
         </div>
+        <div className="w-1/2 pl-12">
+          <img 
+            src="/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png" 
+            alt="Urban Mobility" 
+            className="rounded-lg shadow-xl"
+          />
+        </div>
       </section>
 
-      <section className="container mx-auto px-4 py-16 grid md:grid-cols-2 gap-12 bg-white">
-        <div>
-          <h2 className="text-3xl font-serif mb-6 text-purple-900">
-            Why Choose JUSTMOVE?
-          </h2>
-          <p className="text-purple-700 text-lg">
-            We empower communities to take charge of their mobility needs. 
-            Document, visualize, and collaborate to create urban spaces that are 
-            equitable and accessible for all. It's time to take action!
-          </p>
+      <section className="p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white">
+        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-purple-900">Issue Mapping</h3>
+          <p className="mb-4 text-purple-700">Document and visualize mobility challenges in your community.</p>
+          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-purple-700">📍</span>
+          </div>
         </div>
-        <div className="space-y-6">
-          <div className="bg-purple-50 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white">
-                01
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-purple-900">Community Power</h3>
-                <p className="text-purple-700">
-                  Harness the strength of your community to address mobility challenges. 
-                  Together, we can make a difference!
-                </p>
-              </div>
-            </div>
+        
+        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-purple-900">Community Action</h3>
+          <p className="mb-4 text-purple-700">Connect with others and organize for positive change.</p>
+          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-purple-700">👥</span>
           </div>
-
-          <div className="bg-purple-50 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white">
-                02
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-purple-900">Visualize Change</h3>
-                <p className="text-purple-700">
-                  Use our tools to map out mobility issues and visualize solutions. 
-                  See the change you want to create!
-                </p>
-              </div>
-            </div>
+        </div>
+        
+        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-purple-900">Data Analysis</h3>
+          <p className="mb-4 text-purple-700">Track progress and measure impact with powerful analytics.</p>
+          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-purple-700">📊</span>
           </div>
-
-          <div className="bg-purple-50 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white">
-                03
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-purple-900">Collaborative Solutions</h3>
-                <p className="text-purple-700">
-                  Work with others to brainstorm and implement effective strategies 
-                  for mobility justice. Teamwork makes the dream work!
-                </p>
-              </div>
-            </div>
+        </div>
+        
+        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-purple-900">Resource Hub</h3>
+          <p className="mb-4 text-purple-700">Access tools and guides for effective advocacy.</p>
+          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-purple-700">📚</span>
           </div>
         </div>
       </section>

@@ -3,12 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -128,7 +122,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section className="container mx-auto py-16 px-4">
+      <section className="container mx-auto py-16 px-4 bg-white">
         <h2 className="text-3xl font-serif mb-8 text-center text-primary">
           Our Process
         </h2>

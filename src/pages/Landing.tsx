@@ -8,9 +8,49 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const Landing = () => {
   const navigate = useNavigate();
+
+  const processSteps = [
+    {
+      tag: "COMMUNITY LINKING",
+      tagColor: "bg-blue-400",
+      title: "Part I: The Demands of Justice",
+      description: "Understanding community's mobility transformation needs",
+      subtitle: "With alone VIX plan",
+      image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
+    },
+    {
+      tag: "COMMUNITY CHAINING",
+      tagColor: "bg-green-400",
+      title: "Part II: Forms of Reasoning",
+      description: "Community's analytical approach to mobility",
+      image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
+    },
+    {
+      tag: "COMMUNITY PRODUCTION",
+      tagColor: "bg-pink-400",
+      title: "Part III: The Materials of Justice",
+      description: "Physical and social infrastructure for community",
+      image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
+    },
+    {
+      tag: "COMMUNITY BUILDING",
+      tagColor: "bg-blue-400",
+      title: "Part IV: Public Reasoning and Democracy",
+      description: "Community engagement in community",
+      subtitle: "Community Stations",
+      image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,6 +125,41 @@ const Landing = () => {
           <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl text-purple-700">📚</span>
           </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto py-16 px-4">
+        <h2 className="text-3xl font-serif mb-8 text-center text-purple-900">
+          Our Process
+        </h2>
+        <div className="relative">
+          <Carousel className="w-full max-w-5xl mx-auto">
+            <CarouselContent>
+              {processSteps.map((step, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="relative h-[400px] rounded-2xl overflow-hidden group">
+                    <img 
+                      src={step.image} 
+                      alt={step.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-purple-900/60 p-6 flex flex-col justify-center items-center text-center text-white transition-opacity">
+                      <span className={`${step.tagColor} px-3 py-1 rounded-full text-sm font-medium mb-4`}>
+                        {step.tag}
+                      </span>
+                      <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                      <p className="text-sm mb-2">{step.description}</p>
+                      {step.subtitle && (
+                        <p className="text-lg mt-2">{step.subtitle}</p>
+                      )}
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
         </div>
       </section>
 

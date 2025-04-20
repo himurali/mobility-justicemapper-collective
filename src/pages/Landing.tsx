@@ -22,7 +22,7 @@ const Landing = () => {
   const processSteps = [
     {
       tag: "COMMUNITY LINKING",
-      tagColor: "bg-blue-400",
+      tagColor: "bg-primary",
       title: "Part I: The Demands of Justice",
       description: "Understanding community's mobility transformation needs",
       subtitle: "With alone VIX plan",
@@ -30,21 +30,21 @@ const Landing = () => {
     },
     {
       tag: "COMMUNITY CHAINING",
-      tagColor: "bg-green-400",
+      tagColor: "bg-secondary",
       title: "Part II: Forms of Reasoning",
       description: "Community's analytical approach to mobility",
       image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
     },
     {
       tag: "COMMUNITY PRODUCTION",
-      tagColor: "bg-pink-400",
+      tagColor: "bg-accent",
       title: "Part III: The Materials of Justice",
       description: "Physical and social infrastructure for community",
       image: "/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png"
     },
     {
       tag: "COMMUNITY BUILDING",
-      tagColor: "bg-blue-400",
+      tagColor: "bg-primary/80",
       title: "Part IV: Public Reasoning and Democracy",
       description: "Community engagement in community",
       subtitle: "Community Stations",
@@ -53,17 +53,17 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white text-black">
       <Header />
       
-      <section className="flex items-center justify-between p-12 bg-purple-50/50">
+      <section className="flex items-center justify-between p-12 bg-white">
         <div className="max-w-2xl">
-          <p className="text-purple-600 mb-2 font-medium">More than just reporting</p>
-          <h1 className="text-5xl font-serif font-bold mb-6 text-purple-900">
+          <p className="text-primary mb-2 font-medium">More than just reporting</p>
+          <h1 className="text-5xl font-serif font-bold mb-6 text-primary">
             Your mobility justice toolkit.<br/>
             Urban change made accessible.
           </h1>
-          <p className="text-lg text-purple-700 mb-8">
+          <p className="text-lg text-black mb-8">
             Smart reporting, community-driven tools, seamless collaboration, and built-in resources — 
             reimagine how you create change in your urban spaces.
           </p>
@@ -71,7 +71,7 @@ const Landing = () => {
             <Button 
               onClick={() => navigate('/explore')}
               size="lg"
-              className="bg-purple-900 hover:bg-purple-800 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               Explore Map
             </Button>
@@ -79,7 +79,7 @@ const Landing = () => {
               onClick={() => navigate('/auth')}
               size="lg"
               variant="outline"
-              className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              className="border-primary text-primary hover:bg-primary/10"
             >
               Join Us
             </Button>
@@ -95,41 +95,41 @@ const Landing = () => {
       </section>
 
       <section className="p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white">
-        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold mb-2 text-purple-900">Issue Mapping</h3>
-          <p className="mb-4 text-purple-700">Document and visualize mobility challenges in your community.</p>
-          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
-            <span className="text-2xl text-purple-700">📍</span>
+        <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-primary">Issue Mapping</h3>
+          <p className="mb-4 text-black">Document and visualize mobility challenges in your community.</p>
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-primary">📍</span>
           </div>
         </div>
         
-        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold mb-2 text-purple-900">Community Action</h3>
-          <p className="mb-4 text-purple-700">Connect with others and organize for positive change.</p>
-          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
-            <span className="text-2xl text-purple-700">👥</span>
+        <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-primary">Community Action</h3>
+          <p className="mb-4 text-black">Connect with others and organize for positive change.</p>
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-primary">👥</span>
           </div>
         </div>
         
-        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold mb-2 text-purple-900">Data Analysis</h3>
-          <p className="mb-4 text-purple-700">Track progress and measure impact with powerful analytics.</p>
-          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
-            <span className="text-2xl text-purple-700">📊</span>
+        <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-primary">Data Analysis</h3>
+          <p className="mb-4 text-black">Track progress and measure impact with powerful analytics.</p>
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-primary">📊</span>
           </div>
         </div>
         
-        <div className="bg-purple-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold mb-2 text-purple-900">Resource Hub</h3>
-          <p className="mb-4 text-purple-700">Access tools and guides for effective advocacy.</p>
-          <div className="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center mb-2">
-            <span className="text-2xl text-purple-700">📚</span>
+        <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <h3 className="text-xl font-bold mb-2 text-primary">Resource Hub</h3>
+          <p className="mb-4 text-black">Access tools and guides for effective advocacy.</p>
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <span className="text-2xl text-primary">📚</span>
           </div>
         </div>
       </section>
 
       <section className="container mx-auto py-16 px-4">
-        <h2 className="text-3xl font-serif mb-8 text-center text-purple-900">
+        <h2 className="text-3xl font-serif mb-8 text-center text-primary">
           Our Process
         </h2>
         <div className="relative">
@@ -143,7 +143,7 @@ const Landing = () => {
                       alt={step.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-purple-900/60 p-6 flex flex-col justify-center items-center text-center text-white transition-opacity">
+                    <div className="absolute inset-0 bg-black/60 p-6 flex flex-col justify-center items-center text-center text-white transition-opacity">
                       <span className={`${step.tagColor} px-3 py-1 rounded-full text-sm font-medium mb-4`}>
                         {step.tag}
                       </span>
@@ -164,19 +164,19 @@ const Landing = () => {
       </section>
 
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-serif mb-8 text-purple-900">
+        <h2 className="text-3xl font-serif mb-8 text-primary">
           Your Questions Answered
         </h2>
-        <div className="max-w-3xl mx-auto bg-purple-50/50 rounded-lg p-8">
+        <div className="max-w-3xl mx-auto bg-white border border-primary/10 rounded-lg p-8">
           <Accordion type="single" collapsible className="space-y-6">
             <AccordionItem value="what-is" className="border-b-0">
               <AccordionTrigger className="text-left hover:no-underline">
                 <div className="flex items-center gap-6">
-                  <span className="text-2xl font-serif text-purple-900">01</span>
-                  <span className="text-xl font-medium text-purple-900">What is JUSTMOVE all about?</span>
+                  <span className="text-2xl font-serif text-primary">01</span>
+                  <span className="text-xl font-medium text-primary">What is JUSTMOVE all about?</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700 pl-14">
+              <AccordionContent className="text-black pl-14">
                 JUSTMOVE is a community-driven platform that empowers people to identify, 
                 document, and address mobility justice issues in their communities. We 
                 provide tools and resources to help create more equitable and accessible 
@@ -187,11 +187,11 @@ const Landing = () => {
             <AccordionItem value="get-involved" className="border-b-0">
               <AccordionTrigger className="text-left hover:no-underline">
                 <div className="flex items-center gap-6">
-                  <span className="text-2xl font-serif text-purple-900">02</span>
-                  <span className="text-xl font-medium text-purple-900">How can I get involved?</span>
+                  <span className="text-2xl font-serif text-primary">02</span>
+                  <span className="text-xl font-medium text-primary">How can I get involved?</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700 pl-14">
+              <AccordionContent className="text-black pl-14">
                 You can start by signing up for an account, reporting mobility issues 
                 in your area, joining community discussions, and participating in local 
                 initiatives. Every contribution helps make our cities more accessible!
@@ -201,11 +201,11 @@ const Landing = () => {
             <AccordionItem value="cost" className="border-b-0">
               <AccordionTrigger className="text-left hover:no-underline">
                 <div className="flex items-center gap-6">
-                  <span className="text-2xl font-serif text-purple-900">03</span>
-                  <span className="text-xl font-medium text-purple-900">Is there a cost to use?</span>
+                  <span className="text-2xl font-serif text-primary">03</span>
+                  <span className="text-xl font-medium text-primary">Is there a cost to use?</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700 pl-14">
+              <AccordionContent className="text-black pl-14">
                 No, JUSTMOVE is completely free for community members. We believe that 
                 access to mobility justice tools should be available to everyone who 
                 wants to make a difference in their community.
@@ -215,11 +215,11 @@ const Landing = () => {
             <AccordionItem value="contribute" className="border-b-0">
               <AccordionTrigger className="text-left hover:no-underline">
                 <div className="flex items-center gap-6">
-                  <span className="text-2xl font-serif text-purple-900">04</span>
-                  <span className="text-xl font-medium text-purple-900">Can I contribute my own data?</span>
+                  <span className="text-2xl font-serif text-primary">04</span>
+                  <span className="text-xl font-medium text-primary">Can I contribute my own data?</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="text-purple-700 pl-14">
+              <AccordionContent className="text-black pl-14">
                 Yes! We encourage community members to contribute their observations, 
                 experiences, and data about mobility issues. Your contributions help 
                 build a more comprehensive understanding of mobility challenges in your area.

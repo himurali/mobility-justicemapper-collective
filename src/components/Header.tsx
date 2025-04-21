@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Map, List, Info, Menu, X, User, LogOut } from "lucide-react";
+import { PlusCircle, Map, List, Info, Menu, X, User, LogOut, Book } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -36,6 +36,11 @@ const Header: React.FC = () => {
       <Link to="/about">
         <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800">
           About
+        </Button>
+      </Link>
+      <Link to="/blog">
+        <Button variant="ghost" className="text-white hover:text-white hover:bg-purple-800 flex items-center gap-2">
+          <Book size={16} /> Blog
         </Button>
       </Link>
       <Link to="/resources">

@@ -14,24 +14,30 @@ const FAQSection: React.FC = () => {
   const faqItems: FAQItem[] = [
     {
       question: "How can I get involved?",
-      answer: "There are many ways to get involved with JUSTMOV! You can volunteer for our community programs, participate in advocacy campaigns, attend our events, or contribute to our initiatives. Sign up for our newsletter to stay informed about upcoming opportunities and join our community of changemakers."
+      answer:
+        "There are many ways to get involved with JUSTMOV! You can volunteer for our community programs, participate in advocacy campaigns, attend our events, or contribute to our initiatives. Sign up for our newsletter to stay informed about upcoming opportunities and join our community of changemakers.",
     },
     {
       question: "How are donations used?",
-      answer: "Your donations directly support our mission for urban mobility justice. Funds are allocated to community programs, advocacy initiatives, educational resources, and operational costs. We maintain full transparency in our financial reporting and ensure that donations are used effectively to create maximum impact."
+      answer:
+        "Your donations directly support our mission for urban mobility justice.",
+      // Removed the rest of the original answer as requested
     },
     {
       question: "Do you offer internships?",
-      answer: "Yes! We offer internship opportunities throughout the year for students and young professionals passionate about social justice and urban mobility. Our internships provide hands-on experience in advocacy, community organizing, research, and program development."
+      answer:
+        "Yes! We offer internship opportunities throughout the year for students and young professionals passionate about social justice and urban mobility. Our internships provide hands-on experience in advocacy, community organizing, research, and program development.",
     },
     {
       question: "How can I request support?",
-      answer: "If you or your community needs support with urban mobility justice issues, please reach out through our support request form on our website. Our team will review your request and connect you with appropriate resources or assistance programs."
+      answer:
+        "If you or your community needs support with urban mobility justice issues, please reach out through our support request form on our website. Our team will review your request and connect you with appropriate resources or assistance programs.",
     },
     {
       question: "How can I report a social justice issue?",
-      answer: "You can report social justice issues related to urban mobility through our secure online reporting system. We take all reports seriously and work with relevant stakeholders to address concerns while maintaining confidentiality when requested."
-    }
+      answer:
+        "You can report social justice issues related to urban mobility through our secure online reporting system. We take all reports seriously and work with relevant stakeholders to address concerns while maintaining confidentiality when requested.",
+    },
   ];
 
   const toggleQuestion = (index: number) => {
@@ -57,13 +63,11 @@ const FAQSection: React.FC = () => {
             {faqItems.map((item, index) => (
               <div
                 key={index}
-                className="border border-gray-200 rounded-xl overflow-hidden transition-shadow"
+                className="border border-gray-200 rounded-xl overflow-hidden"
               >
                 <button
                   className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
                   onClick={() => toggleQuestion(index)}
-                  aria-expanded={openIndex === index}
-                  aria-controls={`faq-content-${index}`}
                 >
                   <span className="text-xl font-medium text-gray-900">
                     {item.question}
@@ -76,14 +80,10 @@ const FAQSection: React.FC = () => {
                     )}
                   </span>
                 </button>
+
                 {openIndex === index && (
-                  <div
-                    className="px-6 pb-6"
-                    id={`faq-content-${index}`}
-                  >
-                    <p className="text-gray-600 text-lg">
-                      {item.answer}
-                    </p>
+                  <div className="px-6 pb-6">
+                    <p className="text-gray-600 text-lg">{item.answer}</p>
                   </div>
                 )}
               </div>

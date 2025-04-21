@@ -1,8 +1,6 @@
-
-import React from 'react';
-import Container from '../UI/Container';
-// FIX: update Button import casing
-import { Button } from '@/components/ui/button';
+import React from "react";
+import Container from "@/components/ui/container"; 
+import { Button } from "@/components/ui/button";
 
 const CardsSection: React.FC = () => {
   const cards = [

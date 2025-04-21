@@ -1,8 +1,7 @@
-
 import React from "react";
+import { Button } from "@/components/ui/button";
 import { ArrowRight, Bike, Bus, Train, PersonStanding } from "lucide-react";
 import Container from "@/components/UI/Container";
-import { Button } from "@/components/ui/button";
 
 const HeroSection: React.FC = () => (
   <section className="relative pt-24 pb-20 overflow-hidden bg-white">

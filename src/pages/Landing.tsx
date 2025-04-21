@@ -5,21 +5,17 @@ import HeroSection from "@/components/Hero/HeroSection";
 import CardsSection from "@/components/Cards/CardsSection";
 import ImpactSection from "@/components/Impact/ImpactSection";
 import FAQSection from "@/components/FAQ/FAQSection";
-// Import Explore page
 import Explore from "@/pages/Explore";
 
 const Landing = () => {
-  // Simple router state: add "explore"
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
 
   const renderContent = () => {
     if (currentPage === 'explore') {
-      // Render map page
+      // Render Explore page (map)
       return <Explore />;
     }
-    // For now, we just render the main sections
-    // Add others (blog, about) if needed in future
     return (
       <>
         <HeroSection />
@@ -48,3 +44,4 @@ const Landing = () => {
 };
 
 export default Landing;
+

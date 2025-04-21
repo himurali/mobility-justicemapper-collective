@@ -14,7 +14,7 @@ const HeroSection: React.FC = () => {
       
       {/* Decorative Elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500/20 rounded-lg rotate-12 animate-[float_7s_ease-in-out_infinite]"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-yellow-500/20 rounded-full animate-[float_9s_ease-in-out_infinite]"></div>
+      <div className="absolute bottom-20 right-10 w-40 h-40 bg-yellow-500/20 rounded-full animate-[float_9s_ease-in-out_infinite_1.5s]"></div>
       
       <div className="relative z-10 container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
@@ -51,13 +51,13 @@ const HeroSection: React.FC = () => {
           {/* Animated Transport Icons */}
           <div className="relative">
             <div className="flex justify-center items-center gap-12 mt-12">
-              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-transform duration-200">
+              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_6s_ease-in-out_infinite] hover:scale-110 transition-transform duration-200">
                 <Bike className="w-10 h-10 text-blue-600" />
               </div>
               <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-transform duration-200">
                 <PersonStanding className="w-10 h-10 text-emerald-600" />
               </div>
-              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-transform duration-200">
+              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_8s_ease-in-out_infinite_0.5s] hover:scale-110 transition-transform duration-200">
                 <Bus className="w-10 h-10 text-yellow-600" />
               </div>
               <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-transform duration-200">

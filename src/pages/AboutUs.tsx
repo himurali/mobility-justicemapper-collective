@@ -4,7 +4,6 @@ import { Users, Info, Building2 } from "lucide-react";
 import Container from "@/components/UI/Container";
 import Header from "@/components/Header";
 
-// Stats, milestones, and highlights remain unchanged
 const stats = [
   {
     label: "Years Experience",
@@ -46,32 +45,29 @@ const AboutUs: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8F9ED] text-gray-900 flex flex-col">
       <Header />
-      {/* Hero Section */}
       <div className="relative w-full">
-        {/* Green angled background */}
         <div
           className="absolute top-0 left-0 w-full h-[260px] md:h-[320px] z-0"
           style={{
-            background: "#14b85a",
+            background: "#FEF7CD",
             clipPath:
               "polygon(0 0, 100% 0, 100% 73%, 0 100%)",
           }}
         />
         <Container>
           <nav
-            className="relative z-10 flex justify-end md:justify-start pt-4 pb-3 text-white text-base font-medium"
+            className="relative z-10 flex justify-end md:justify-start pt-4 pb-3 text-gray-900 text-base font-medium"
             aria-label="Breadcrumb"
           >
             <Link
               to="/"
-              className="hover:underline transition text-white opacity-90"
+              className="hover:underline transition text-gray-900 opacity-90"
             >
               Home
             </Link>
             <span className="mx-2 opacity-75">{">"}</span>
             <span className="font-semibold">About Us</span>
           </nav>
-          {/* Page Hero Image */}
           <div className="relative z-10 flex justify-center mt-4 mb-0">
             <img
               src="/lovable-uploads/258426fb-1adf-4cdb-a772-3637cad8223b.png"
@@ -85,7 +81,6 @@ const AboutUs: React.FC = () => {
         </Container>
       </div>
 
-      {/* Main Content */}
       <Container>
         <section className="mt-0 mb-8 flex flex-col items-center animate-fade-in">
           <h1 className="text-4xl md:text-6xl font-extrabold mt-12 mb-5 text-gray-900 text-center" style={{ fontFamily: "Libre Baskerville, serif" }}>
@@ -94,7 +89,9 @@ const AboutUs: React.FC = () => {
           <p className="text-lg md:text-xl max-w-3xl text-center mb-6 text-gray-800 font-normal">
             At <span className="font-semibold">JUSTMOVE</span>, we are a passionate community of changemakers committed to building a better future for underserved populations. We work tirelessly across borders, cultures, and communities to create sustainable solutions in education, healthcare, disaster relief, environmental conservation, and social empowerment. Our belief in the power of community drives every initiative we undertake, ensuring that every voice is heard and every life is valued.
           </p>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-6 mb-2 text-center">Inspiring Change for a Brighter Tomorrow</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-6 mb-2 text-center">
+            Inspiring Change for a Brighter Tomorrow
+          </h2>
         </section>
         <section className="grid md:grid-cols-2 gap-12 mb-16">
           <div>

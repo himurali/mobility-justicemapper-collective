@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
+import CardsSection from "@/components/CardsSection";
 import {
   Accordion,
   AccordionContent,
@@ -58,6 +59,8 @@ const Landing = () => {
       <Header />
 
       <HeroSection />
+
+      <CardsSection />
 
       <section className="p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white">
         <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">

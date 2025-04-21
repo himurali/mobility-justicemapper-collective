@@ -3,7 +3,7 @@ import React from 'react';
 import { ArrowRight, Bike, Bus, Train, PersonStanding } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// No Container component in your codebase, use responsive divs.
+// Add keyframes for icon animation using Tailwind's arbitrary value (customize in tailwind.config.ts if needed)
 const HeroSection: React.FC = () => {
   return (
     <section className="relative pt-24 pb-20 overflow-hidden bg-white">
@@ -50,14 +50,20 @@ const HeroSection: React.FC = () => {
           {/* Animated Transport Icons */}
           <div className="relative">
             <div className="flex justify-center items-center gap-12 mt-12">
-              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_6s_ease-in-out_infinite] hover:scale-110 transition-transform duration-200">
-                <Bike className="w-10 h-10 text-blue-600 animate-[wiggle_2s_ease-in-out_infinite]" />
+              <div
+                className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_6s_ease-in-out_infinite] hover:scale-110 transition-transform duration-200"
+                >
+                {/* Bike icon wiggles */}
+                <Bike className="w-10 h-10 text-blue-600 animate-wiggle" />
               </div>
               <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_7s_ease-in-out_infinite_0.5s] hover:scale-110 transition-transform duration-200">
                 <PersonStanding className="w-10 h-10 text-emerald-600" />
               </div>
-              <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_8s_ease-in-out_infinite_1s] hover:scale-110 transition-transform duration-200">
-                <Bus className="w-10 h-10 text-yellow-600 animate-[wiggle_2s_ease-in-out_infinite_0.5s]" />
+              <div
+                className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_8s_ease-in-out_infinite_1s] hover:scale-110 transition-transform duration-200"
+                >
+                {/* Bus icon wiggles */}
+                <Bus className="w-10 h-10 text-yellow-600 animate-wiggle-slow" />
               </div>
               <div className="p-4 bg-white/80 backdrop-blur rounded-full shadow-lg animate-[float_7s_ease-in-out_infinite_1.2s] hover:scale-110 transition-transform duration-200">
                 <Train className="w-10 h-10 text-purple-600" />
@@ -72,6 +78,25 @@ const HeroSection: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Custom keyframes for wiggle animation */}
+      <style>{`
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(-7deg) scale(1);}
+          12% { transform: rotate(10deg) scale(1.04);}
+          20% { transform: rotate(-5deg) scale(1);}
+          28% { transform: rotate(8deg) scale(1.05);}
+          35% { transform: rotate(-8deg) scale(1);}
+          48% { transform: rotate(7deg) scale(1.08);}
+          55% { transform: rotate(-6deg) scale(.97);}
+          58%, 98% { transform: rotate(0deg) scale(1);}
+        }
+        .animate-wiggle {
+          animation: wiggle 2s infinite ease-in-out;
+        }
+        .animate-wiggle-slow {
+          animation: wiggle 3.5s infinite cubic-bezier(0.74, 0.11, 0.2, 1.12);
+        }
+      `}</style>
     </section>
   );
 };

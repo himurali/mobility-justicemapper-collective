@@ -36,6 +36,16 @@ const Header: React.FC<Props> = ({ currentPage, onNavigate, onLogoClick }) => (
           </button>
           <button 
             className={`px-4 py-2 rounded-md transition-colors ${
+              currentPage === 'explore' 
+                ? 'text-blue-700 bg-blue-50' 
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
+            onClick={() => onNavigate('explore')}
+          >
+            Explore
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-md transition-colors ${
               currentPage === 'blog' 
                 ? 'text-blue-700 bg-blue-50' 
                 : 'text-gray-600 hover:text-blue-600'

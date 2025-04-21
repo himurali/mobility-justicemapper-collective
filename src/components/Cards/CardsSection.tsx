@@ -1,5 +1,6 @@
+
 import React from "react";
-import Container from "@/components/ui/container"; 
+import Container from "@/components/UI/Container"; 
 import { Button } from "@/components/ui/button";
 
 const CardsSection: React.FC = () => {

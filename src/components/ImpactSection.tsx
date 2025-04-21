@@ -1,5 +1,6 @@
 
 import React from "react";
+import Container from "./UI/Container";
 import {
   Scale,
   FileSpreadsheet,
@@ -18,9 +19,13 @@ const impactSteps = [
     subtitle: "Understanding community's mobility transformation needs",
     description:
       "We begin by deeply understanding the community's needs and aspirations for mobility justice, ensuring our approach is grounded in real experiences and challenges.",
-    bgColor: "bg-primary-50",
+    bgColor: "bg-[#E5DEFF]",
     icon: Scale,
-    iconColor: "text-primary-600",
+    iconBg: "bg-white",
+    textColor: "text-[#221F26]",
+    subtitleColor: "text-[#7E69AB]",
+    iconColor: "text-[#7E69AB]",
+    fontWeight: "font-bold"
   },
   {
     number: "02",
@@ -28,10 +33,13 @@ const impactSteps = [
     subtitle: "Vision, Implementation, and Execution Planning",
     description:
       "Creating comprehensive strategies that bridge current mobility gaps while building towards a more equitable and accessible transportation future.",
-    bgColor: "bg-primary-600",
+    bgColor: "bg-[#7E69AB]",
     icon: FileSpreadsheet,
-    iconColor: "text-white",
+    iconBg: "bg-white/20",
     textColor: "text-white",
+    subtitleColor: "text-[#D6BCFA]",
+    iconColor: "text-white",
+    fontWeight: "font-bold"
   },
   {
     number: "03",
@@ -39,9 +47,13 @@ const impactSteps = [
     subtitle: "Community's analytical approach to mobility",
     description:
       "Implementing systematic approaches to analyze and address mobility challenges, ensuring solutions are both practical and sustainable.",
-    bgColor: "bg-secondary-50",
+    bgColor: "bg-[#FEF7CD]",
     icon: Network,
-    iconColor: "text-primary-600",
+    iconBg: "bg-white",
+    textColor: "text-[#221F26]",
+    subtitleColor: "text-[#B2890D]",
+    iconColor: "text-[#B2890D]",
+    fontWeight: "font-bold"
   },
   {
     number: "04",
@@ -49,10 +61,13 @@ const impactSteps = [
     subtitle: "Analytical framework for mobility justice",
     description:
       "Developing robust analytical frameworks that help us understand and address complex mobility challenges in our communities.",
-    bgColor: "bg-primary-600",
+    bgColor: "bg-[#7E69AB]",
     icon: Brain,
-    iconColor: "text-white",
+    iconBg: "bg-white/20",
     textColor: "text-white",
+    subtitleColor: "text-[#D6BCFA]",
+    iconColor: "text-white",
+    fontWeight: "font-bold"
   },
   {
     number: "05",
@@ -60,9 +75,13 @@ const impactSteps = [
     subtitle: "Physical and social infrastructure development",
     description:
       "Building and maintaining the physical and social infrastructure needed to support equitable mobility solutions.",
-    bgColor: "bg-primary-50",
+    bgColor: "bg-[#E5DEFF]",
     icon: Factory,
-    iconColor: "text-primary-600",
+    iconBg: "bg-white",
+    textColor: "text-[#221F26]",
+    subtitleColor: "text-[#7E69AB]",
+    iconColor: "text-[#7E69AB]",
+    fontWeight: "font-bold"
   },
   {
     number: "06",
@@ -70,10 +89,13 @@ const impactSteps = [
     subtitle: "Resources for sustainable mobility",
     description:
       "Identifying and mobilizing the resources needed to create lasting positive change in urban mobility systems.",
-    bgColor: "bg-secondary-500",
+    bgColor: "bg-[#FDE1D3]",
     icon: Building2,
-    iconColor: "text-primary-600",
-    textColor: "text-primary-600",
+    iconBg: "bg-white",
+    textColor: "text-[#B15C2D]",
+    subtitleColor: "text-[#B15C2D]",
+    iconColor: "text-[#B15C2D]",
+    fontWeight: "font-bold"
   },
   {
     number: "07",
@@ -81,9 +103,13 @@ const impactSteps = [
     subtitle: "Collaborative decision-making processes",
     description:
       "Fostering inclusive dialogue and decision-making processes that ensure all voices are heard and considered.",
-    bgColor: "bg-primary-50",
+    bgColor: "bg-[#E5DEFF]",
     icon: Users2,
-    iconColor: "text-primary-600",
+    iconBg: "bg-white",
+    textColor: "text-[#221F26]",
+    subtitleColor: "text-[#7E69AB]",
+    iconColor: "text-[#7E69AB]",
+    fontWeight: "font-bold"
   },
   {
     number: "08",
@@ -91,51 +117,54 @@ const impactSteps = [
     subtitle: "Community engagement and participation",
     description:
       "Empowering communities to actively participate in shaping their mobility future through democratic processes and collective action.",
-    bgColor: "bg-primary-600",
+    bgColor: "bg-[#7E69AB]",
     icon: Vote,
-    iconColor: "text-white",
+    iconBg: "bg-white/20",
     textColor: "text-white",
+    subtitleColor: "text-[#D6BCFA]",
+    iconColor: "text-white",
+    fontWeight: "font-bold"
   },
 ];
 
 const ImpactSection: React.FC = () => {
   return (
-    <section className="py-24 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <section className="py-24 bg-[#F1F0FB]">
+      <Container>
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Our Approach to{" "}
-            <span className="text-primary-600">Mobility Justice</span>
+            <span className="text-[#7E69AB]">Mobility Justice</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             A systematic framework for understanding and implementing mobility justice in our communities.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {impactSteps.map((step, index) => (
             <div
               key={index}
-              className={`${step.bgColor} rounded-2xl p-8 transition-transform hover:scale-[1.02] duration-300`}
+              className={`${step.bgColor} rounded-2xl p-8 flex flex-col shadow-md transition-transform hover:scale-[1.02] duration-300 h-full`}
             >
-              <div className="flex items-start gap-6">
-                <div className="flex-shrink-0">
-                  <span className={`text-4xl font-bold ${step.textColor || 'text-gray-900'}`}>
-                    {step.number}
-                  </span>
-                </div>
-                <div className="flex-grow">
-                  <h3 className={`text-2xl font-semibold mb-2 ${step.textColor || 'text-gray-900'}`}>
-                    {step.title}
-                  </h3>
-                  <p className={`text-lg font-medium mb-2 ${step.textColor ? 'text-white/90' : 'text-primary-600'}`}>
+              <div className="flex items-start gap-6 w-full h-full">
+                <span className={`text-4xl md:text-5xl ${step.fontWeight} mr-2 mt-1 ${step.textColor}`}>
+                  {step.number}
+                </span>
+                <div className="flex-grow flex flex-col min-w-0">
+                  <div className="flex items-start gap-2">
+                    <h3 className={`text-2xl md:text-2xl font-bold leading-snug mb-0.5 ${step.textColor} mr-1`}>
+                      {step.title}
+                    </h3>
+                  </div>
+                  <p className={`text-base md:text-lg font-semibold mb-2 mt-1 ${step.subtitleColor}`}>
                     {step.subtitle}
                   </p>
-                  <p className={`text-base ${step.textColor ? 'text-white/80' : 'text-gray-600'}`}>
+                  <p className={`text-base mt-1 ${step.textColor === "text-white" ? "text-white/85" : "text-[#555]"} `}>
                     {step.description}
                   </p>
                 </div>
-                <div className="flex-shrink-0">
-                  <div className={`p-4 rounded-full ${step.textColor ? 'bg-white/10' : 'bg-white'}`}>
+                <div className={`flex-shrink-0 ml-3 flex items-center`}>
+                  <div className={`p-4 rounded-full ${step.iconBg} flex items-center justify-center`}>
                     <step.icon className={`w-8 h-8 ${step.iconColor}`} />
                   </div>
                 </div>
@@ -143,8 +172,9 @@ const ImpactSection: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 };
+
 export default ImpactSection;

@@ -57,7 +57,7 @@ const AboutUs: React.FC = () => {
             Dedicated to Transforming Lives Worldwide
           </h1>
           <p className="text-xl max-w-2xl mb-6">
-            At <span className="font-semibold">TheNGO</span>, we are a passionate community of changemakers committed to building a better future for underserved populations. We work tirelessly across borders, cultures, and communities to create sustainable solutions in education, healthcare, disaster relief, environmental conservation, and social empowerment. 
+            At <span className="font-semibold">JUSTMOVE</span>, we are a passionate community of changemakers committed to building a better future for underserved populations. We work tirelessly across borders, cultures, and communities to create sustainable solutions in education, healthcare, disaster relief, environmental conservation, and social empowerment. 
             Our belief in the power of community drives every initiative we undertake, ensuring that every voice is heard and every life is valued.
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-8 mb-2">Inspiring Change for a Brighter Tomorrow</h2>
@@ -88,7 +88,7 @@ const AboutUs: React.FC = () => {
         <section className="my-12">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">From Humble Beginnings to Global Impact</h3>
           <p className="mb-6">
-            Founded in 1998, <span className="font-semibold">TheNGO</span> began as a grassroots effort by a small group of passionate individuals determined to make a difference. What started as local community support has now evolved into a global movement dedicated to fostering lasting change.
+            Founded in 1998, <span className="font-semibold">JUSTMOVE</span> began as a grassroots effort by a small group of passionate individuals determined to make a difference. What started as local community support has now evolved into a global movement dedicated to fostering lasting change.
           </p>
           <div className="mb-6">
             <h4 className="text-xl font-medium text-primary mb-2">Milestones Along Our Journey:</h4>
@@ -119,3 +119,4 @@ const AboutUs: React.FC = () => {
 };
 
 export default AboutUs;
+

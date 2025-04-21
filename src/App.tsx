@@ -1,3 +1,4 @@
+
 import React from 'react'; 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,6 +13,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ReportInjustice from "./pages/ReportInjustice";
 import AboutUs from "./pages/AboutUs";
+import Blog from "./pages/Blog";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient({
@@ -36,6 +38,7 @@ const App = () => {
                 <Route path="/" element={<Landing />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/about" element={<AboutUs />} />
+                <Route path="/blog" element={<Blog />} />
                 <Route path="/resources" element={<div>Resources page (coming soon)</div>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />

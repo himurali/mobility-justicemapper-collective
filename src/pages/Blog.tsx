@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Container from "@/components/UI/Container";
 import { Calendar, Book, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import Header from "@/components/Header";
 
 const categories = [
   { name: "All", key: "all" },
@@ -59,15 +60,17 @@ export default function Blog() {
     : blogPosts.filter((post) => post.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header />
       <Container>
         <div className="max-w-4xl mx-auto pt-14 pb-4">
           <h1 className="text-4xl md:text-5xl font-extrabold pb-1 tracking-tight">
-            Latest from Our <span className="text-blue-600">Blog</span>
+            Latest from Our <span className="text-purple-600">Blog</span>
           </h1>
           <p className="text-lg text-gray-600 pb-6">
             Insights, stories, and perspectives on urban mobility justice.
           </p>
+          
           {/* Blog Navigation Menu */}
           <div className="flex flex-wrap gap-2 md:gap-4 mt-2 mb-8">
             {categories.map((cat) => (
@@ -75,30 +78,39 @@ export default function Blog() {
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition 
-                ${selectedCategory === cat.key ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800 hover:bg-blue-50"}`}
+                ${selectedCategory === cat.key ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800 hover:bg-purple-50"}`}
               >
                 {cat.name}
               </button>
             ))}
           </div>
         </div>
+        
         {/* Blog Card Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
           {filteredPosts.map((post) => (
             <div
               key={post.id}
-              className="bg-white rounded-2xl shadow-lg border p-0 hover:shadow-xl transition hover:-translate-y-1 overflow-hidden flex flex-col"
+              className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden flex flex-col hover:shadow-xl transition hover:-translate-y-1"
             >
-              <img
-                src={post.image}
-                alt={post.title}
-                className="h-56 w-full object-cover object-center"
-              />
+              <div className="h-56 w-full overflow-hidden">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="h-full w-full object-cover object-center"
+                />
+              </div>
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center gap-3 text-gray-500 text-sm mb-1">
-                  <Calendar size={18} className="mr-1" />{post.date}
-                  <span className="mx-2">•</span>
-                  <Book size={18} className="mr-1" />{post.readTime}
+                  <div className="flex items-center">
+                    <Calendar size={14} className="mr-1" />
+                    <span>{post.date}</span>
+                  </div>
+                  <span className="mx-1">•</span>
+                  <div className="flex items-center">
+                    <Book size={14} className="mr-1" />
+                    <span>{post.readTime}</span>
+                  </div>
                 </div>
                 <h2 className="font-bold text-lg mb-1 text-gray-900">{post.title}</h2>
                 <p className="text-gray-700 text-sm mb-3 flex-1">{post.summary}</p>
@@ -106,7 +118,7 @@ export default function Blog() {
                   <User size={16} className="text-gray-400 mr-1" />
                   <span className="text-gray-600">{post.author}</span>
                 </div>
-                <Link to={post.link} className="text-blue-700 font-medium hover:underline flex items-center gap-1 group">
+                <Link to={post.link} className="text-purple-700 font-medium hover:underline flex items-center gap-1 group">
                   Read More <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>

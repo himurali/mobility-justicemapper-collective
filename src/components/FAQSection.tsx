@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Container from "./UI/Container";
 import { Plus, Minus } from "lucide-react";
@@ -20,8 +19,7 @@ const FAQSection: React.FC = () => {
     {
       question: "How are donations used?",
       answer:
-        "Your donations directly support our mission for urban mobility justice.",
-      // Removed the rest of the original answer as requested
+        "Your donations directly support our mission for urban mobility justice. We allocate funds to various initiatives, including community programs, advocacy efforts, research projects, and operational expenses. We are committed to transparency and accountability in our financial management, ensuring that your contributions make a meaningful impact on the lives of those we serve.",
     },
     {
       question: "Do you offer internships?",

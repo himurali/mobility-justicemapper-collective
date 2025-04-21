@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./MapStyles.css"; // Import the custom CSS
 import { IssueCategory, IssueData } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -343,21 +344,32 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       
+      // Fix: Creating marker element with proper positioning and z-index
       const markerWrapper = document.createElement("div");
-      markerWrapper.className = "marker-wrapper";
+      markerWrapper.className = "marker-wrapper relative z-10";
+      markerWrapper.style.position = "relative";
+      markerWrapper.style.zIndex = "10";
+      markerWrapper.style.cursor = "pointer";
 
       const markerElement = document.createElement("div");
+      const categoryColor = getCategoryColor(mainCategory);
+      const severityColor = getSeverityColor(issue.severity);
+      
       markerElement.innerHTML = `
         <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
-             style="border-color: ${getCategoryColor(mainCategory)}">
+             style="border-color: ${categoryColor}; z-index: 10;">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${getSeverityColor(issue.severity)}"></div>
+               style="background-color: ${severityColor}"></div>
         </div>
       `;
 
       markerWrapper.appendChild(markerElement);
 
-      const marker = new mapboxgl.Marker(markerWrapper)
+      // Fix: Apply additional styling to ensure marker is visible
+      const marker = new mapboxgl.Marker({
+        element: markerWrapper,
+        anchor: 'center'
+      })
         .setLngLat([issue.location.longitude, issue.location.latitude])
         .addTo(map.current!);
       
@@ -366,7 +378,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = markerWrapper;
+      markerElementsRef.current[issue.id] = markerElement;
     });
 
     if (selectedIssue && markersRef.current[selectedIssue]) {
@@ -383,9 +395,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   // Initial map setup
   useEffect(() => {
+    console.log("MapComponent mounted, initializing map");
     initializeMap();
 
     return () => {
+      console.log("MapComponent unmounting, cleaning up");
       stopBlinking();
       if (map.current) {
         map.current.remove();

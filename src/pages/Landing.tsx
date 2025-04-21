@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import HeroSection from "@/components/HeroSection";
 import {
   Accordion,
   AccordionContent,
@@ -56,44 +56,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-white text-black">
       <Header />
-      
-      <section className="flex items-center justify-between p-12 bg-white">
-        <div className="max-w-2xl">
-          <p className="text-primary mb-2 font-medium">More than just reporting</p>
-          <h1 className="text-5xl font-serif font-bold mb-6 text-primary">
-            Your mobility justice toolkit.<br/>
-            Urban change made accessible.
-          </h1>
-          <p className="text-lg text-black mb-8">
-            Smart reporting, community-driven tools, seamless collaboration, and built-in resources — 
-            reimagine how you create change in your urban spaces.
-          </p>
-          <div className="space-x-4">
-            <Button 
-              onClick={() => navigate('/explore')}
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              Explore Map
-            </Button>
-            <Button 
-              onClick={() => navigate('/auth')}
-              size="lg"
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary/10"
-            >
-              Join Us
-            </Button>
-          </div>
-        </div>
-        <div className="w-1/2 pl-12">
-          <img 
-            src="/lovable-uploads/bb1c0369-396d-4a0d-956a-16d034710170.png" 
-            alt="Urban Mobility" 
-            className="rounded-lg shadow-xl"
-          />
-        </div>
-      </section>
+
+      <HeroSection />
 
       <section className="p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white">
         <div className="bg-white border border-primary/10 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">

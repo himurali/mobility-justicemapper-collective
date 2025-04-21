@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -284,7 +283,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return;
     }
 
-    // Clean up existing markers first
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
@@ -344,41 +342,54 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const mainCategory = issue.tags[0] || "other";
       const isSelected = issue.id === selectedIssue;
       
-      // Fix: Creating marker element with proper positioning and z-index
-      const markerWrapper = document.createElement("div");
-      markerWrapper.className = "marker-wrapper relative z-10";
-      markerWrapper.style.position = "relative";
-      markerWrapper.style.zIndex = "10";
-      markerWrapper.style.cursor = "pointer";
-
-      const markerElement = document.createElement("div");
+      const markerEl = document.createElement("div");
+      markerEl.className = "marker-wrapper";
+      markerEl.style.position = "relative";
+      markerEl.style.zIndex = "100";
+      markerEl.style.display = "block";
+      markerEl.style.visibility = "visible";
+      markerEl.style.opacity = "1";
+      markerEl.style.pointerEvents = "auto";
+      markerEl.style.cursor = "pointer";
+      
+      markerEl.style.width = "24px";
+      markerEl.style.height = "24px";
+      
       const categoryColor = getCategoryColor(mainCategory);
       const severityColor = getSeverityColor(issue.severity);
       
-      markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
-             style="border-color: ${categoryColor}; z-index: 10;">
+      markerEl.innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''}" 
+             style="border-color: ${categoryColor}; z-index: 100; display: flex !important; position: relative; opacity: 1 !important; visibility: visible !important;">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${severityColor}"></div>
+               style="background-color: ${severityColor}; display: block !important; opacity: 1 !important; visibility: visible !important;"></div>
         </div>
       `;
 
-      markerWrapper.appendChild(markerElement);
-
-      // Fix: Apply additional styling to ensure marker is visible
-      const marker = new mapboxgl.Marker({
-        element: markerWrapper,
-        anchor: 'center'
-      })
-        .setLngLat([issue.location.longitude, issue.location.latitude])
-        .addTo(map.current!);
+      document.body.appendChild(markerEl);
+      document.body.removeChild(markerEl);
       
-      markerWrapper.addEventListener('click', () => {
+      const marker = new mapboxgl.Marker({
+        element: markerEl,
+        anchor: 'center',
+      })
+      .setLngLat([issue.location.longitude, issue.location.latitude])
+      .addTo(map.current!);
+      
+      setTimeout(() => {
+        if (marker.getElement()) {
+          marker.getElement().style.display = 'block';
+          marker.getElement().style.visibility = 'visible';
+          marker.getElement().style.opacity = '1';
+        }
+      }, 100);
+      
+      markerEl.addEventListener('click', () => {
         handleMarkerClick(issue);
       });
 
       markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = markerElement;
+      markerElementsRef.current[issue.id] = markerEl;
     });
 
     if (selectedIssue && markersRef.current[selectedIssue]) {
@@ -393,7 +404,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   };
 
-  // Initial map setup
   useEffect(() => {
     console.log("MapComponent mounted, initializing map");
     initializeMap();
@@ -409,7 +419,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
-  // Update markers when relevant props change
   useEffect(() => {
     if (map.current && mapInitializedRef.current) {
       console.log("Map updating with center:", center, "zoom:", zoom);
@@ -423,7 +432,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues]);
 
-  // Handle blinking effect for selected marker
   useEffect(() => {
     stopBlinking();
     

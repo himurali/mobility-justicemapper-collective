@@ -13,8 +13,17 @@ export interface BlogPostMetadata {
 }
 
 export async function loadBlogPost(slug: string) {
+  if (!slug) {
+    throw new Error('Blog post slug is required');
+  }
+
   try {
     const response = await fetch(`/src/content/blog/${slug}.md`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load blog post: ${response.status} ${response.statusText}`);
+    }
+    
     const text = await response.text();
     const { data, content } = matter(text);
     
@@ -23,7 +32,7 @@ export async function loadBlogPost(slug: string) {
       content
     };
   } catch (error) {
-    console.error('Error loading blog post:', error);
+    console.error(`Error loading blog post '${slug}':`, error);
     throw error;
   }
 }

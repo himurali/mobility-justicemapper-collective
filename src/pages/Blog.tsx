@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Container from "@/components/UI/Container";
 import { Calendar, Book, User, ArrowRight } from "lucide-react";
@@ -24,7 +23,7 @@ const blogPosts = [
     readTime: "9 min",
     image: "/lovable-uploads/24ac4175-f301-47ad-9ace-3dba49cfa75f.png",
     category: "wellness",
-    link: "/blog/let-god-in-your-heart-and-soul",
+    slug: "let-god-in-your-heart-and-soul",
   },
   {
     id: "2",
@@ -36,7 +35,7 @@ const blogPosts = [
     readTime: "7 min",
     image: "https://images.pexels.com/photos/1181675/pexels-photo-1181675.jpeg?w=640&q=80",
     category: "mobility",
-    link: "/blog/finding-peace-in-urban-mobility",
+    slug: "finding-peace-in-urban-mobility",
   },
   {
     id: "3",
@@ -48,7 +47,7 @@ const blogPosts = [
     readTime: "5 min",
     image: "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?w=640&q=80",
     category: "community",
-    link: "/blog/community-and-connection",
+    slug: "community-and-connection",
   }
 ];
 
@@ -71,7 +70,6 @@ export default function Blog() {
             Insights, stories, and perspectives on urban mobility justice.
           </p>
           
-          {/* Blog Navigation Menu */}
           <div className="flex flex-wrap gap-2 md:gap-4 mt-2 mb-8">
             {categories.map((cat) => (
               <button
@@ -86,7 +84,6 @@ export default function Blog() {
           </div>
         </div>
         
-        {/* Blog Card Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
           {filteredPosts.map((post) => (
             <div
@@ -118,7 +115,7 @@ export default function Blog() {
                   <User size={16} className="text-gray-400 mr-1" />
                   <span className="text-gray-600">{post.author}</span>
                 </div>
-                <Link to={post.link} className="text-purple-700 font-medium hover:underline flex items-center gap-1 group">
+                <Link to={`/blog/${post.slug}`} className="text-purple-700 font-medium hover:underline flex items-center gap-1 group">
                   Read More <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>

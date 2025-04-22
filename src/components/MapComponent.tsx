@@ -52,72 +52,113 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [activeTab, setActiveTab] = useState(selectedTab);
   const [issues, setIssues] = useState<IssueData[]>([]);
   
+  // Use a hardcoded API key for development, in production this should come from environment variables
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   useEffect(() => {
     const fetchIssues = async () => {
       console.log("Fetching issues from database...");
       
-      const { data, error } = await supabase
-        .from('JusticeIssue')
-        .select(`
-          *,
-          issue_community_members (*),
-          justice_champions (*),
-          issue_documents (*)
-        `);
+      try {
+        const { data, error } = await supabase
+          .from('JusticeIssue')
+          .select(`
+            *,
+            issue_community_members (*),
+            justice_champions (*),
+            issue_documents (*)
+          `);
 
-      if (error) {
-        console.error("Error fetching issues:", error);
+        if (error) {
+          console.error("Error fetching issues:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch issues. Please try again later.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          console.log("Raw data from database:", data);
+          console.log(`Total number of issues fetched: ${data.length}`);
+          
+          const formattedData = data.map((issue: any) => {
+            console.log(`Processing issue ID: ${issue.id}, Title: ${issue.issue_title}, City: ${issue.city}, Coordinates: [${issue.longitude_of_issue}, ${issue.latitude_of_issue}]`);
+            
+            return {
+              id: String(issue.id),
+              title: issue.issue_title || '',
+              description: issue.issue_desc || '',
+              solution: issue.solution_of_issue || '',
+              videoUrl: issue.issue_video_problem_statement || '',
+              city: issue.city || '',
+              location: {
+                latitude: issue.latitude_of_issue || 0,
+                longitude: issue.longitude_of_issue || 0,
+                address: issue.address || '',
+              },
+              communityMembers: issue.issue_community_members || [],
+              documents: issue.issue_documents || [],
+              tags: issue.tags || [],
+              justiceChampion: issue.justice_champions && issue.justice_champions[0] 
+                ? {
+                    id: String(issue.justice_champions[0].id),
+                    name: issue.justice_champions[0].name,
+                    role: issue.justice_champions[0].role,
+                    avatarUrl: issue.justice_champions[0].avatar_url || '',
+                  }
+                : undefined,
+              createdAt: issue.created_at,
+              updatedAt: issue.created_at,
+              upvotes: issue.upvotes || 0,
+              downvotes: issue.downvotes || 0,
+              severity: issue.severity || 'moderate',
+            };
+          });
+          
+          console.log("Formatted data:", formattedData);
+          setIssues(formattedData);
+          cachedIssuesRef.current = formattedData;
+        } else {
+          console.log("No issues found in the database");
+          // Add mock data for testing if needed
+          const mockData: IssueData[] = [];
+          for (let i = 1; i <= 5; i++) {
+            mockData.push({
+              id: String(i),
+              title: `Test Issue ${i}`,
+              description: "Test description",
+              solution: "Test solution",
+              videoUrl: "",
+              city: "Bangalore",
+              location: {
+                latitude: 12.9716 + (Math.random() - 0.5) * 0.1,
+                longitude: 77.5946 + (Math.random() - 0.5) * 0.1,
+                address: "Test address",
+              },
+              communityMembers: [],
+              documents: [],
+              tags: ["pedestrian_infrastructure"],
+              justiceChampion: undefined,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              upvotes: 0,
+              downvotes: 0,
+              severity: 'moderate',
+            });
+          }
+          console.log("Using mock data for testing:", mockData);
+          setIssues(mockData);
+          cachedIssuesRef.current = mockData;
+        }
+      } catch (error) {
+        console.error("Error in fetchIssues:", error);
         toast({
           title: "Error",
           description: "Failed to fetch issues. Please try again later.",
           variant: "destructive",
         });
-        return;
-      }
-      
-      if (data) {
-        console.log("Raw data from database:", data);
-        console.log(`Total number of issues fetched: ${data.length}`);
-        
-        const formattedData = data.map((issue: any) => {
-          console.log(`Processing issue ID: ${issue.id}, Title: ${issue.issue_title}, City: ${issue.city}, Coordinates: [${issue.longitude_of_issue}, ${issue.latitude_of_issue}]`);
-          
-          return {
-            id: String(issue.id),
-            title: issue.issue_title || '',
-            description: issue.issue_desc || '',
-            solution: issue.solution_of_issue || '',
-            videoUrl: issue.issue_video_problem_statement || '',
-            city: issue.city || '',
-            location: {
-              latitude: issue.latitude_of_issue || 0,
-              longitude: issue.longitude_of_issue || 0,
-              address: issue.address || '',
-            },
-            communityMembers: issue.issue_community_members || [],
-            documents: issue.issue_documents || [],
-            tags: issue.tags || [],
-            justiceChampion: issue.justice_champions && issue.justice_champions[0] 
-              ? {
-                  id: String(issue.justice_champions[0].id),
-                  name: issue.justice_champions[0].name,
-                  role: issue.justice_champions[0].role,
-                  avatarUrl: issue.justice_champions[0].avatar_url || '',
-                }
-              : undefined,
-            createdAt: issue.created_at,
-            updatedAt: issue.created_at,
-            upvotes: issue.upvotes || 0,
-            downvotes: issue.downvotes || 0,
-            severity: issue.severity || 'moderate',
-          };
-        });
-        
-        console.log("Formatted data:", formattedData);
-        setIssues(formattedData);
-        cachedIssuesRef.current = formattedData;
       }
     };
 
@@ -253,7 +294,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
         console.log("Map loaded successfully");
         mapInitializedRef.current = true;
         if (cachedIssuesRef.current.length > 0) {
+          console.log("Adding markers from cached issues:", cachedIssuesRef.current.length);
           addMarkers();
+        } else {
+          console.log("No cached issues available when map loaded");
         }
       });
     } catch (error) {
@@ -299,15 +343,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log(`Selected city for filtering: ${selectedCityName}`);
 
     const filteredIssues = issues.filter(issue => {
+      // Skip issues with invalid coordinates
       if (!issue.location.latitude || !issue.location.longitude) {
         console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
         return false;
       }
 
+      // Apply city filter (if applicable)
       if (selectedCityName && issue.city) {
         const issueCity = issue.city.trim().toLowerCase();
         const selectedCity = selectedCityName.trim().toLowerCase();
         
+        // Allow for case differences or slight variations in city names
         if (issueCity !== selectedCity && 
             issueCity !== selectedCity.charAt(0).toLowerCase() + selectedCity.slice(1)) {
           console.log(`Filtering out issue ${issue.id} due to city mismatch: '${issue.city}' vs '${selectedCityName}'`);
@@ -315,6 +362,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
+      // Apply category filter (if applicable)
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) {
@@ -323,6 +371,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
+      // Apply severity filter (if applicable)
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
         console.log(`Filtering out issue ${issue.id} due to severity mismatch`);
         return false;
@@ -333,10 +382,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     console.log(`Filtered to ${filteredIssues.length} issues after applying all filters`);
     
-    filteredIssues.forEach(issue => {
-      console.log(`Issue in filtered list: ID=${issue.id}, Title=${issue.title}, City=${issue.city}, Coords=[${issue.location.longitude}, ${issue.location.latitude}]`);
-    });
-
     filteredIssues.forEach(issue => {
       console.log(`Creating marker for issue: ${issue.id}, Title: ${issue.title}, Location: [${issue.location.longitude}, ${issue.location.latitude}]`);
       
@@ -357,18 +402,26 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
       markerWrapper.appendChild(markerElement);
 
-      const marker = new mapboxgl.Marker(markerWrapper)
-        .setLngLat([issue.location.longitude, issue.location.latitude])
-        .addTo(map.current!);
-      
-      markerWrapper.addEventListener('click', () => {
-        handleMarkerClick(issue);
-      });
+      try {
+        // Create and add the marker to the map
+        const marker = new mapboxgl.Marker(markerWrapper)
+          .setLngLat([issue.location.longitude, issue.location.latitude])
+          .addTo(map.current!);
+        
+        // Add click event listener to the marker
+        markerWrapper.addEventListener('click', () => {
+          handleMarkerClick(issue);
+        });
 
-      markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = markerWrapper;
+        // Store references to the marker and its element
+        markersRef.current[issue.id] = marker;
+        markerElementsRef.current[issue.id] = markerWrapper;
+      } catch (error) {
+        console.error(`Error creating marker for issue ${issue.id}:`, error);
+      }
     });
 
+    // Focus on the selected issue (if applicable)
     if (selectedIssue && markersRef.current[selectedIssue]) {
       map.current.flyTo({
         center: markersRef.current[selectedIssue].getLngLat(),

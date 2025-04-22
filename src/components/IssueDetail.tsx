@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,12 +5,14 @@ import { IssueData } from '@/types';
 import Forum from '@/components/Forum';
 import { mockForumPosts } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import IssueHeader from './issue-detail/IssueHeader';
 import IssueContent from './issue-detail/IssueContent';
 import SolutionSection from './issue-detail/SolutionSection';
 import CommunitySection from './issue-detail/CommunitySection';
+import JoinCommunityTab from './issue-detail/JoinCommunityTab';
+import DocumentsTab from './issue-detail/DocumentsTab';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -93,7 +94,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }));
       setCommunityMembers(mappedMembers);
       
-      // Check if current user is already a member
       if (user) {
         const userIsMember = mappedMembers.some(member => 
           member.name === user.email
@@ -213,30 +213,12 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsContent>
           
           <TabsContent value="join" className="p-6 pt-4">
-            <div className="text-center space-y-4">
-              <h3 className="text-lg font-medium text-yellow-700 dark:text-yellow-300">Join the Community</h3>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Join our community of advocates working together to address mobility justice issues. Your voice matters in creating positive change.
-              </p>
-              <div className="flex flex-col items-center gap-4">
-                {!isMember ? (
-                  <button 
-                    className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8 py-2 rounded"
-                    onClick={handleJoinCommunity}
-                    disabled={isJoining}
-                  >
-                    {isJoining ? "Joining..." : "Join Now"}
-                  </button>
-                ) : (
-                  <div className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium px-8 py-2 rounded">
-                    You're already a member!
-                  </div>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  {!user ? "Sign in to participate" : "Thank you for your interest in this issue"}
-                </p>
-              </div>
-            </div>
+            <JoinCommunityTab
+              isMember={isMember}
+              isJoining={isJoining}
+              onJoinCommunity={handleJoinCommunity}
+              user={user}
+            />
           </TabsContent>
           
           <TabsContent value="community" className="p-6 pt-4">
@@ -253,22 +235,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsContent>
           
           <TabsContent value="documents" className="p-6 pt-4">
-            <h3 className="text-lg font-medium mb-4 text-amber-700 dark:text-amber-300">Related Documents</h3>
-            {issue.documents && issue.documents.length > 0 ? (
-              <div className="space-y-2">
-                {issue.documents.map((doc, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 rounded-md hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 dark:text-amber-400">
-                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    <span>{doc.name}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No documents available</p>
-            )}
+            <DocumentsTab documents={issue.documents} />
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from './video/VideoPlayer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -46,6 +46,31 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isJoining, setIsJoining] = useState(false);
+  const [communityMembers, setCommunityMembers] = useState(issue?.communityMembers || []);
+
+  useEffect(() => {
+    if (issue) {
+      fetchCommunityMembers();
+    }
+  }, [issue]);
+
+  const fetchCommunityMembers = async () => {
+    if (!issue) return;
+    
+    const { data, error } = await supabase
+      .from('issue_community_members')
+      .select('*')
+      .eq('issue_id', parseInt(issue.id));
+
+    if (error) {
+      console.error("Error fetching community members:", error);
+      return;
+    }
+
+    if (data) {
+      setCommunityMembers(data);
+    }
+  };
 
   if (!issue) return null;
 
@@ -85,7 +110,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         return;
       }
 
-      // Add user to community
+      // Add user to community_members
       const { error: insertError } = await supabase
         .from('community_members')
         .insert({
@@ -99,12 +124,26 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw insertError;
       }
 
+      // Add member to issue_community_members for UI display
+      const { error: uiInsertError } = await supabase
+        .from('issue_community_members')
+        .insert({
+          issue_id: parseInt(issue.id),
+          name: user.email || 'Anonymous',
+          role: 'member',
+          avatar_url: user.user_metadata?.avatar_url || null
+        });
+
+      if (uiInsertError) {
+        console.error("Error updating UI members:", uiInsertError);
+      }
+
+      await fetchCommunityMembers(); // Refresh the members list
+
       toast({
         title: "Success!",
         description: "You've joined the community. Welcome!",
       });
-      
-      // Update UI or refetch data if needed
     } catch (error: any) {
       console.error("Full error details:", error);
       toast({
@@ -242,11 +281,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
               </div>
               
               <div className="space-y-3">
-                {issue.communityMembers.map((member) => (
+                {communityMembers.map((member) => (
                   <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
                     <Avatar>
-                      <AvatarImage src={member.avatarUrl} />
-                      <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarImage src={member.avatar_url} />
+                      <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                        {member.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-medium">{member.name}</p>

@@ -285,6 +285,13 @@ const Index = () => {
     }
   };
 
+  const handleSelectIssueById = (issueId: string) => {
+    const issue = issues.find(issue => issue.id === issueId);
+    if (issue) {
+      handleIssueClick(issue);
+    }
+  };
+
   useEffect(() => {
     if (selectedIssue && selectedIssueRef.current) {
       const issueElement = document.getElementById(`issue-card-${selectedIssue.id}`);
@@ -356,7 +363,7 @@ const Index = () => {
                   categoryFilter={categoryFilter}
                   severityFilter={severityFilter}
                   selectedIssue={selectedIssue?.id}
-                  onSelectIssue={handleIssueClick}
+                  onSelectIssue={handleSelectIssueById}
                   selectedTab={activeDialogTab}
                 />
               </div>

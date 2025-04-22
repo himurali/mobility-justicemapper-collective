@@ -14,6 +14,8 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import ExploreContent from "@/components/explore/ExploreContent";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
 
 const bangaloreCity: City = {
   id: "bangalore",

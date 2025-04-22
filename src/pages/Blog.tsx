@@ -17,7 +17,7 @@ const blogPosts = [
   {
     id: "1",
     title: "Let God in your Heart and Soul",
-    summary: "Discover the transformative power of faith and the profound impact it can have on...",
+    summary: "Discover the transformative power of faith and the profound impact it can have on your journey through urban mobility justice. Learn how spiritual connections can help navigate challenges.",
     author: "Jane Doe",
     authorAvatar: "/placeholder.svg",
     date: "February 2, 2023",
@@ -29,7 +29,7 @@ const blogPosts = [
   {
     id: "2",
     title: "Finding Peace in Urban Mobility",
-    summary: "Exploring the intersection of spirituality and modern transportation challenges.",
+    summary: "Explore how mindfulness and spiritual awareness can transform your daily commute. Discover practical strategies for maintaining inner peace while navigating transportation challenges.",
     author: "John Smith",
     authorAvatar: "/placeholder.svg",
     date: "March 15, 2023",
@@ -41,7 +41,7 @@ const blogPosts = [
   {
     id: "3",
     title: "Community and Connection",
-    summary: "Building stronger bonds through shared experiences and mutual support.",
+    summary: "Learn how building stronger community bonds can lead to more equitable transportation solutions. Discover inspiring stories of neighborhoods coming together to create positive change.",
     author: "Priya Mehra",
     authorAvatar: "/placeholder.svg",
     date: "April 1, 2023",

@@ -1,14 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import MapComponent from "@/components/MapComponent";
-import { IssueCategory, IssueSeverity, City } from "@/types";
+import { IssueCategory, IssueSeverity, City, IssueData } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import CitySelector from "@/components/CitySelector";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import IssueDetail from "@/components/IssueDetail";
-import { IssueData } from "@/types";
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
 import { useLocation } from "react-router-dom";
 import FilterBar from "@/components/FilterBar";
 import { useToast } from "@/components/ui/use-toast";
@@ -83,11 +80,7 @@ const Index = () => {
 
       if (error) throw error;
       
-      return data.map((issue: Tables<'JusticeIssue'> & {
-        issue_community_members: Tables<'issue_community_members'>[],
-        justice_champions: Tables<'justice_champions'>[],
-        issue_documents: Tables<'issue_documents'>[],
-      }) => ({
+      return data.map((issue: any) => ({
         id: String(issue.id),
         title: issue.issue_title || '',
         description: issue.issue_desc || '',
@@ -99,29 +92,23 @@ const Index = () => {
           longitude: issue.longitude_of_issue || 0,
           address: issue.address || '',
         },
-        communityMembers: issue.issue_community_members.map(member => ({
-          id: String(member.id),
-          name: member.name,
-          role: member.role || '',
-          avatarUrl: member.avatar_url || '',
-        })),
-        documents: issue.issue_documents.map(doc => ({
-          name: doc.name,
-          url: doc.url,
-          type: doc.type || '',
-        })),
+        communityMembers: issue.issue_community_members || [],
+        documents: issue.issue_documents || [],
         tags: issue.tags || [],
-        justiceChampion: issue.justice_champions[0] ? {
-          id: String(issue.justice_champions[0].id),
-          name: issue.justice_champions[0].name,
-          role: issue.justice_champions[0].role || '',
-          avatarUrl: issue.justice_champions[0].avatar_url || '',
-        } : undefined,
+        justiceChampion: issue.justice_champions && issue.justice_champions[0] 
+          ? {
+              id: String(issue.justice_champions[0].id),
+              name: issue.justice_champions[0].name,
+              role: issue.justice_champions[0].role,
+              avatarUrl: issue.justice_champions[0].avatar_url || '',
+            }
+          : undefined,
         createdAt: issue.created_at,
         updatedAt: issue.created_at,
         upvotes: issue.upvotes || 0,
         downvotes: issue.downvotes || 0,
         severity: issue.severity || 'moderate',
+        image_url: issue.image_url || '',
       }));
     },
   });
@@ -367,7 +354,7 @@ const Index = () => {
                   categoryFilter={categoryFilter}
                   severityFilter={severityFilter}
                   selectedIssue={selectedIssue?.id}
-                  onSelectIssue={handleSelectIssue}
+                  onSelectIssue={handleIssueClick}
                   selectedTab={activeDialogTab}
                 />
               </div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -44,6 +43,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const cachedIssuesRef = useRef<IssueData[]>([]);
   const blinkIntervalRef = useRef<number | null>(null);
   const mapInitializedRef = useRef<boolean>(false);
+  const markersAddedRef = useRef<boolean>(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -52,7 +52,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [activeTab, setActiveTab] = useState(selectedTab);
   const [issues, setIssues] = useState<IssueData[]>([]);
   
-  // Use a hardcoded API key for development, in production this should come from environment variables
   const mapboxToken = "pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ";
 
   useEffect(() => {
@@ -114,15 +113,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
               upvotes: issue.upvotes || 0,
               downvotes: issue.downvotes || 0,
               severity: issue.severity || 'moderate',
+              image_url: issue.image_url || '',
             };
           });
           
           console.log("Formatted data:", formattedData);
           setIssues(formattedData);
           cachedIssuesRef.current = formattedData;
+          
+          if (mapInitializedRef.current && !markersAddedRef.current) {
+            console.log("Map is already initialized, adding markers immediately");
+            addMarkers();
+            markersAddedRef.current = true;
+          }
         } else {
           console.log("No issues found in the database");
-          // Add mock data for testing if needed
           const mockData: IssueData[] = [];
           for (let i = 1; i <= 5; i++) {
             mockData.push({
@@ -151,6 +156,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
           console.log("Using mock data for testing:", mockData);
           setIssues(mockData);
           cachedIssuesRef.current = mockData;
+          
+          if (mapInitializedRef.current && !markersAddedRef.current) {
+            console.log("Map is already initialized, adding markers with mock data");
+            addMarkers();
+            markersAddedRef.current = true;
+          }
         }
       } catch (error) {
         console.error("Error in fetchIssues:", error);
@@ -293,11 +304,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       map.current.on("load", () => {
         console.log("Map loaded successfully");
         mapInitializedRef.current = true;
-        if (cachedIssuesRef.current.length > 0) {
+        
+        if (cachedIssuesRef.current.length > 0 && !markersAddedRef.current) {
           console.log("Adding markers from cached issues:", cachedIssuesRef.current.length);
           addMarkers();
+          markersAddedRef.current = true;
         } else {
-          console.log("No cached issues available when map loaded");
+          console.log("No cached issues available when map loaded or markers already added");
         }
       });
     } catch (error) {
@@ -327,7 +340,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       return;
     }
 
-    // Clean up existing markers first
     Object.values(markersRef.current).forEach(marker => marker.remove());
     markersRef.current = {};
     markerElementsRef.current = {};
@@ -343,18 +355,15 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log(`Selected city for filtering: ${selectedCityName}`);
 
     const filteredIssues = issues.filter(issue => {
-      // Skip issues with invalid coordinates
       if (!issue.location.latitude || !issue.location.longitude) {
         console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
         return false;
       }
 
-      // Apply city filter (if applicable)
       if (selectedCityName && issue.city) {
         const issueCity = issue.city.trim().toLowerCase();
         const selectedCity = selectedCityName.trim().toLowerCase();
         
-        // Allow for case differences or slight variations in city names
         if (issueCity !== selectedCity && 
             issueCity !== selectedCity.charAt(0).toLowerCase() + selectedCity.slice(1)) {
           console.log(`Filtering out issue ${issue.id} due to city mismatch: '${issue.city}' vs '${selectedCityName}'`);
@@ -362,7 +371,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
-      // Apply category filter (if applicable)
       if (categoryFilter !== "all") {
         const categoryMatch = issue.tags.some(tag => tag === categoryFilter);
         if (!categoryMatch) {
@@ -371,7 +379,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       }
       
-      // Apply severity filter (if applicable)
       if (severityFilter !== "all" && issue.severity !== severityFilter) {
         console.log(`Filtering out issue ${issue.id} due to severity mismatch`);
         return false;
@@ -403,17 +410,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
       markerWrapper.appendChild(markerElement);
 
       try {
-        // Create and add the marker to the map
         const marker = new mapboxgl.Marker(markerWrapper)
           .setLngLat([issue.location.longitude, issue.location.latitude])
           .addTo(map.current!);
         
-        // Add click event listener to the marker
         markerWrapper.addEventListener('click', () => {
           handleMarkerClick(issue);
         });
 
-        // Store references to the marker and its element
         markersRef.current[issue.id] = marker;
         markerElementsRef.current[issue.id] = markerWrapper;
       } catch (error) {
@@ -421,7 +425,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
       }
     });
 
-    // Focus on the selected issue (if applicable)
     if (selectedIssue && markersRef.current[selectedIssue]) {
       map.current.flyTo({
         center: markersRef.current[selectedIssue].getLngLat(),
@@ -434,7 +437,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   };
 
-  // Initial map setup
   useEffect(() => {
     initializeMap();
 
@@ -444,11 +446,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
         map.current.remove();
         map.current = null;
         mapInitializedRef.current = false;
+        markersAddedRef.current = false;
       }
     };
   }, []);
 
-  // Update markers when relevant props change
   useEffect(() => {
     if (map.current && mapInitializedRef.current) {
       console.log("Map updating with center:", center, "zoom:", zoom);
@@ -459,10 +461,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
         duration: 1500
       });
       addMarkers();
+      markersAddedRef.current = true;
     }
-  }, [center, zoom, categoryFilter, severityFilter, selectedIssue, issues]);
+  }, [center, zoom, categoryFilter, severityFilter, selectedIssue]);
 
-  // Handle blinking effect for selected marker
+  useEffect(() => {
+    if (map.current && mapInitializedRef.current && issues.length > 0) {
+      console.log("Issues data changed, updating markers");
+      addMarkers();
+      markersAddedRef.current = true;
+    }
+  }, [issues]);
+
   useEffect(() => {
     stopBlinking();
     

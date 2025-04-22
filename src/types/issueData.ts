@@ -21,7 +21,7 @@ export interface IssueData {
     type: string;
   }[];
   tags: string[];
-  justiceChampion: {
+  justiceChampion?: {
     id: string;
     name: string;
     role: string;
@@ -32,7 +32,7 @@ export interface IssueData {
   upvotes: number;
   downvotes: number;
   severity: IssueSeverity;
-  image_url?: string; // Add this field to match the database schema
+  image_url?: string;
 }
 
 export interface ForumPost {

@@ -36,13 +36,18 @@ const BlogPost: React.FC<BlogPostProps> = ({
         <Container>
           <div className="relative h-full flex flex-col justify-end pb-20 lg:pb-28">
             {onBack && (
-              <button
-                onClick={onBack}
-                className="absolute top-20 left-4 text-white hover:text-blue-200 transition-colors flex items-center gap-2"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Back to Blog
-              </button>
+              <div className="absolute top-20 left-4 space-y-4">
+                <button
+                  onClick={onBack}
+                  className="text-white hover:text-blue-200 transition-colors flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back to Blog
+                </button>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                  {title}
+                </h1>
+              </div>
             )}
 
             <div className="flex items-center gap-6 text-white/80 mb-4">
@@ -60,9 +65,6 @@ const BlogPost: React.FC<BlogPostProps> = ({
               )}
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-              {title}
-            </h1>
             {subtitle && (
               <p className="text-xl text-white/90 max-w-2xl drop-shadow">
                 {subtitle}
@@ -86,3 +88,4 @@ const BlogPost: React.FC<BlogPostProps> = ({
 };
 
 export default BlogPost;
+

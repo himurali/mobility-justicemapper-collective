@@ -19,6 +19,7 @@ interface CommunitySectionProps {
   isLeaving?: boolean;
   isMember: boolean;
   currentUserEmail?: string;
+  memberName?: string;
 }
 
 const CommunitySection: React.FC<CommunitySectionProps> = ({
@@ -28,7 +29,8 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
   isJoining,
   isLeaving = false,
   isMember,
-  currentUserEmail
+  currentUserEmail,
+  memberName
 }) => {
   const { user } = useAuth();
   
@@ -60,7 +62,7 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
         ) : (
           <div className="flex gap-2 items-center">
             <div className="px-4 py-2 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-md">
-              You're a member
+              {memberName ? `You're a member as ${memberName}` : "You're a member"}
             </div>
             <Button 
               onClick={onLeaveCommunity}

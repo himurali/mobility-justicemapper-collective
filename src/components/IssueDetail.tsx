@@ -87,6 +87,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   useEffect(() => {
     if (issue && user) {
       checkMembershipStatus();
+    } else if (!user) {
+      setIsMember(false);
+      setMembershipId(null);
+      setMemberName(undefined);
     }
   }, [user, issue?.id]);
 
@@ -114,15 +118,17 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         setCommunityMembers(mappedMembers);
         
         // Check if current user is a member
-        checkMembershipStatus(mappedMembers);
+        if (user) {
+          checkMembershipStatus(mappedMembers);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch community members:", error);
     }
   };
 
-  const checkMembershipStatus = (members = communityMembers) => {
-    if (!user) {
+  const checkMembershipStatus = async (members = communityMembers) => {
+    if (!user || !issue) {
       setIsMember(false);
       setMembershipId(null);
       setMemberName(undefined);
@@ -130,6 +136,8 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
     
     const userEmail = user.email || '';
+    
+    // First check in the current members list
     const currentMember = members.find(member => 
       member.name === userEmail
     );
@@ -138,16 +146,69 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       setIsMember(true);
       setMembershipId(currentMember.id);
       setMemberName(currentMember.name);
-    } else {
-      setIsMember(false);
-      setMembershipId(null);
-      setMemberName(undefined);
+      return;
+    }
+    
+    // If not found in the UI list, double-check the database
+    try {
+      const { data, error } = await supabase
+        .from('community_members')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('issue_id', parseInt(issue.id));
+        
+      if (error) {
+        console.error("Error checking membership in database:", error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        // User is a member in the database but not in the UI list
+        // This means the UI list is out of sync
+        setIsMember(true);
+        // Get the corresponding UI record or create one if missing
+        const { data: uiMember, error: uiError } = await supabase
+          .from('issue_community_members')
+          .select('*')
+          .eq('issue_id', parseInt(issue.id))
+          .eq('name', userEmail)
+          .maybeSingle();
+          
+        if (uiError) {
+          console.error("Error checking UI membership:", uiError);
+        } else if (uiMember) {
+          setMembershipId(uiMember.id);
+          setMemberName(userEmail);
+          
+          // Update the UI members list if needed
+          if (!members.some(m => m.id === uiMember.id)) {
+            setCommunityMembers(prev => [
+              ...prev, 
+              {
+                id: uiMember.id,
+                name: uiMember.name,
+                role: uiMember.role || 'member',
+                avatarUrl: uiMember.avatar_url
+              }
+            ]);
+          }
+        } else {
+          // UI record doesn't exist, create it
+          await handleJoinCommunity(true);
+        }
+      } else {
+        setIsMember(false);
+        setMembershipId(null);
+        setMemberName(undefined);
+      }
+    } catch (error) {
+      console.error("Error in membership check:", error);
     }
   };
 
   if (!issue) return null;
 
-  const handleJoinCommunity = async () => {
+  const handleJoinCommunity = async (skipCheck = false) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -158,34 +219,39 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
 
     // Prevent duplicate operations
-    if (isJoining || isMember) return;
+    if (isJoining || (isMember && !skipCheck)) return;
 
     setIsJoining(true);
     try {
       // First check if already a member in the actual membership table
-      const { data: existingMember, error: checkError } = await supabase
-        .from('community_members')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('issue_id', parseInt(issue.id));
+      if (!skipCheck) {
+        const { data: existingMember, error: checkError } = await supabase
+          .from('community_members')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('issue_id', parseInt(issue.id));
 
-      if (checkError) {
-        console.error("Error checking membership:", checkError);
-        throw checkError;
+        if (checkError) {
+          console.error("Error checking membership:", checkError);
+          throw checkError;
+        }
+
+        if (existingMember && existingMember.length > 0) {
+          // Already a member in the database, but UI might not show it
+          toast({
+            title: "Already a member",
+            description: "You are already part of this community!",
+          });
+          setIsMember(true);
+          
+          // Check if UI needs updating
+          await fetchCommunityMembers();
+          setIsJoining(false);
+          return;
+        }
       }
 
-      if (existingMember && existingMember.length > 0) {
-        // Already a member in the database, but UI might not show it
-        toast({
-          title: "Already a member",
-          description: "You are already part of this community!",
-        });
-        setIsMember(true);
-        
-        // Check if UI needs updating
-        await fetchCommunityMembers();
-        return;
-      }
+      const userEmail = user.email || 'Anonymous';
 
       // Add to community_members table
       const { error: insertError } = await supabase
@@ -200,8 +266,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         console.error("Error joining community:", insertError);
         throw insertError;
       }
-
-      const userEmail = user.email || 'Anonymous';
       
       // Add to issue_community_members table (for UI display)
       const { data: newMember, error: uiInsertError } = await supabase
@@ -231,22 +295,27 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           avatarUrl: newMember.avatar_url
         };
         
-        setCommunityMembers(prev => [...prev, newUiMember]);
+        // Update the community members list with the new member
+        const updatedMembers = [...communityMembers, newUiMember];
+        setCommunityMembers(updatedMembers);
+        setIsMember(true);
       }
-      
-      setIsMember(true);
 
-      toast({
-        title: "Success!",
-        description: "You've joined the community. Welcome!",
-      });
+      if (!skipCheck) {
+        toast({
+          title: "Success!",
+          description: "You've joined the community. Welcome!",
+        });
+      }
     } catch (error: any) {
       console.error("Full error details:", error);
-      toast({
-        title: "Error joining community",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      if (!skipCheck) {
+        toast({
+          title: "Error joining community",
+          description: error.message || "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsJoining(false);
     }
@@ -380,6 +449,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
               isLeaving={isLeaving}
               isMember={isMember}
               currentUserEmail={user?.email}
+              memberName={memberName}
             />
           </TabsContent>
           

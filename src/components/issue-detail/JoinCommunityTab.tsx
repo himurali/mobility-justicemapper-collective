@@ -32,6 +32,7 @@ const JoinCommunityTab: React.FC<JoinCommunityTabProps> = ({
             className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8 py-2 rounded"
             onClick={onJoinCommunity}
             disabled={isJoining}
+            aria-live="polite"
           >
             {isJoining ? "Joining..." : "Join Now"}
           </button>
@@ -44,6 +45,7 @@ const JoinCommunityTab: React.FC<JoinCommunityTabProps> = ({
               className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-200 font-medium px-8 py-2 rounded transition-colors"
               onClick={onLeaveCommunity}
               disabled={isLeaving}
+              aria-live="polite"
             >
               {isLeaving ? "Leaving..." : "Leave Community"}
             </button>

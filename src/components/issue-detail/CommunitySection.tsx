@@ -32,6 +32,16 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
 }) => {
   const { user } = useAuth();
   
+  // Helper to check if a member is the current user
+  const isCurrentUser = (memberName: string) => {
+    if (!user) return false;
+    
+    return (
+      memberName === currentUserEmail || 
+      memberName === user.email
+    );
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -43,6 +53,7 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
             onClick={onJoinCommunity}
             className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
             disabled={isJoining}
+            aria-live="polite"
           >
             {isJoining ? "Joining..." : "Join Community"}
           </Button>
@@ -56,6 +67,7 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
               variant="destructive"
               size="sm"
               disabled={isLeaving}
+              aria-live="polite"
             >
               {isLeaving ? "Leaving..." : "Leave"}
             </Button>
@@ -76,7 +88,7 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
               <div>
                 <p className="font-medium">{member.name}</p>
                 <p className="text-sm text-muted-foreground">{member.role}</p>
-                {user && (currentUserEmail === member.name || user.email === member.name) && (
+                {isCurrentUser(member.name) && (
                   <span className="text-xs bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200 px-2 py-0.5 rounded-full">
                     You
                   </span>

@@ -70,49 +70,78 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const [membershipId, setMembershipId] = useState<string | null>(null);
   const [memberName, setMemberName] = useState<string | undefined>(undefined);
 
+  // Refetch community members whenever the issue changes
   useEffect(() => {
     if (issue) {
       fetchCommunityMembers();
+    } else {
+      // Reset state if no issue
+      setCommunityMembers([]);
+      setIsMember(false);
+      setMembershipId(null);
+      setMemberName(undefined);
     }
   }, [issue]);
+
+  // Also refetch when user changes
+  useEffect(() => {
+    if (issue && user) {
+      checkMembershipStatus();
+    }
+  }, [user, issue?.id]);
 
   const fetchCommunityMembers = async () => {
     if (!issue) return;
     
-    const { data, error } = await supabase
-      .from('issue_community_members')
-      .select('*')
-      .eq('issue_id', parseInt(issue.id));
+    try {
+      const { data, error } = await supabase
+        .from('issue_community_members')
+        .select('*')
+        .eq('issue_id', parseInt(issue.id));
 
-    if (error) {
-      console.error("Error fetching community members:", error);
+      if (error) {
+        console.error("Error fetching community members:", error);
+        return;
+      }
+
+      if (data) {
+        const mappedMembers: UiCommunityMember[] = data.map((member: DbCommunityMember) => ({
+          id: member.id,
+          name: member.name,
+          role: member.role || 'member',
+          avatarUrl: member.avatar_url
+        }));
+        setCommunityMembers(mappedMembers);
+        
+        // Check if current user is a member
+        checkMembershipStatus(mappedMembers);
+      }
+    } catch (error) {
+      console.error("Failed to fetch community members:", error);
+    }
+  };
+
+  const checkMembershipStatus = (members = communityMembers) => {
+    if (!user) {
+      setIsMember(false);
+      setMembershipId(null);
+      setMemberName(undefined);
       return;
     }
-
-    if (data) {
-      const mappedMembers: UiCommunityMember[] = data.map((member: DbCommunityMember) => ({
-        id: member.id,
-        name: member.name,
-        role: member.role || 'member',
-        avatarUrl: member.avatar_url
-      }));
-      setCommunityMembers(mappedMembers);
-      
-      if (user) {
-        const currentMember = mappedMembers.find(member => 
-          member.name === user.email
-        );
-        
-        if (currentMember) {
-          setIsMember(true);
-          setMembershipId(currentMember.id);
-          setMemberName(currentMember.name);
-        } else {
-          setIsMember(false);
-          setMembershipId(null);
-          setMemberName(undefined);
-        }
-      }
+    
+    const userEmail = user.email || '';
+    const currentMember = members.find(member => 
+      member.name === userEmail
+    );
+    
+    if (currentMember) {
+      setIsMember(true);
+      setMembershipId(currentMember.id);
+      setMemberName(currentMember.name);
+    } else {
+      setIsMember(false);
+      setMembershipId(null);
+      setMemberName(undefined);
     }
   };
 
@@ -128,8 +157,12 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
 
+    // Prevent duplicate operations
+    if (isJoining || isMember) return;
+
     setIsJoining(true);
     try {
+      // First check if already a member in the actual membership table
       const { data: existingMember, error: checkError } = await supabase
         .from('community_members')
         .select('*')
@@ -142,14 +175,19 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
 
       if (existingMember && existingMember.length > 0) {
+        // Already a member in the database, but UI might not show it
         toast({
           title: "Already a member",
           description: "You are already part of this community!",
         });
         setIsMember(true);
+        
+        // Check if UI needs updating
+        await fetchCommunityMembers();
         return;
       }
 
+      // Add to community_members table
       const { error: insertError } = await supabase
         .from('community_members')
         .insert({
@@ -165,6 +203,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
 
       const userEmail = user.email || 'Anonymous';
       
+      // Add to issue_community_members table (for UI display)
       const { data: newMember, error: uiInsertError } = await supabase
         .from('issue_community_members')
         .insert({
@@ -181,7 +220,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw uiInsertError;
       }
 
-      // Add the new member to the state immediately
+      // Update local state immediately for responsive UI
       if (newMember) {
         setMembershipId(newMember.id);
         setMemberName(userEmail);
@@ -214,7 +253,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   };
 
   const handleLeaveCommunity = async () => {
-    if (!user || !isMember || !membershipId) {
+    if (!user || !isMember) {
       toast({
         title: "Cannot leave community",
         description: "You are not a member or not signed in",
@@ -223,8 +262,28 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
 
+    // Prevent leaving if operation already in progress
+    if (isLeaving) return;
+
     setIsLeaving(true);
     try {
+      // We need the membership ID to remove from UI table
+      if (!membershipId) {
+        // Try to find membership ID if not already in state
+        const { data } = await supabase
+          .from('issue_community_members')
+          .select('id')
+          .eq('issue_id', parseInt(issue.id))
+          .eq('name', user.email)
+          .single();
+        
+        if (data?.id) {
+          setMembershipId(data.id);
+        } else {
+          throw new Error("Could not find your membership record");
+        }
+      }
+
       // Delete from community_members table
       const { error: deleteMemberError } = await supabase
         .from('community_members')

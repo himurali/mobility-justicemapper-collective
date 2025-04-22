@@ -19,6 +19,22 @@ interface IssueDetailProps {
   initialTab?: string;
 }
 
+interface DbCommunityMember {
+  id: string;
+  name: string;
+  role: string;
+  avatar_url: string | null;
+  issue_id: number;
+  created_at?: string;
+}
+
+interface UiCommunityMember {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl: string | null;
+}
+
 const tagColors: Record<string, string> = {
   'Cycling': 'bg-emerald-100 text-gray-600 dark:bg-emerald-900 dark:text-gray-300',
   'Safety': 'bg-red-100 text-gray-600 dark:bg-red-900 dark:text-gray-300',
@@ -46,7 +62,9 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isJoining, setIsJoining] = useState(false);
-  const [communityMembers, setCommunityMembers] = useState(issue?.communityMembers || []);
+  const [communityMembers, setCommunityMembers] = useState<UiCommunityMember[]>(
+    issue?.communityMembers || []
+  );
 
   useEffect(() => {
     if (issue) {
@@ -68,7 +86,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
 
     if (data) {
-      setCommunityMembers(data);
+      const mappedMembers: UiCommunityMember[] = data.map((member: DbCommunityMember) => ({
+        id: member.id,
+        name: member.name,
+        role: member.role || 'member',
+        avatarUrl: member.avatar_url || null
+      }));
+      setCommunityMembers(mappedMembers);
     }
   };
 
@@ -90,7 +114,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
 
     setIsJoining(true);
     try {
-      // Check if user is already a member
       const { data: existingMember, error: checkError } = await supabase
         .from('community_members')
         .select('*')
@@ -110,7 +133,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         return;
       }
 
-      // Add user to community_members
       const { error: insertError } = await supabase
         .from('community_members')
         .insert({
@@ -124,7 +146,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw insertError;
       }
 
-      // Add member to issue_community_members for UI display
       const { error: uiInsertError } = await supabase
         .from('issue_community_members')
         .insert({
@@ -138,7 +159,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         console.error("Error updating UI members:", uiInsertError);
       }
 
-      await fetchCommunityMembers(); // Refresh the members list
+      await fetchCommunityMembers();
 
       toast({
         title: "Success!",
@@ -284,7 +305,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 {communityMembers.map((member) => (
                   <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
                     <Avatar>
-                      <AvatarImage src={member.avatar_url} />
+                      <AvatarImage src={member.avatarUrl || undefined} />
                       <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                         {member.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>

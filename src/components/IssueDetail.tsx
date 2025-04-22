@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from './video/VideoPlayer';
+import { useState } from 'react';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -44,6 +46,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isJoining, setIsJoining] = useState(false);
 
   if (!issue) return null;
 
@@ -61,14 +64,31 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
 
+    setIsJoining(true);
     try {
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
+        .from('community_members')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('issue_id', parseInt(issue.id))
+        .single();
+
+      if (existingMember) {
+        toast({
+          title: "Already a member",
+          description: "You are already part of this community!",
+        });
+        return;
+      }
+
+      // Add user to community
       const { error } = await supabase
         .from('community_members')
         .insert({
           user_id: user.id,
           issue_id: parseInt(issue.id),
-          role: 'member',
-          status: 'pending'
+          role: 'member'
         });
 
       if (error) throw error;
@@ -83,6 +103,8 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsJoining(false);
     }
   };
 
@@ -136,8 +158,12 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                   </Badge>
                 </div>
               </div>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                Join Community
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                onClick={handleJoinCommunity}
+                disabled={isJoining}
+              >
+                {isJoining ? "Joining..." : "Join Community"}
               </Button>
             </div>
           </div>
@@ -250,11 +276,5 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     </Card>
   );
 };
-
-function getYoutubeId(url: string): string {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : '';
-}
 
 export default IssueDetail;

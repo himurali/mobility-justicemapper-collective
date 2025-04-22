@@ -44,31 +44,34 @@ const BlogPost: React.FC<BlogPostProps> = ({
                   <ArrowLeft className="w-5 h-5" />
                   Back to Blog
                 </button>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-                  {title}
-                </h1>
+                
+                <div className="space-y-4">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                    {title}
+                  </h1>
+
+                  {subtitle && (
+                    <p className="text-xl text-white/90 max-w-2xl drop-shadow">
+                      {subtitle}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-6 text-white/80">
+                    {date && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        <span>{date}</span>
+                      </div>
+                    )}
+                    {readTime && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        <span>{readTime}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-
-            <div className="flex items-center gap-6 text-white/80 mb-4">
-              {date && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>{date}</span>
-                </div>
-              )}
-              {readTime && (
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  <span>{readTime}</span>
-                </div>
-              )}
-            </div>
-
-            {subtitle && (
-              <p className="text-xl text-white/90 max-w-2xl drop-shadow">
-                {subtitle}
-              </p>
             )}
           </div>
         </Container>
@@ -88,4 +91,3 @@ const BlogPost: React.FC<BlogPostProps> = ({
 };
 
 export default BlogPost;
-

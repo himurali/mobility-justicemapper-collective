@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IssueData } from '@/types';
 import Forum from '@/components/Forum';
@@ -61,9 +62,8 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isJoining, setIsJoining] = useState(false);
-  const [communityMembers, setCommunityMembers] = useState<UiCommunityMember[]>(
-    issue?.communityMembers || []
-  );
+  const [communityMembers, setCommunityMembers] = useState<UiCommunityMember[]>([]);
+  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     if (issue) {
@@ -89,17 +89,21 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         id: member.id,
         name: member.name,
         role: member.role || 'member',
-        avatarUrl: member.avatar_url || null
+        avatarUrl: member.avatar_url
       }));
       setCommunityMembers(mappedMembers);
+      
+      // Check if current user is already a member
+      if (user) {
+        const userIsMember = mappedMembers.some(member => 
+          member.name === user.email
+        );
+        setIsMember(userIsMember);
+      }
     }
   };
 
   if (!issue) return null;
-
-  const getTagColor = (tag: string) => {
-    return tagColors[tag] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-  };
 
   const handleJoinCommunity = async () => {
     if (!user) {
@@ -129,6 +133,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           title: "Already a member",
           description: "You are already part of this community!",
         });
+        setIsMember(true);
         return;
       }
 
@@ -159,6 +164,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
 
       await fetchCommunityMembers();
+      setIsMember(true);
 
       toast({
         title: "Success!",
@@ -213,15 +219,21 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 Join our community of advocates working together to address mobility justice issues. Your voice matters in creating positive change.
               </p>
               <div className="flex flex-col items-center gap-4">
-                <button 
-                  className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8 py-2 rounded"
-                  onClick={handleJoinCommunity}
-                  disabled={isJoining}
-                >
-                  {isJoining ? "Joining..." : "Join Now"}
-                </button>
+                {!isMember ? (
+                  <button 
+                    className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8 py-2 rounded"
+                    onClick={handleJoinCommunity}
+                    disabled={isJoining}
+                  >
+                    {isJoining ? "Joining..." : "Join Now"}
+                  </button>
+                ) : (
+                  <div className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium px-8 py-2 rounded">
+                    You're already a member!
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">
-                  Already a member? Sign in to participate
+                  {!user ? "Sign in to participate" : "Thank you for your interest in this issue"}
                 </p>
               </div>
             </div>
@@ -232,6 +244,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
               communityMembers={communityMembers}
               onJoinCommunity={handleJoinCommunity}
               isJoining={isJoining}
+              isMember={isMember}
             />
           </TabsContent>
           
@@ -261,7 +274,9 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       </CardContent>
       <CardFooter className="border-t p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
         <div className="w-full text-center text-sm text-muted-foreground">
-          Join the community to contribute to this issue's resolution
+          {isMember 
+            ? "You're part of this community. Thank you for contributing!" 
+            : "Join the community to contribute to this issue's resolution"}
         </div>
       </CardFooter>
     </Card>

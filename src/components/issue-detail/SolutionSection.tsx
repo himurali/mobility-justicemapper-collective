@@ -11,7 +11,7 @@ const SolutionSection: React.FC<SolutionSectionProps> = ({ solution }) => {
       <h3 className="text-lg font-medium mb-2 text-green-700 dark:text-green-300">
         Proposed Solution
       </h3>
-      <p className="text-muted-foreground">{solution}</p>
+      <p className="text-muted-foreground whitespace-pre-wrap">{solution || "No solution proposed yet."}</p>
     </div>
   );
 };

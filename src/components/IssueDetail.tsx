@@ -1,8 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IssueData } from '@/types';
 import Forum from '@/components/Forum';
@@ -10,8 +7,10 @@ import { mockForumPosts } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import VideoPlayer from './video/VideoPlayer';
-import { useState, useEffect } from 'react';
+import IssueHeader from './issue-detail/IssueHeader';
+import IssueContent from './issue-detail/IssueContent';
+import SolutionSection from './issue-detail/SolutionSection';
+import CommunitySection from './issue-detail/CommunitySection';
 
 interface IssueDetailProps {
   issue: IssueData | null;
@@ -49,7 +48,7 @@ const tagColors: Record<string, string> = {
   'Traffic': 'bg-rose-100 text-gray-600 dark:bg-rose-900 dark:text-gray-300',
   'Maintenance': 'bg-slate-100 text-gray-600 dark:bg-slate-900 dark:text-gray-300',
   'Lighting': 'bg-cyan-100 text-gray-600 dark:bg-cyan-900 dark:text-gray-300',
-  'Public Transit': 'bg-fuchsia-100 text-gray-600 dark:bg-fuchsia-900 dark:text-gray-300',
+  'Public Transit': 'bg-fuchsia-100 text-gray-600 dark:bg-fuchsia-900 dark:text-gray-600',
   'Weather Protection': 'bg-sky-100 text-gray-600 dark:bg-sky-900 dark:text-gray-300',
   'Comfort': 'bg-lime-100 text-gray-600 dark:bg-lime-900 dark:text-gray-300',
 };
@@ -180,63 +179,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   return (
     <Card className="w-full h-full overflow-hidden shadow-lg">
       <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-blue-700 dark:text-blue-300">{issue.title}</CardTitle>
-            <CardDescription className="flex items-center gap-2 mt-1">
-              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">{issue.city}</Badge>
-              <span className="text-xs text-muted-foreground">
-                {issue.location.address}
-              </span>
-            </CardDescription>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {issue.tags.map(tag => (
-                <Badge key={tag} className={`${getTagColor(tag)} text-xs`}>
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900">
-            Close
-          </Button>
-        </div>
-        
-        {issue.justiceChampion && (
-          <div className="w-full mt-4 border-t pt-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col">
-                  <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300">Justice Champion</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Avatar className="h-8 w-8 border-2 border-orange-300 dark:border-orange-700">
-                      <AvatarImage src={issue.justiceChampion.avatarUrl} />
-                      <AvatarFallback className="bg-orange-200 text-orange-800 dark:bg-orange-800 dark:text-orange-200">
-                        {issue.justiceChampion.name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-orange-800 dark:text-orange-300">{issue.justiceChampion.name}</p>
-                      <p className="text-xs text-orange-700 dark:text-orange-400">{issue.justiceChampion.role}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
-                    {issue.communityMembers.length} supporters
-                  </Badge>
-                </div>
-              </div>
-              <Button 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                onClick={handleJoinCommunity}
-                disabled={isJoining}
-              >
-                {isJoining ? "Joining..." : "Join Community"}
-              </Button>
-            </div>
-          </div>
-        )}
+        <IssueHeader 
+          issue={issue}
+          onClose={onClose}
+          onJoinCommunity={handleJoinCommunity}
+          isJoining={isJoining}
+          tagColors={tagColors}
+        />
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue={initialTab} className="w-full">
@@ -250,21 +199,11 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsList>
           
           <TabsContent value="video" className="p-6 pt-4">
-            <div className="flex justify-center mb-4">
-              <div className="w-3/4 aspect-video bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden shadow-md">
-                <VideoPlayer 
-                  url={issue.videoUrl || ''}
-                  title={issue.title}
-                />
-              </div>
-            </div>
-            <h3 className="text-lg font-medium mb-2 text-blue-700 dark:text-blue-300">Problem Description</h3>
-            <p className="text-muted-foreground">{issue.description}</p>
+            <IssueContent issue={issue} />
           </TabsContent>
           
           <TabsContent value="solution" className="p-6 pt-4">
-            <h3 className="text-lg font-medium mb-2 text-green-700 dark:text-green-300">Proposed Solution</h3>
-            <p className="text-muted-foreground">{issue.solution}</p>
+            <SolutionSection solution={issue.solution} />
           </TabsContent>
           
           <TabsContent value="join" className="p-6 pt-4">
@@ -274,13 +213,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 Join our community of advocates working together to address mobility justice issues. Your voice matters in creating positive change.
               </p>
               <div className="flex flex-col items-center gap-4">
-                <Button 
-                  className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8"
+                <button 
+                  className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8 py-2 rounded"
                   onClick={handleJoinCommunity}
                   disabled={isJoining}
                 >
                   {isJoining ? "Joining..." : "Join Now"}
-                </Button>
+                </button>
                 <p className="text-sm text-muted-foreground">
                   Already a member? Sign in to participate
                 </p>
@@ -289,35 +228,11 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsContent>
           
           <TabsContent value="community" className="p-6 pt-4">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-purple-700 dark:text-purple-300">Community Members</h3>
-                <Button 
-                  onClick={handleJoinCommunity}
-                  className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
-                  disabled={isJoining}
-                >
-                  {isJoining ? "Joining..." : "Join Community"}
-                </Button>
-              </div>
-              
-              <div className="space-y-3">
-                {communityMembers.map((member) => (
-                  <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors">
-                    <Avatar>
-                      <AvatarImage src={member.avatarUrl || undefined} />
-                      <AvatarFallback className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                        {member.name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{member.name}</p>
-                      <p className="text-sm text-muted-foreground">{member.role}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <CommunitySection 
+              communityMembers={communityMembers}
+              onJoinCommunity={handleJoinCommunity}
+              isJoining={isJoining}
+            />
           </TabsContent>
           
           <TabsContent value="forum" className="p-6 pt-4">

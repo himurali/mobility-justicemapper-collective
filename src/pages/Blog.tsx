@@ -14,18 +14,6 @@ const categories = [
 
 const blogPosts = [
   {
-    id: "1",
-    title: "Let God in your Heart and Soul",
-    summary: "Discover the transformative power of faith and the profound impact it can have on your journey through urban mobility justice. Learn how spiritual connections can help navigate challenges.",
-    author: "Jane Doe",
-    authorAvatar: "/placeholder.svg",
-    date: "February 2, 2023",
-    readTime: "9 min",
-    image: "/lovable-uploads/24ac4175-f301-47ad-9ace-3dba49cfa75f.png",
-    category: "wellness",
-    slug: "let-god-in-your-heart-and-soul",
-  },
-  {
     id: "2",
     title: "Finding Peace in Urban Mobility",
     summary: "Explore how mindfulness and spiritual awareness can transform your daily commute. Discover practical strategies for maintaining inner peace while navigating transportation challenges.",

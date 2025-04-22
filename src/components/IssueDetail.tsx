@@ -68,6 +68,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const [communityMembers, setCommunityMembers] = useState<UiCommunityMember[]>([]);
   const [isMember, setIsMember] = useState(false);
   const [membershipId, setMembershipId] = useState<string | null>(null);
+  const [memberName, setMemberName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (issue) {
@@ -105,9 +106,11 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         if (currentMember) {
           setIsMember(true);
           setMembershipId(currentMember.id);
+          setMemberName(currentMember.name);
         } else {
           setIsMember(false);
           setMembershipId(null);
+          setMemberName(undefined);
         }
       }
     }
@@ -160,11 +163,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw insertError;
       }
 
+      const userEmail = user.email || 'Anonymous';
+      
       const { data: newMember, error: uiInsertError } = await supabase
         .from('issue_community_members')
         .insert({
           issue_id: parseInt(issue.id),
-          name: user.email || 'Anonymous',
+          name: userEmail,
           role: 'member',
           avatar_url: user.user_metadata?.avatar_url || null
         })
@@ -179,6 +184,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       // Add the new member to the state immediately
       if (newMember) {
         setMembershipId(newMember.id);
+        setMemberName(userEmail);
         const newUiMember: UiCommunityMember = {
           id: newMember.id,
           name: newMember.name,
@@ -246,6 +252,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       setCommunityMembers(prev => prev.filter(member => member.id !== membershipId));
       setIsMember(false);
       setMembershipId(null);
+      setMemberName(undefined);
 
       toast({
         title: "Left community",
@@ -301,6 +308,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
               onJoinCommunity={handleJoinCommunity}
               onLeaveCommunity={handleLeaveCommunity}
               user={user}
+              memberName={memberName}
             />
           </TabsContent>
           
@@ -312,6 +320,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
               isJoining={isJoining}
               isLeaving={isLeaving}
               isMember={isMember}
+              currentUserEmail={user?.email}
             />
           </TabsContent>
           

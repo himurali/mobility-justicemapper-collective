@@ -18,6 +18,7 @@ interface CommunitySectionProps {
   isJoining: boolean;
   isLeaving?: boolean;
   isMember: boolean;
+  currentUserEmail?: string;
 }
 
 const CommunitySection: React.FC<CommunitySectionProps> = ({
@@ -26,7 +27,8 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
   onLeaveCommunity,
   isJoining,
   isLeaving = false,
-  isMember
+  isMember,
+  currentUserEmail
 }) => {
   const { user } = useAuth();
   
@@ -74,7 +76,7 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
               <div>
                 <p className="font-medium">{member.name}</p>
                 <p className="text-sm text-muted-foreground">{member.role}</p>
-                {user && user.email === member.name && (
+                {user && (currentUserEmail === member.name || user.email === member.name) && (
                   <span className="text-xs bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200 px-2 py-0.5 rounded-full">
                     You
                   </span>

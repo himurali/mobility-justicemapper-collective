@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,14 +66,18 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     setIsJoining(true);
     try {
       // Check if user is already a member
-      const { data: existingMember } = await supabase
+      const { data: existingMember, error: checkError } = await supabase
         .from('community_members')
         .select('*')
         .eq('user_id', user.id)
-        .eq('issue_id', parseInt(issue.id))
-        .single();
+        .eq('issue_id', parseInt(issue.id));
 
-      if (existingMember) {
+      if (checkError) {
+        console.error("Error checking membership:", checkError);
+        throw checkError;
+      }
+
+      if (existingMember && existingMember.length > 0) {
         toast({
           title: "Already a member",
           description: "You are already part of this community!",
@@ -83,7 +86,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
 
       // Add user to community
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('community_members')
         .insert({
           user_id: user.id,
@@ -91,16 +94,22 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           role: 'member'
         });
 
-      if (error) throw error;
+      if (insertError) {
+        console.error("Error joining community:", insertError);
+        throw insertError;
+      }
 
       toast({
         title: "Success!",
         description: "You've joined the community. Welcome!",
       });
+      
+      // Update UI or refetch data if needed
     } catch (error: any) {
+      console.error("Full error details:", error);
       toast({
         title: "Error joining community",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -205,8 +214,12 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 Join our community of advocates working together to address mobility justice issues. Your voice matters in creating positive change.
               </p>
               <div className="flex flex-col items-center gap-4">
-                <Button className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8">
-                  Join Now
+                <Button 
+                  className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-medium px-8"
+                  onClick={handleJoinCommunity}
+                  disabled={isJoining}
+                >
+                  {isJoining ? "Joining..." : "Join Now"}
                 </Button>
                 <p className="text-sm text-muted-foreground">
                   Already a member? Sign in to participate
@@ -222,8 +235,9 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
                 <Button 
                   onClick={handleJoinCommunity}
                   className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
+                  disabled={isJoining}
                 >
-                  Join Community
+                  {isJoining ? "Joining..." : "Join Community"}
                 </Button>
               </div>
               

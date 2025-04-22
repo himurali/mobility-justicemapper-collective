@@ -14,14 +14,18 @@ interface UiCommunityMember {
 interface CommunitySectionProps {
   communityMembers: UiCommunityMember[];
   onJoinCommunity: () => void;
+  onLeaveCommunity: () => void;
   isJoining: boolean;
+  isLeaving?: boolean;
   isMember: boolean;
 }
 
 const CommunitySection: React.FC<CommunitySectionProps> = ({
   communityMembers,
   onJoinCommunity,
+  onLeaveCommunity,
   isJoining,
+  isLeaving = false,
   isMember
 }) => {
   const { user } = useAuth();
@@ -41,8 +45,18 @@ const CommunitySection: React.FC<CommunitySectionProps> = ({
             {isJoining ? "Joining..." : "Join Community"}
           </Button>
         ) : (
-          <div className="px-4 py-2 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-md">
-            You're a member
+          <div className="flex gap-2 items-center">
+            <div className="px-4 py-2 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-md">
+              You're a member
+            </div>
+            <Button 
+              onClick={onLeaveCommunity}
+              variant="destructive"
+              size="sm"
+              disabled={isLeaving}
+            >
+              {isLeaving ? "Leaving..." : "Leave"}
+            </Button>
           </div>
         )}
       </div>

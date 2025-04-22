@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -63,8 +64,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isJoining, setIsJoining] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [communityMembers, setCommunityMembers] = useState<UiCommunityMember[]>([]);
   const [isMember, setIsMember] = useState(false);
+  const [membershipId, setMembershipId] = useState<string | null>(null);
 
   useEffect(() => {
     if (issue) {
@@ -95,10 +98,17 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       setCommunityMembers(mappedMembers);
       
       if (user) {
-        const userIsMember = mappedMembers.some(member => 
+        const currentMember = mappedMembers.find(member => 
           member.name === user.email
         );
-        setIsMember(userIsMember);
+        
+        if (currentMember) {
+          setIsMember(true);
+          setMembershipId(currentMember.id);
+        } else {
+          setIsMember(false);
+          setMembershipId(null);
+        }
       }
     }
   };
@@ -150,20 +160,35 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw insertError;
       }
 
-      const { error: uiInsertError } = await supabase
+      const { data: newMember, error: uiInsertError } = await supabase
         .from('issue_community_members')
         .insert({
           issue_id: parseInt(issue.id),
           name: user.email || 'Anonymous',
           role: 'member',
           avatar_url: user.user_metadata?.avatar_url || null
-        });
+        })
+        .select('*')
+        .single();
 
       if (uiInsertError) {
         console.error("Error updating UI members:", uiInsertError);
+        throw uiInsertError;
       }
 
-      await fetchCommunityMembers();
+      // Add the new member to the state immediately
+      if (newMember) {
+        setMembershipId(newMember.id);
+        const newUiMember: UiCommunityMember = {
+          id: newMember.id,
+          name: newMember.name,
+          role: newMember.role || 'member',
+          avatarUrl: newMember.avatar_url
+        };
+        
+        setCommunityMembers(prev => [...prev, newUiMember]);
+      }
+      
       setIsMember(true);
 
       toast({
@@ -179,6 +204,62 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       });
     } finally {
       setIsJoining(false);
+    }
+  };
+
+  const handleLeaveCommunity = async () => {
+    if (!user || !isMember || !membershipId) {
+      toast({
+        title: "Cannot leave community",
+        description: "You are not a member or not signed in",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLeaving(true);
+    try {
+      // Delete from community_members table
+      const { error: deleteMemberError } = await supabase
+        .from('community_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('issue_id', parseInt(issue.id));
+
+      if (deleteMemberError) {
+        console.error("Error leaving community:", deleteMemberError);
+        throw deleteMemberError;
+      }
+
+      // Delete from issue_community_members table
+      const { error: deleteUiMemberError } = await supabase
+        .from('issue_community_members')
+        .delete()
+        .eq('id', membershipId);
+
+      if (deleteUiMemberError) {
+        console.error("Error removing from UI members:", deleteUiMemberError);
+        throw deleteUiMemberError;
+      }
+
+      // Update the local state
+      setCommunityMembers(prev => prev.filter(member => member.id !== membershipId));
+      setIsMember(false);
+      setMembershipId(null);
+
+      toast({
+        title: "Left community",
+        description: "You've successfully left the community",
+      });
+    } catch (error: any) {
+      console.error("Error leaving community:", error);
+      toast({
+        title: "Error leaving community",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLeaving(false);
     }
   };
 
@@ -216,7 +297,9 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
             <JoinCommunityTab
               isMember={isMember}
               isJoining={isJoining}
+              isLeaving={isLeaving}
               onJoinCommunity={handleJoinCommunity}
+              onLeaveCommunity={handleLeaveCommunity}
               user={user}
             />
           </TabsContent>
@@ -225,7 +308,9 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
             <CommunitySection 
               communityMembers={communityMembers}
               onJoinCommunity={handleJoinCommunity}
+              onLeaveCommunity={handleLeaveCommunity}
               isJoining={isJoining}
+              isLeaving={isLeaving}
               isMember={isMember}
             />
           </TabsContent>

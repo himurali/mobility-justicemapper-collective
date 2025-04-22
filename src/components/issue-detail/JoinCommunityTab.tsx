@@ -5,13 +5,17 @@ interface JoinCommunityTabProps {
   isMember: boolean;
   isJoining: boolean;
   onJoinCommunity: () => void;
+  onLeaveCommunity: () => void;
+  isLeaving?: boolean;
   user: any;
 }
 
 const JoinCommunityTab: React.FC<JoinCommunityTabProps> = ({
   isMember,
   isJoining,
+  isLeaving = false,
   onJoinCommunity,
+  onLeaveCommunity,
   user
 }) => {
   return (
@@ -30,8 +34,17 @@ const JoinCommunityTab: React.FC<JoinCommunityTabProps> = ({
             {isJoining ? "Joining..." : "Join Now"}
           </button>
         ) : (
-          <div className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium px-8 py-2 rounded">
-            You're already a member!
+          <div className="flex flex-col gap-2 items-center">
+            <div className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium px-8 py-2 rounded">
+              You're already a member!
+            </div>
+            <button 
+              className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-200 font-medium px-8 py-2 rounded transition-colors"
+              onClick={onLeaveCommunity}
+              disabled={isLeaving}
+            >
+              {isLeaving ? "Leaving..." : "Leave Community"}
+            </button>
           </div>
         )}
         <p className="text-sm text-muted-foreground">

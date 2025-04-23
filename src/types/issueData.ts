@@ -1,6 +1,7 @@
 
 import type { IssueLocation, IssueCategory, IssueSeverity } from './index';
 
+// Update the ForumPost type so author and reply author are just the name (string)
 export interface IssueData {
   id: string;
   title: string;
@@ -35,24 +36,19 @@ export interface IssueData {
   image_url?: string;
 }
 
+// Here, author and reply.author are now just 'name: string'
 export interface ForumPost {
   id: string;
   issueId: string;
   title: string;
-  author: {
-    name: string;
-    avatarUrl: string;
-  };
+  author: string;
   date: string;
   content: string;
   tags: string[];
   likes: number;
   replies: {
     id: string;
-    author: {
-      name: string;
-      avatarUrl: string;
-    };
+    author: string;
     date: string;
     content: string;
     likes: number;

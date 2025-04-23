@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,17 +25,11 @@ const Forum: React.FC<ForumProps> = ({ posts }) => {
         <Card key={post.id} className="overflow-hidden">
           <CardContent className="p-4">
             <div className="flex justify-between items-start">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={post.author.avatarUrl} />
-                  <AvatarFallback>{post.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-medium">{post.title}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    by {post.author.name} · {new Date(post.date).toLocaleDateString()}
-                  </p>
-                </div>
+              <div className="flex flex-col">
+                <h3 className="font-medium">{post.title}</h3>
+                <p className="text-xs text-muted-foreground">
+                  by {post.author} · {new Date(post.date).toLocaleDateString()}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" className="flex items-center gap-1">
@@ -47,25 +40,22 @@ const Forum: React.FC<ForumProps> = ({ posts }) => {
                 </Button>
               </div>
             </div>
-            
+
             <p className="my-3 text-sm">{post.content}</p>
-            
+
             <div className="flex flex-wrap gap-1 mt-2">
               {post.tags.map(tag => (
                 <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
               ))}
             </div>
-            
+
             {post.replies.length > 0 && (
               <div className="mt-4 pl-4 border-l-2 border-muted space-y-3">
                 {post.replies.map(reply => (
                   <div key={reply.id} className="text-sm">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={reply.author.avatarUrl} />
-                        <AvatarFallback className="text-xs">{reply.author.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{reply.author.name}</span>
+                      {/* Just display reply author's name (no avatar) */}
+                      <span className="font-medium">{reply.author}</span>
                       <span className="text-xs text-muted-foreground">{new Date(reply.date).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-1 ml-8">{reply.content}</p>

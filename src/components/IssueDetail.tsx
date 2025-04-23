@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,13 +68,12 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
   const [isMember, setIsMember] = useState(false);
   const [membershipId, setMembershipId] = useState<string | null>(null);
   const [memberName, setMemberName] = useState<string | undefined>(undefined);
+  const [documents, setDocuments] = useState(issue?.documents || []);
 
-  // Refetch community members whenever the issue changes
   useEffect(() => {
     if (issue) {
       fetchCommunityMembers();
     } else {
-      // Reset state if no issue
       setCommunityMembers([]);
       setIsMember(false);
       setMembershipId(null);
@@ -83,7 +81,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
   }, [issue]);
 
-  // Also refetch when user changes
   useEffect(() => {
     if (issue && user) {
       checkMembershipStatus();
@@ -93,6 +90,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       setMemberName(undefined);
     }
   }, [user, issue?.id]);
+
+  useEffect(() => {
+    setDocuments(issue?.documents || []);
+  }, [issue]);
 
   const fetchCommunityMembers = async () => {
     if (!issue) return;
@@ -117,7 +118,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         }));
         setCommunityMembers(mappedMembers);
         
-        // Check if current user is a member
         if (user) {
           checkMembershipStatus(mappedMembers);
         }
@@ -137,7 +137,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     
     const userEmail = user.email || '';
     
-    // First check in the current members list
     const currentMember = members.find(member => 
       member.name === userEmail
     );
@@ -149,7 +148,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
     
-    // If not found in the UI list, double-check the database
     try {
       const { data, error } = await supabase
         .from('community_members')
@@ -163,38 +161,20 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
       
       if (data && data.length > 0) {
-        // User is a member in the database but not in the UI list
-        // This means the UI list is out of sync
         setIsMember(true);
-        // Get the corresponding UI record or create one if missing
-        const { data: uiMember, error: uiError } = await supabase
-          .from('issue_community_members')
-          .select('*')
-          .eq('issue_id', parseInt(issue.id))
-          .eq('name', userEmail)
-          .maybeSingle();
-          
-        if (uiError) {
-          console.error("Error checking UI membership:", uiError);
-        } else if (uiMember) {
-          setMembershipId(uiMember.id);
-          setMemberName(userEmail);
-          
-          // Update the UI members list if needed
-          if (!members.some(m => m.id === uiMember.id)) {
-            setCommunityMembers(prev => [
-              ...prev, 
-              {
-                id: uiMember.id,
-                name: uiMember.name,
-                role: uiMember.role || 'member',
-                avatarUrl: uiMember.avatar_url
-              }
-            ]);
-          }
-        } else {
-          // UI record doesn't exist, create it
-          await handleJoinCommunity(true);
+        setMembershipId(data[0].id);
+        setMemberName(userEmail);
+        
+        if (!members.some(m => m.id === data[0].id)) {
+          setCommunityMembers(prev => [
+            ...prev, 
+            {
+              id: data[0].id,
+              name: data[0].name,
+              role: data[0].role || 'member',
+              avatarUrl: data[0].avatar_url
+            }
+          ]);
         }
       } else {
         setIsMember(false);
@@ -218,12 +198,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
 
-    // Prevent duplicate operations
     if (isJoining || (isMember && !skipCheck)) return;
 
     setIsJoining(true);
     try {
-      // First check if already a member in the actual membership table
       if (!skipCheck) {
         const { data: existingMember, error: checkError } = await supabase
           .from('community_members')
@@ -237,14 +215,11 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         }
 
         if (existingMember && existingMember.length > 0) {
-          // Already a member in the database, but UI might not show it
           toast({
             title: "Already a member",
             description: "You are already part of this community!",
           });
           setIsMember(true);
-          
-          // Check if UI needs updating
           await fetchCommunityMembers();
           setIsJoining(false);
           return;
@@ -253,7 +228,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
 
       const userEmail = user.email || 'Anonymous';
 
-      // Add to community_members table
       const { error: insertError } = await supabase
         .from('community_members')
         .insert({
@@ -267,7 +241,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw insertError;
       }
       
-      // Add to issue_community_members table (for UI display)
       const { data: newMember, error: uiInsertError } = await supabase
         .from('issue_community_members')
         .insert({
@@ -284,7 +257,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw uiInsertError;
       }
 
-      // Update local state immediately for responsive UI
       if (newMember) {
         setMembershipId(newMember.id);
         setMemberName(userEmail);
@@ -295,9 +267,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           avatarUrl: newMember.avatar_url
         };
         
-        // Update the community members list with the new member
-        const updatedMembers = [...communityMembers, newUiMember];
-        setCommunityMembers(updatedMembers);
+        setCommunityMembers(prev => [
+          ...prev, 
+          newUiMember
+        ]);
         setIsMember(true);
       }
 
@@ -331,14 +304,11 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       return;
     }
 
-    // Prevent leaving if operation already in progress
     if (isLeaving) return;
 
     setIsLeaving(true);
     try {
-      // We need the membership ID to remove from UI table
       if (!membershipId) {
-        // Try to find membership ID if not already in state
         const { data } = await supabase
           .from('issue_community_members')
           .select('id')
@@ -353,7 +323,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         }
       }
 
-      // Delete from community_members table
       const { error: deleteMemberError } = await supabase
         .from('community_members')
         .delete()
@@ -365,7 +334,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw deleteMemberError;
       }
 
-      // Delete from issue_community_members table
       const { error: deleteUiMemberError } = await supabase
         .from('issue_community_members')
         .delete()
@@ -376,7 +344,6 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         throw deleteUiMemberError;
       }
 
-      // Update the local state
       setCommunityMembers(prev => prev.filter(member => member.id !== membershipId));
       setIsMember(false);
       setMembershipId(null);
@@ -397,6 +364,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       setIsLeaving(false);
     }
   };
+
+  const handleDocumentAdded = async (newDoc: any) => {
+    setDocuments(prev => [newDoc, ...prev]);
+  };
+
+  const isLoggedIn = Boolean(user);
+  const isCommunityMember = isMember;
 
   return (
     <Card className="w-full h-full overflow-hidden shadow-lg">
@@ -458,7 +432,13 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
           </TabsContent>
           
           <TabsContent value="documents" className="p-6 pt-4">
-            <DocumentsTab documents={issue.documents} />
+            <DocumentsTab 
+              documents={documents} 
+              issueId={issue.id}
+              isMember={isCommunityMember}
+              user={user}
+              onDocumentAdded={handleDocumentAdded}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

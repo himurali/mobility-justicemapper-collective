@@ -22,11 +22,10 @@ interface IssueDetailProps {
 
 interface DbCommunityMember {
   id: string;
-  name: string;
-  role: string;
-  avatar_url: string | null;
   issue_id: number;
-  created_at?: string;
+  joined_at: string;
+  role: string;
+  user_id: string;
 }
 
 interface UiCommunityMember {
@@ -110,7 +109,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
 
       if (data) {
-        const mappedMembers: UiCommunityMember[] = data.map((member: DbCommunityMember) => ({
+        const mappedMembers: UiCommunityMember[] = data.map((member: any) => ({
           id: member.id,
           name: member.name,
           role: member.role || 'member',
@@ -149,7 +148,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
     
     try {
-      const { data, error } = await supabase
+      const { data: dbMembers, error } = await supabase
         .from('community_members')
         .select('*')
         .eq('user_id', user.id)
@@ -160,21 +159,43 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         return;
       }
       
-      if (data && data.length > 0) {
+      if (dbMembers && dbMembers.length > 0) {
         setIsMember(true);
-        setMembershipId(data[0].id);
+        setMembershipId(dbMembers[0].id);
         setMemberName(userEmail);
         
-        if (!members.some(m => m.id === data[0].id)) {
-          setCommunityMembers(prev => [
-            ...prev, 
-            {
-              id: data[0].id,
-              name: data[0].name,
-              role: data[0].role || 'member',
-              avatarUrl: data[0].avatar_url
+        if (!members.some(m => m.id === dbMembers[0].id)) {
+          const { data: existingUiMember } = await supabase
+            .from('issue_community_members')
+            .select('*')
+            .eq('name', userEmail)
+            .eq('issue_id', parseInt(issue.id))
+            .single();
+            
+          if (!existingUiMember) {
+            const { data: newUiMember } = await supabase
+              .from('issue_community_members')
+              .insert({
+                issue_id: parseInt(issue.id),
+                name: userEmail,
+                role: dbMembers[0].role || 'member',
+                avatar_url: user.user_metadata?.avatar_url || null
+              })
+              .select('*')
+              .single();
+              
+            if (newUiMember) {
+              setCommunityMembers(prev => [
+                ...prev, 
+                {
+                  id: newUiMember.id,
+                  name: newUiMember.name,
+                  role: newUiMember.role || 'member',
+                  avatarUrl: newUiMember.avatar_url
+                }
+              ]);
             }
-          ]);
+          }
         }
       } else {
         setIsMember(false);

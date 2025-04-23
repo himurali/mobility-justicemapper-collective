@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import IssueDetail from "@/components/IssueDetail";
 import { supabase } from "@/integrations/supabase/client";
+import { tagColors } from "@/components/IssueDetail";
 
 interface MapComponentProps {
   center?: [number, number];
@@ -190,6 +191,20 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [selectedIssue, issues]);
 
   const getCategoryColor = (category: string): string => {
+    const formattedCategory = category.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+    
+    if (tagColors[formattedCategory]) {
+      if (formattedCategory === "Cycling") return "#10b981";
+      if (formattedCategory === "Safety") return "#ef4444";
+      if (formattedCategory === "Infrastructure") return "#3b82f6";
+      if (formattedCategory === "Intersection") return "#f59e0b";
+      if (formattedCategory === "Accessibility") return "#8b5cf6";
+      if (formattedCategory === "Sidewalks") return "#6366f1";
+      if (formattedCategory === "Public Transit") return "#ec4899";
+    }
+    
     switch (category) {
       case "pedestrian_infrastructure":
         return "#ef4444";
@@ -396,21 +411,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const isSelected = issue.id === selectedIssue;
       
       const markerWrapper = document.createElement("div");
-      markerWrapper.className = "marker-wrapper";
+      markerWrapper.className = "marker-wrapper cursor-pointer";
 
       const markerElement = document.createElement("div");
+      const color = getCategoryColor(mainCategory);
+      const severityColor = getSeverityColor(issue.severity);
+      
       markerElement.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
-             style="border-color: ${getCategoryColor(mainCategory)}">
+        <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
+             style="border-color: ${color}">
           <div class="w-3 h-3 rounded-full" 
-               style="background-color: ${getSeverityColor(issue.severity)}"></div>
+               style="background-color: ${severityColor}"></div>
         </div>
       `;
 
       markerWrapper.appendChild(markerElement);
 
       try {
-        const marker = new mapboxgl.Marker(markerWrapper)
+        const marker = new mapboxgl.Marker({
+          element: markerWrapper,
+          anchor: 'bottom'
+        })
           .setLngLat([issue.location.longitude, issue.location.latitude])
           .addTo(map.current!);
         

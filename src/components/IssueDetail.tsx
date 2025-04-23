@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +21,7 @@ interface IssueDetailProps {
   initialTab?: string;
 }
 
+// Define the database community member structure
 interface DbCommunityMember {
   id: string;
   issue_id: number;
@@ -28,6 +30,7 @@ interface DbCommunityMember {
   user_id: string;
 }
 
+// Define the UI community member structure
 interface UiCommunityMember {
   id: string;
   name: string;
@@ -98,6 +101,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     if (!issue) return;
     
     try {
+      // Fetch issue_community_members data - this table represents the UI members
       const { data, error } = await supabase
         .from('issue_community_members')
         .select('*')
@@ -109,6 +113,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
       }
 
       if (data) {
+        // Map the database records to the UiCommunityMember structure
         const mappedMembers: UiCommunityMember[] = data.map((member: any) => ({
           id: member.id,
           name: member.name,
@@ -136,6 +141,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     
     const userEmail = user.email || '';
     
+    // Check if the user is already in the UI members list
     const currentMember = members.find(member => 
       member.name === userEmail
     );
@@ -148,6 +154,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
     }
     
     try {
+      // If not in the UI list, check in the database community_members table
       const { data: dbMembers, error } = await supabase
         .from('community_members')
         .select('*')
@@ -164,7 +171,10 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
         setMembershipId(dbMembers[0].id);
         setMemberName(userEmail);
         
+        // If the user is in the database but not in the UI members list,
+        // add them to the UI members list
         if (!members.some(m => m.id === dbMembers[0].id)) {
+          // First check if there's already a UI entry for this user
           const { data: existingUiMember } = await supabase
             .from('issue_community_members')
             .select('*')
@@ -173,6 +183,7 @@ const IssueDetail: React.FC<IssueDetailProps> = ({
             .single();
             
           if (!existingUiMember) {
+            // Create a new UI member entry
             const { data: newUiMember } = await supabase
               .from('issue_community_members')
               .insert({

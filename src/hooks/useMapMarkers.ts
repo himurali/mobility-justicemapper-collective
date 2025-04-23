@@ -29,6 +29,7 @@ export const useMapMarkers = ({
     markerWrapper.className = "marker-wrapper cursor-pointer transition-all duration-300";
     markerWrapper.style.transform = isSelected ? 'scale(1.5)' : 'scale(1)';
     markerWrapper.style.zIndex = isSelected ? '10' : '1';
+    markerWrapper.setAttribute('data-issue-id', issue.id);
 
     markerWrapper.innerHTML = `
       <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-lg border-2"
@@ -49,27 +50,48 @@ export const useMapMarkers = ({
     markersRef.current = {};
     markerElementsRef.current = {};
 
+    // Add markers for each issue with valid coordinates
     issues.forEach(issue => {
-      if (!issue.location.latitude || !issue.location.longitude) return;
+      if (!issue.location.latitude || !issue.location.longitude) {
+        console.warn(`Issue ${issue.id} has invalid coordinates:`, issue.location);
+        return;
+      }
 
-      const isSelected = issue.id === selectedIssue;
-      const markerElement = createMarkerElement(issue, isSelected);
-      markerElement.addEventListener('click', () => onMarkerClick(issue));
+      try {
+        const isSelected = issue.id === selectedIssue;
+        const markerElement = createMarkerElement(issue, isSelected);
+        markerElement.addEventListener('click', () => onMarkerClick(issue));
 
-      const marker = new mapboxgl.Marker({
-        element: markerElement,
-        anchor: 'bottom'
-      })
-        .setLngLat([issue.location.longitude, issue.location.latitude])
-        .addTo(map);
+        // Create the marker with exact coordinates
+        const marker = new mapboxgl.Marker({
+          element: markerElement,
+          anchor: 'bottom'
+        })
+          .setLngLat([issue.location.longitude, issue.location.latitude])
+          .addTo(map);
 
-      markersRef.current[issue.id] = marker;
-      markerElementsRef.current[issue.id] = markerElement;
+        markersRef.current[issue.id] = marker;
+        markerElementsRef.current[issue.id] = markerElement;
+        
+        // Debug info
+        console.log(`Added marker for issue ${issue.id} at [${issue.location.longitude}, ${issue.location.latitude}]`);
+      } catch (error) {
+        console.error(`Error adding marker for issue ${issue.id}:`, error);
+      }
     });
   };
 
+  // Update markers whenever map, issues, or selectedIssue changes
   useEffect(() => {
-    updateMarkers();
+    if (map && map.loaded()) {
+      updateMarkers();
+    } else if (map) {
+      map.once('load', updateMarkers);
+    }
+    
+    return () => {
+      Object.values(markersRef.current).forEach(marker => marker.remove());
+    };
   }, [map, issues, selectedIssue]);
 
   return { markersRef, markerElementsRef };

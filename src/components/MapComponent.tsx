@@ -15,6 +15,7 @@ import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
 // Mapbox access token - users need to replace this with their own token
 // or provide it via the UI
@@ -46,10 +47,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIssueData, setSelectedIssueData] = useState<IssueData | null>(null);
   const [activeTab, setActiveTab] = useState(selectedTab);
-  const [mapboxToken, setMapboxToken] = useState<string>(DEFAULT_MAPBOX_TOKEN);
+  const [mapboxToken, setMapboxToken] = useState<string>(
+    localStorage.getItem('mapbox_token') || DEFAULT_MAPBOX_TOKEN
+  );
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [showTokenInput, setShowTokenInput] = useState(false);
+  const { toast } = useToast();
 
+  // Initialize the map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -61,12 +66,20 @@ const MapComponent: React.FC<MapComponentProps> = ({
         style: "mapbox://styles/mapbox/light-v10",
         center: center,
         zoom: zoom,
+        attributionControl: true,
       });
 
       map.current.addControl(
         new mapboxgl.NavigationControl(),
         "top-right"
       );
+      
+      map.current.on('load', () => {
+        console.log("Map loaded successfully");
+        // Log the map bounds for debugging purposes
+        const bounds = map.current?.getBounds();
+        console.log("Map bounds:", bounds);
+      });
 
       map.current.on('error', (e) => {
         console.error("Mapbox error:", e);
@@ -77,20 +90,24 @@ const MapComponent: React.FC<MapComponentProps> = ({
       });
     } catch (error: any) {
       console.error("Error initializing map:", error);
-      if (error.message.includes('access token')) {
+      if (error.message && error.message.includes('access token')) {
         setTokenError("A valid Mapbox access token is required");
         setShowTokenInput(true);
       }
     }
 
     return () => {
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [mapboxToken]);
 
+  // Update map center and zoom when props change
   useEffect(() => {
-    if (map.current) {
+    if (map.current && map.current.loaded()) {
+      console.log("Updating map center to:", center, "zoom:", zoom);
       map.current.flyTo({
         center: center,
         zoom: zoom,
@@ -105,6 +122,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   }, [selectedTab]);
 
   const handleMarkerClick = (issue: IssueData) => {
+    console.log("Marker clicked for issue:", issue.id, "at position:", [issue.location.longitude, issue.location.latitude]);
     if (onSelectIssue) {
       onSelectIssue(issue.id);
     }
@@ -114,6 +132,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   // Filter issues based on category and severity filters
   const filteredIssues = issues.filter(issue => {
+    if (!issue.location.latitude || !issue.location.longitude) {
+      return false;
+    }
+    
     if (categoryFilter !== 'all') {
       const categoryNormalized = categoryFilter.toLowerCase().replace(/[_\s-]/g, '');
       if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === categoryNormalized)) {
@@ -130,6 +152,20 @@ const MapComponent: React.FC<MapComponentProps> = ({
     return true;
   });
 
+  // Log filtered issues for debugging
+  useEffect(() => {
+    console.log(`Displaying ${filteredIssues.length} filtered issues out of ${issues.length} total`);
+    
+    // Debug coordinates
+    filteredIssues.forEach(issue => {
+      if (issue.location.latitude && issue.location.longitude) {
+        console.log(`Issue ${issue.id} coordinates: [${issue.location.longitude}, ${issue.location.latitude}]`);
+      } else {
+        console.warn(`Issue ${issue.id} has invalid coordinates`, issue.location);
+      }
+    });
+  }, [filteredIssues, issues]);
+
   const { markersRef, markerElementsRef } = useMapMarkers({
     map: map.current,
     issues: filteredIssues,
@@ -141,20 +177,19 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setMapboxToken(newToken);
     localStorage.setItem('mapbox_token', newToken);
     setTokenError(null);
+    setShowTokenInput(false);
+    toast({
+      title: "Token updated",
+      description: "Mapbox access token has been updated",
+      duration: 3000,
+    });
+    
     // This will trigger the useEffect to recreate the map
     if (map.current) {
       map.current.remove();
       map.current = null;
     }
   };
-
-  // Load token from localStorage if available
-  useEffect(() => {
-    const savedToken = localStorage.getItem('mapbox_token');
-    if (savedToken) {
-      setMapboxToken(savedToken);
-    }
-  }, []);
 
   return (
     <TooltipProvider>

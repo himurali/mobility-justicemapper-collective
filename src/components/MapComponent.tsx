@@ -28,7 +28,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   center = [77.5946, 12.9716],
   zoom = 12,
   selectedIssue,
-  issues,
+  issues = [],  // Provide default empty array to avoid issues
   onSelectIssue,
   selectedTab = "video",
   categoryFilter = 'all',

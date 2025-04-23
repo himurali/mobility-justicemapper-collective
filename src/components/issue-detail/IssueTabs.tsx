@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import IssueHeader from "./IssueHeader";
 import IssueContent from "./IssueContent";
 import SolutionSection from "./SolutionSection";
 import CommunitySection from "./CommunitySection";
@@ -9,7 +8,6 @@ import JoinCommunityTab from "./JoinCommunityTab";
 import DocumentsTab from "./DocumentsTab";
 import Forum from "@/components/Forum";
 import { mockForumPosts } from "@/data/mockData";
-import { tagColors } from "../IssueDetail";
 
 const IssueTabs = ({
   issue,

@@ -365,6 +365,7 @@ const Index = () => {
                   selectedIssue={selectedIssue?.id}
                   onSelectIssue={handleSelectIssueById}
                   selectedTab={activeDialogTab}
+                  issues={filteredIssues}
                 />
               </div>
             </ResizablePanel>

@@ -14,7 +14,7 @@ interface IssueDetailProps {
   initialTab?: string;
 }
 
-const tagColors: Record<string, string> = {
+export const tagColors: Record<string, string> = {
   'Cycling': 'bg-emerald-100 text-gray-600 dark:bg-emerald-900 dark:text-gray-300',
   'Safety': 'bg-red-100 text-gray-600 dark:bg-red-900 dark:text-gray-300',
   'Infrastructure': 'bg-blue-100 text-gray-600 dark:bg-blue-900 dark:text-gray-300',

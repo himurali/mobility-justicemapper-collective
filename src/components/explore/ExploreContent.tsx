@@ -33,6 +33,23 @@ const ExploreContent: React.FC<ExploreContentProps> = ({
 }) => {
   return (
     <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
+        <span className="text-sm text-muted-foreground">
+          Showing {paginatedIssues.length} of {totalItems} issues
+        </span>
+        <select
+          className="text-sm border rounded p-1"
+          value={itemsPerPage}
+          onChange={(e) => {
+            onItemsPerPageChange(Number(e.target.value));
+          }}
+        >
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={30}>30 per page</option>
+        </select>
+      </div>
+      
       <IssueList
         issues={paginatedIssues}
         selectedIssue={selectedIssue}
@@ -40,6 +57,7 @@ const ExploreContent: React.FC<ExploreContentProps> = ({
         onUpvote={onUpvote}
         onDownvote={onDownvote}
       />
+      
       {totalPages > 1 && (
         <IssuePagination
           currentPage={currentPage}

@@ -26,13 +26,13 @@ export const useMapMarkers = ({
     const severityColor = getSeverityColor(issue.severity);
 
     const markerWrapper = document.createElement("div");
-    markerWrapper.className = "marker-wrapper cursor-pointer transition-all duration-300";
+    markerWrapper.className = `marker-wrapper cursor-pointer transition-all duration-300 ${isSelected ? 'animate-pulse' : ''}`;
     markerWrapper.style.transform = isSelected ? 'scale(1.5)' : 'scale(1)';
     markerWrapper.style.zIndex = isSelected ? '10' : '1';
     markerWrapper.setAttribute('data-issue-id', issue.id);
 
     markerWrapper.innerHTML = `
-      <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-lg border-2"
+      <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-lg border-2 ${isSelected ? 'ring-4 ring-primary ring-opacity-50' : ''}"
            style="border-color: ${color}">
         <div class="w-4 h-4 rounded-full" 
              style="background-color: ${severityColor}"></div>
@@ -96,3 +96,4 @@ export const useMapMarkers = ({
 
   return { markersRef, markerElementsRef };
 };
+

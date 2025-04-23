@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,9 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ImageIcon, MapPin } from "lucide-react";
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+
+const DEFAULT_MAPBOX_TOKEN = 'pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ';
 
 interface IssueFormData {
   issue_title: string;
@@ -47,12 +50,15 @@ const ReportInjustice = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [location, setLocation] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const mapContainer = React.useRef<HTMLDivElement>(null);
   const map = React.useRef<mapboxgl.Map | null>(null);
   const marker = React.useRef<mapboxgl.Marker | null>(null);
-  const [selectedCity, setSelectedCity] = React.useState<City>(cities[0]);
+  const [selectedCity, setSelectedCity] = useState<City>(cities[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>(DEFAULT_MAPBOX_TOKEN);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [showTokenInput, setShowTokenInput] = useState(false);
 
   const form = useForm<IssueFormData>({
     defaultValues: {
@@ -68,7 +74,7 @@ const ReportInjustice = () => {
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) {
       navigate('/auth');
       toast({
@@ -79,47 +85,82 @@ const ReportInjustice = () => {
     }
   }, [user, navigate]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const savedToken = localStorage.getItem('mapbox_token');
+    if (savedToken) {
+      setMapboxToken(savedToken);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoibXVyYWxpaHIiLCJhIjoiYXNJRUtZNCJ9.qCHETqk-pqaoRaK4e_VcvQ';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [77.5946, 12.9716], // Default to Bangalore
-      zoom: 12
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    marker.current = new mapboxgl.Marker({
-      draggable: true
-    });
-
-    map.current.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
-      setLocation({ lng, lat });
-      form.setValue('latitude_of_issue', lat);
-      form.setValue('longitude_of_issue', lng);
+    try {
+      mapboxgl.accessToken = mapboxToken;
       
-      marker.current?.setLngLat([lng, lat]).addTo(map.current!);
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: selectedCity.coordinates, 
+        zoom: selectedCity.zoom
+      });
 
-    marker.current.on('dragend', () => {
-      const lngLat = marker.current?.getLngLat();
-      if (lngLat) {
-        setLocation({ lng: lngLat.lng, lat: lngLat.lat });
-        form.setValue('latitude_of_issue', lngLat.lat);
-        form.setValue('longitude_of_issue', lngLat.lng);
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      marker.current = new mapboxgl.Marker({
+        draggable: true
+      });
+
+      map.current.on('click', (e) => {
+        const { lng, lat } = e.lngLat;
+        setLocation({ lng, lat });
+        form.setValue('latitude_of_issue', lat);
+        form.setValue('longitude_of_issue', lng);
+        
+        marker.current?.setLngLat([lng, lat]).addTo(map.current!);
+      });
+
+      map.current.on('error', (e) => {
+        console.error("Mapbox error:", e);
+        if (e.error.message.includes('access token')) {
+          setTokenError("Invalid Mapbox access token. Please provide a valid token.");
+          setShowTokenInput(true);
+        }
+      });
+
+      if (marker.current) {
+        marker.current.on('dragend', () => {
+          const lngLat = marker.current?.getLngLat();
+          if (lngLat) {
+            setLocation({ lng: lngLat.lng, lat: lngLat.lat });
+            form.setValue('latitude_of_issue', lngLat.lat);
+            form.setValue('longitude_of_issue', lngLat.lng);
+          }
+        });
       }
-    });
+    } catch (error: any) {
+      console.error("Error initializing map:", error);
+      if (error.message && error.message.includes('access token')) {
+        setTokenError("A valid Mapbox access token is required");
+        setShowTokenInput(true);
+      }
+    }
 
     return () => {
       map.current?.remove();
       map.current = null;
     };
-  }, []);
+  }, [mapboxToken, selectedCity]);
+
+  const handleTokenChange = (newToken: string) => {
+    setMapboxToken(newToken);
+    localStorage.setItem('mapbox_token', newToken);
+    setTokenError(null);
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+  };
 
   const getCurrentLocation = () => {
     if ("geolocation" in navigator) {
@@ -368,10 +409,43 @@ const ReportInjustice = () => {
               )}
             </div>
             
-            <div 
-              ref={mapContainer} 
-              className="w-full h-[300px] rounded-lg border border-gray-200 shadow-sm"
-            />
+            <div className="relative">
+              {tokenError && showTokenInput && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 p-6">
+                  <div className="w-full space-y-4 bg-card p-6 shadow-lg rounded-lg">
+                    <Alert variant="destructive" className="mb-4">
+                      <AlertDescription>{tokenError}</AlertDescription>
+                    </Alert>
+                    <p className="text-sm">
+                      Please provide your Mapbox access token. You can get one by signing up at{" "}
+                      <a 
+                        href="https://mapbox.com/signup" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary underline"
+                      >
+                        mapbox.com
+                      </a>.
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter your Mapbox token"
+                        value={mapboxToken}
+                        onChange={(e) => setMapboxToken(e.target.value)}
+                      />
+                      <Button onClick={() => handleTokenChange(mapboxToken)}>
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div 
+                ref={mapContainer} 
+                className="w-full h-[300px] rounded-lg border border-gray-200 shadow-sm"
+              />
+            </div>
           </div>
 
           <FormField

@@ -26,12 +26,14 @@ export const useMapMarkers = ({
     const severityColor = getSeverityColor(issue.severity);
 
     const markerWrapper = document.createElement("div");
-    markerWrapper.className = "marker-wrapper cursor-pointer";
+    markerWrapper.className = "marker-wrapper cursor-pointer transition-all duration-300";
+    markerWrapper.style.transform = isSelected ? 'scale(1.5)' : 'scale(1)';
+    markerWrapper.style.zIndex = isSelected ? '10' : '1';
 
     markerWrapper.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg border-2 ${isSelected ? 'scale-150' : ''} transition-transform duration-300" 
+      <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-lg border-2"
            style="border-color: ${color}">
-        <div class="w-3 h-3 rounded-full" 
+        <div class="w-4 h-4 rounded-full" 
              style="background-color: ${severityColor}"></div>
       </div>
     `;
@@ -50,7 +52,8 @@ export const useMapMarkers = ({
     issues.forEach(issue => {
       if (!issue.location.latitude || !issue.location.longitude) return;
 
-      const markerElement = createMarkerElement(issue, issue.id === selectedIssue);
+      const isSelected = issue.id === selectedIssue;
+      const markerElement = createMarkerElement(issue, isSelected);
       markerElement.addEventListener('click', () => onMarkerClick(issue));
 
       const marker = new mapboxgl.Marker({

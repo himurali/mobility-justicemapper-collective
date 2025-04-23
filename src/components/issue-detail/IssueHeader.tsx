@@ -4,13 +4,13 @@ import { IssueData } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { tagColors } from '@/utils/mapColors';
 
 interface IssueHeaderProps {
   issue: IssueData;
   onClose: () => void;
   onJoinCommunity?: () => void;
   isJoining?: boolean;
-  tagColors: Record<string, string>;
 }
 
 const IssueHeader: React.FC<IssueHeaderProps> = ({
@@ -18,7 +18,6 @@ const IssueHeader: React.FC<IssueHeaderProps> = ({
   onClose,
   onJoinCommunity,
   isJoining,
-  tagColors,
 }) => {
   const formatTag = (tag: string) => {
     return tag.split('_').map(word => 
@@ -44,14 +43,17 @@ const IssueHeader: React.FC<IssueHeaderProps> = ({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {issue.tags.map((tag, index) => (
-          <Badge
-            key={index}
-            className={tagColors[formatTag(tag)] || "bg-secondary"}
-          >
-            {formatTag(tag)}
-          </Badge>
-        ))}
+        {issue.tags.map((tag, index) => {
+          const formattedTag = formatTag(tag);
+          return (
+            <Badge
+              key={index}
+              className={tagColors[formattedTag] || "bg-secondary"}
+            >
+              {formattedTag}
+            </Badge>
+          );
+        })}
       </div>
     </div>
   );

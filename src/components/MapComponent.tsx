@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { IssueData } from "@/types";
+import { IssueData, IssueCategory, IssueSeverity } from "@/types";
 import {
   TooltipProvider,
   Tooltip,
@@ -20,6 +20,8 @@ interface MapComponentProps {
   issues: IssueData[];
   onSelectIssue?: (issueId: string) => void;
   selectedTab?: string;
+  categoryFilter?: IssueCategory | 'all';
+  severityFilter?: IssueSeverity | 'all';
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -29,6 +31,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
   issues,
   onSelectIssue,
   selectedTab = "video",
+  categoryFilter = 'all',
+  severityFilter = 'all'
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -80,9 +84,27 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setIsDialogOpen(true);
   };
 
+  // Filter issues based on category and severity filters
+  const filteredIssues = issues.filter(issue => {
+    if (categoryFilter !== 'all') {
+      const categoryNormalized = categoryFilter.toLowerCase().replace(/[_\s-]/g, '');
+      if (!issue.tags.some(tag => tag.toLowerCase().replace(/[_\s-]/g, '') === categoryNormalized)) {
+        return false;
+      }
+    }
+
+    if (severityFilter !== 'all') {
+      if (issue.severity !== severityFilter) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   const { markersRef, markerElementsRef } = useMapMarkers({
     map: map.current,
-    issues,
+    issues: filteredIssues,
     selectedIssue,
     onMarkerClick: handleMarkerClick,
   });
@@ -90,7 +112,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <TooltipProvider>
       <div ref={mapContainer} className="w-full h-full rounded-lg shadow-sm">
-        {issues.map(issue => (
+        {filteredIssues.map(issue => (
           <Tooltip key={issue.id}>
             <TooltipTrigger asChild>
               <div className="marker-tooltip-trigger" data-issue-id={issue.id} />

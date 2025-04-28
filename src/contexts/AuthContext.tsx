@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -155,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
+      console.log("Attempting Google sign-in...");
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -163,16 +165,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error("Google sign-in error:", error);
+        
+        // Provide more descriptive error messages for common OAuth issues
+        let errorMessage = error.message;
+        
+        if (error.message.includes("validation_failed") && error.message.includes("provider is not enabled")) {
+          errorMessage = "Google login is not enabled. Please check the authentication settings in your Supabase project.";
+        } else if (error.message.includes("invalid_request") || error.message.includes("invalid_client")) {
+          errorMessage = "Invalid OAuth request. Please verify your Google OAuth credentials are configured correctly.";
+        } else if (error.message.includes("Access blocked")) {
+          errorMessage = "Access blocked by Google. Your OAuth consent screen may need verification or the app domain may not be authorized.";
+        }
+        
         toast({
           title: "Google sign in failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         return { error };
       }
       
+      console.log("Google sign-in initiated successfully:", data);
       return { error: null };
     } catch (error: any) {
+      console.error("Google sign-in exception:", error);
       toast({
         title: "Google sign in failed",
         description: error.message,
@@ -184,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithTwitter = async () => {
     try {
+      console.log("Attempting Twitter sign-in...");
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
@@ -192,16 +210,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error("Twitter sign-in error:", error);
+        
+        // Provide more descriptive error messages for common OAuth issues
+        let errorMessage = error.message;
+        
+        if (error.message.includes("validation_failed") && error.message.includes("provider is not enabled")) {
+          errorMessage = "Twitter login is not enabled. Please check the authentication settings in your Supabase project.";
+        } 
+        
         toast({
           title: "Twitter sign in failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         return { error };
       }
       
+      console.log("Twitter sign-in initiated successfully:", data);
       return { error: null };
     } catch (error: any) {
+      console.error("Twitter sign-in exception:", error);
       toast({
         title: "Twitter sign in failed",
         description: error.message,
